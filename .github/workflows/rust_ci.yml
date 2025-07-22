@@ -74,3 +74,15 @@ jobs:
 
       - name: Check for clippy warnings
         run: cargo clippy --all-targets --all-features --color always -- -D warnings
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    env:
+      APP_PORT: 8080
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Integration tests
+        run: cargo test --test integration_tests -- --nocapture

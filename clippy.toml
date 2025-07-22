@@ -1,0 +1,3 @@
+# affects `unwrap_used` and `expect_used` lints
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true

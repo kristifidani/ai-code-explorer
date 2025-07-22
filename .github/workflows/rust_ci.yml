@@ -1,6 +1,6 @@
 name: CI
 
-# Trigger CI Runs CI once for each PR update (on merge diff) and again when PR is merged to main (in push)
+# Trigger CI once for each PR update (on merge diff) and again when PR is merged to main (in push)
 on:
   push:
     branches:

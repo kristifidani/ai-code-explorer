@@ -1,0 +1,76 @@
+name: CI
+
+# Trigger CI once for each PR update (on merge diff) and again when PR is merged to main (in push)
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read # allows reading repo contents (needed for basic CI)
+  issues: read # allows reading action metadata (e.g., cache)
+
+env:
+  CARGO_TERM_COLOR: always # force colored output in logs
+  CARGO_INCREMENTAL: 0 # disable incremental compilation for faster from-scratch builds
+
+# Ensure only one CI run per branch/PR; cancel redundant ones
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Check format
+        run: cargo fmt --check
+
+  unused-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-machete
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-machete
+
+      - name: Check for unused dependencies
+        run: cargo machete
+
+  audit-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+
+      - name: Audit dependencies
+        run: cargo audit --color always
+
+  lint-clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Check for clippy warnings
+        run: cargo clippy --all-targets --all-features --color always -- -D warnings

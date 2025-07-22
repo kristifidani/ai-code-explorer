@@ -1,0 +1,8 @@
+{
+    "editor.formatOnSave": true,
+    "rest-client.environmentVariables": {
+        "local": {
+            "host": "http://localhost:8080"
+        }
+    }
+}

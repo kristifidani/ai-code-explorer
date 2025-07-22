@@ -14,7 +14,7 @@ async fn main() -> std::io::Result<()> {
             .configure(config_app)
             .wrap(actix_web::middleware::Logger::default())
     })
-    .bind(("0.0.0.0", port))?
+    .bind(("127.0.0.1", port))?
     .run()
     .await
 }

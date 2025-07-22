@@ -1,10 +1,15 @@
 use tracing_subscriber::EnvFilter;
 
-/// Initializes the global tracing subscriber for logging.
+/// Initializes the global tracing subscriber for application-wide logging.
 ///
-/// This function sets up a `tracing_subscriber` with a format layer and an environment
-/// filter. The environment filter reads the `RUST_LOG` environment variable to determine
-/// the log level and filtering rules.
+/// Sets up a `tracing_subscriber` with formatted output and an environment filter that reads the `RUST_LOG` environment variable to control log levels and filtering. If the subscriber is already initialized, logs a warning instead of panicking.
+///
+/// # Examples
+///
+/// ```
+/// tracing_setup();
+/// tracing::info!("Application started");
+/// ```
 pub fn tracing_setup() {
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env()) // reads RUST_LOG

@@ -1,14 +1,17 @@
 use std::str::FromStr;
 
-/// Tries to load the value from an environment variable and parse it into T.
+/// Loads an environment variable by key and parses its value into the specified type.
 ///
-/// # Arguments
+/// Panics if the environment variable is missing or if parsing fails, providing detailed error messages.
 ///
-/// * `key` - the environment variable key to try to load
+/// # Examples
 ///
-/// # Panics
-///
-/// Panics if the environment variable does not exist or could not be parsed into T.
+/// ```
+/// use your_crate::parse_env_expect;
+/// std::env::set_var("PORT", "8080");
+/// let port: u16 = parse_env_expect("PORT");
+/// assert_eq!(port, 8080);
+/// ```
 pub fn parse_env_expect<T: FromStr<Err = E>, E: std::fmt::Display>(key: &str) -> T {
     let value = std::env::var(key).unwrap_or_else(|_| {
         let msg = format!("Environment variable {key} not set. {key} must be set!");

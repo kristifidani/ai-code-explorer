@@ -1,8 +1,13 @@
 name: CI
 
-# Trigger CI on push to a repository branch
+# Trigger CI Runs CI once for each PR update (on merge diff) and again when PR is merged to main (in push)
 on:
   push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read # allows reading repo contents (needed for basic CI)
@@ -27,9 +32,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-        with:
-          working-directory: backend
 
       - name: Check format
         run: cargo fmt --check
@@ -39,9 +41,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-        with:
-          working-directory: backend
 
       - name: Install cargo-machete
         uses: taiki-e/install-action@v2
@@ -56,9 +55,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-        with:
-          working-directory: backend
 
       - name: Install cargo-audit
         uses: taiki-e/install-action@v2
@@ -75,9 +71,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      - uses: Swatinem/rust-cache@v2
-        with:
-          working-directory: backend
 
       - name: Check for clippy warnings
         run: cargo clippy --all-targets --all-features --color always -- -D warnings

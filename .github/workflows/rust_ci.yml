@@ -18,6 +18,10 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    working-directory: backend
+
 jobs:
   rustfmt:
     runs-on: ubuntu-latest

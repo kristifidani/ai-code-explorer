@@ -8,8 +8,6 @@ pub enum Error {}
 
 impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
-        tracing::error!("Error: {:?}", self);
-
         StatusCode::INTERNAL_SERVER_ERROR
     }
 

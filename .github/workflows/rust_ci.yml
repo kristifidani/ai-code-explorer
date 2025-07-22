@@ -1,9 +1,8 @@
 name: CI
 
-# Trigger CI on both pushes and pull requests to 'main' branch
+# Trigger CI on push to a repository branch
 on:
   push:
-  pull_request:
 
 permissions:
   contents: read # allows reading repo contents (needed for basic CI)
@@ -53,6 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
 
       - name: Install cargo-audit
         uses: taiki-e/install-action@v2
@@ -66,10 +66,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.85.1
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
       - uses: Swatinem/rust-cache@v2
 
       - name: Check for clippy warnings
-        run: |
-          rustup component add clippy
-          cargo clippy --all-targets --all-features --color always -- -D warnings
+        run: cargo clippy --all-targets --all-features --color always -- -D warnings

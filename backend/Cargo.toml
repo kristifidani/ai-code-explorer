@@ -5,9 +5,20 @@ version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 
+[lints.clippy]
+# With these two, we avoid panicking behavior in our code.
+# In some places where panicking is desired, such as in tests or in the `main.rs` files,
+# these are allowed using #[allow(clippy::unwrap_used, clippy::expect_used] or configured
+# to be allowed in the `.clippy.toml` config file.
+unwrap_used = "deny"
+expect_used = "deny"
+
 [dependencies]
 actix-web = { version = "4", default-features = false, features = ["macros"] }
 dotenvy = { version = "0.15", default-features = false }
+
+# error handling
+thiserror = { version = "2", default-features = false }
 
 # tracing
 tracing = { version = "0.1", default-features = false }

@@ -28,6 +28,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+        with:
+          working-directory: backend
 
       - name: Check format
         run: cargo fmt --check
@@ -38,6 +40,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+        with:
+          working-directory: backend
 
       - name: Install cargo-machete
         uses: taiki-e/install-action@v2
@@ -53,6 +57,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+        with:
+          working-directory: backend
 
       - name: Install cargo-audit
         uses: taiki-e/install-action@v2
@@ -70,6 +76,8 @@ jobs:
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
+        with:
+          working-directory: backend
 
       - name: Check for clippy warnings
         run: cargo clippy --all-targets --all-features --color always -- -D warnings

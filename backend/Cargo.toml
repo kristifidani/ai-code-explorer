@@ -6,4 +6,13 @@ edition = "2024"
 rust-version = "1.85"
 
 [dependencies]
-actix-web = { version = "4", default-features = false }
+actix-web = { version = "4", default-features = false, features = ["macros"] }
+dotenvy = { version = "0.15", default-features = false }
+
+# tracing
+tracing = { version = "0.1", default-features = false }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[[bin]]
+name = "rest-api"
+path = "bin/main.rs"

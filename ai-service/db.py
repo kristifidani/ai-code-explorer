@@ -2,7 +2,8 @@
 # ChromaDB may fail with newer NumPy versions >2.0 that removed np.float_
 # This ensures backward compatibility by aliasing float_ to float64
 import numpy as np
-if not hasattr(np, 'float_'):
+
+if not hasattr(np, "float_"):
     np.float_ = np.float64
 
 import uuid
@@ -15,6 +16,7 @@ load_dotenv()
 # Set up ChromaDB client and persistent collection
 client = chromadb.PersistentClient(path=os.getenv("CHROMA_STORE_PATH"))
 collection = client.get_or_create_collection("code_chunks")
+
 
 def add_chunks(chunks: list[str], embeddings: list[list[float]]) -> None:
     """
@@ -37,5 +39,3 @@ def add_chunks(chunks: list[str], embeddings: list[list[float]]) -> None:
         )
     except Exception as e:
         raise Exception(f"Failed to add chunks to database: {e}") from e
-
-

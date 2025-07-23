@@ -21,6 +21,6 @@ def embed_texts(texts: list[str]) -> np.ndarray:
 
 def embed_text(text: str) -> list[float]:
     """
-    Embed a single text input.
+    Embed a single text input as a NumPy array.
     """
     return embed_texts([text])[0]

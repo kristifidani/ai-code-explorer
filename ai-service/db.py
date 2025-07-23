@@ -1,4 +1,6 @@
 # --- Handle ChromaDB NumPy compatibility ---
+# ChromaDB may fail with newer NumPy versions >2.0 that removed np.float_
+# This ensures backward compatibility by aliasing float_ to float64
 import numpy as np
 if not hasattr(np, 'float_'):
     np.float_ = np.float64

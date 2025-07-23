@@ -1,4 +1,5 @@
 from functools import lru_cache
+import numpy as np
 from sentence_transformers import SentenceTransformer
 
 @lru_cache(maxsize=1)
@@ -6,7 +7,7 @@ def _get_model() -> SentenceTransformer:
     """Singleton accessor; loads on first call only."""
     return SentenceTransformer("all-MiniLM-L6-v2")
 
-def embed_texts(texts: list[str]) -> list[list[float]]:
+def embed_texts(texts: list[str]) -> np.ndarray:
     """
     Create embeddings for a list of texts.
 

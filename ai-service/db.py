@@ -5,19 +5,22 @@ if not hasattr(np, 'float_'):
 
 import uuid
 import chromadb
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Set up ChromaDB client and persistent collection
-client = chromadb.PersistentClient(path="./chroma_store")
+client = chromadb.PersistentClient(path=os.getenv("CHROMA_STORE_PATH"))
 collection = client.get_or_create_collection("code_chunks")
 
-def add_chunks(chunks: list[str], embeddings: list[list[float]]):
+def add_chunks(chunks: list[str], embeddings: list[list[float]]) -> None:
     """
     Add new code chunks and their embeddings to ChromaDB.
 
     Args:
         chunks: Code or text chunks to store.
         embeddings: Corresponding vector embeddings.
-        metadata: Optional info like filename, function name.
 
     Raises:
         Exception: If database operation fails.
@@ -28,7 +31,7 @@ def add_chunks(chunks: list[str], embeddings: list[list[float]]):
         collection.add(
             documents=chunks,
             embeddings=embeddings,
-            ids=ids
+            ids=ids,
         )
     except Exception as e:
         raise Exception(f"Failed to add chunks to database: {e}") from e

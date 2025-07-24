@@ -14,7 +14,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Set up ChromaDB client and persistent collection
-client = chromadb.PersistentClient(path=os.getenv("CHROMA_STORE_PATH"))
+chroma_path = os.getenv("CHROMA_STORE_PATH")
+if not chroma_path:
+    raise ValueError("CHROMA_STORE_PATH environment variable is required")
+
+client = chromadb.PersistentClient(path=chroma_path)
 collection = client.get_or_create_collection("code_chunks")
 
 

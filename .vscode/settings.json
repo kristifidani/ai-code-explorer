@@ -10,5 +10,11 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.formatOnSave": true
-    }
+    },
+    "python.defaultInterpreterPath": "${workspaceFolder}/ai-service/.venv/bin/python",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}",
+        "./ai-service/src/ai_service"
+    ],
+    "python.analysis.autoSearchPaths": true
 }

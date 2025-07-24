@@ -1,6 +1,0 @@
-fastapi==0.116.1
-uvicorn==0.35.0
-sentence-transformers==5.0.0
-chromadb==1.0.15
-httpx==0.28.1
-ollama==0.5.1

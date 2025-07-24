@@ -13,10 +13,6 @@ permissions:
   contents: read # allows reading repo contents (needed for basic CI)
   issues: read # allows reading action metadata (e.g., cache)
 
-env:
-  CARGO_TERM_COLOR: always # force colored output in logs
-  CARGO_INCREMENTAL: 0 # disable incremental compilation for faster from-scratch builds
-
 # Ensure only one CI run per branch/PR; cancel redundant ones
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -52,3 +48,5 @@ jobs:
 
       - name: Run tests
         run: PYTHONPATH=src make test
+        env:
+          CHROMA_STORE_PATH: ./chroma_store

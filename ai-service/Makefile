@@ -1,12 +1,15 @@
 # Makefile
 
 # Combined
-.PHONY: all check lint format test clean
+.PHONY: all check lint format format-check test clean
 
 lint:
 	poetry run ruff check
 
 format:
+	poetry run ruff format
+
+format-check:
 	poetry run ruff format --check --diff
 
 check: lint format
@@ -14,7 +17,7 @@ check: lint format
 test:
 	poetry run pytest
 
-all: check test
+all: format-check test
 
 clean:
-	poetry env remove --all || true
+	poetry env remove --all

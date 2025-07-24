@@ -17,4 +17,4 @@ test:
 all: check test
 
 clean:
-    poetry env remove --all || true
+	poetry env remove --all || true

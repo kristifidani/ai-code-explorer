@@ -12,7 +12,7 @@ format:
 format-check:
 	poetry run ruff format --check --diff
 
-check: lint format
+check: lint format-check
 
 test:
 	poetry run pytest

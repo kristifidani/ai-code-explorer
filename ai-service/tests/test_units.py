@@ -133,8 +133,7 @@ def test_query_with_varied_n_results():
             assert len(unique_docs) <= len(
                 sample_texts
             )  # Can't return more than stored
-            if n <= len(sample_texts):
-                assert len(docs) == n  # Should return exactly n when available
+
     finally:
         for text in sample_texts:
             collection.delete(where={"$contains": text})

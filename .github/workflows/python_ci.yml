@@ -1,0 +1,52 @@
+name: PYTHON_CI
+
+# Trigger CI once for each PR update (on merge diff) and again when PR is merged to main (in push)
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read # allows reading repo contents (needed for basic CI)
+  issues: read # allows reading action metadata (e.g., cache)
+
+# Ensure only one CI run per branch/PR; cancel redundant ones
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: ai-service
+
+jobs:
+  lint_format_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: poetry install --no-root --with dev
+
+      - name: Run lint & format checks
+        run: make check
+
+      - name: Run tests
+        run: PYTHONPATH=src make test
+        env:
+          CHROMA_STORE_PATH: ./chroma_store

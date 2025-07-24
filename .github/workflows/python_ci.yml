@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root --with dev
 
-      - name: Run Ruff lint & format checks
+      - name: Run lint & format checks
         run: make check
 
       - name: Run tests

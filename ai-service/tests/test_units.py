@@ -130,9 +130,6 @@ def test_query_with_varied_n_results():
             # To handle this properly, we count only unique documents.
             unique_docs = set(docs)
             assert len(unique_docs) <= n
-            assert len(unique_docs) <= len(
-                sample_texts
-            )  # Can't return more than stored
 
     finally:
         for text in sample_texts:

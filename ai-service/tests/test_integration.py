@@ -5,16 +5,19 @@ import pytest
 
 def test_embed_store_and_retrieve():
     sample_text = "def greet(): print('Hello!')"
-    embedding = embed_text(sample_text)  # returns a 1D numpy array
+    embedding = embed_text(sample_text)  # Embed the sample text
 
-    # add_chunks expects a list of texts and a 2D array of embeddings
-    add_chunks([sample_text], [embedding])
+    add_chunks([sample_text], [embedding])  # Store the text and its embedding
 
-    # Query for the embedding we just stored
-    result = collection.query(query_embeddings=[embedding], n_results=1)
-    retrieved_text = result["documents"][0][0]
+    try:
+        # Query for the embedding we just stored
+        result = collection.query(query_embeddings=[embedding], n_results=1)
+        retrieved_text = result["documents"][0][0]
 
-    assert retrieved_text == sample_text
+        assert retrieved_text == sample_text
+    finally:
+        # Clean up test data
+        collection.delete(where={"$contains": sample_text})
 
 
 def test_embed_empty_text_raises_value_error():

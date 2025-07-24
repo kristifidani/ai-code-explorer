@@ -6,7 +6,7 @@ hello world 2
 """
 
 
-def main():
+def main() -> None:
     try:
         print("Generating embedding for code sample...")
         embedding = embed_text(code)

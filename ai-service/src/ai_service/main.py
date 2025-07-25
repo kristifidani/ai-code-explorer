@@ -1,18 +1,17 @@
-from ai_service.db import add_chunks, query_chunks
+from ai_service import db
 from ai_service.embedder import embed_text
 from ai_service.ollama_client import chat_with_ollama
 from .exceptions import AIServiceError
-from db import collection
 
 
 def upload_code(code: str):
     embedding = embed_text(code)
-    add_chunks([code], [embedding])
+    db.add_chunks([code], [embedding])
 
 
 def answer_question(user_question: str, top_k: int = 3):
     question_embedding = embed_text(user_question)
-    results = query_chunks(question_embedding, number_of_results=top_k)
+    results = db.query_chunks(question_embedding, number_of_results=top_k)
     unique_snippets = list(dict.fromkeys(results["documents"][0]))
     relevant_code = "\n---\n".join(unique_snippets)
     prompt = f"Code context:\n{relevant_code}\nQuestion: {user_question}\nExplain how the code works."
@@ -24,8 +23,8 @@ def answer_question(user_question: str, top_k: int = 3):
 
 def main() -> None:
     code = """
-def add(a, b):
-    return a + b
+def add(a, b, c):
+    return a + b - c
 """
     try:
         # Upload code once
@@ -38,7 +37,6 @@ def add(a, b):
         questions = [
             "How does the sum work here?",
             "What happens if I pass strings to this function?",
-            "Can you rewrite this function to handle lists?",
         ]
         for q in questions:
             answer_question(q)

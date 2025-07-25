@@ -42,8 +42,7 @@ def test_embed_and_store_and_retrieve_texts():
             result = collection.query(query_embeddings=[embedding], n_results=1)
             assert result["documents"][0][0] == sample_texts[i]  # Check exact match
     finally:
-        for text in sample_texts:
-            collection.delete(where={"$contains": text})
+        collection.delete(ids=collection.peek()["ids"])  # clear DB
 
 
 # ------------------ Unicode, Special Characters ------------------
@@ -79,13 +78,13 @@ def test_embed_and_retrieve_special_and_unicode_texts(text):
         result = collection.query(query_embeddings=[embedding], n_results=1)
         assert result["documents"][0][0] == text
     finally:
-        collection.delete(where={"$contains": text})
+        collection.delete(ids=collection.peek()["ids"])  # clear DB
 
 
 # ------------------ Embedding Properties & Structure ------------------
 
 
-# Check the embedding's structure, type, and integration with the vector DB
+# Check the embedding's structure, type, and integration with chroma DB
 def test_embedding_output_properties_and_structure():
     text = "def test_function(): return True"
     embedding = embed_text(text)
@@ -98,6 +97,7 @@ def test_embedding_output_properties_and_structure():
 
     # Validate output structure from the DB query
     try:
+        add_chunks([text], [embedding])
         result = collection.query(query_embeddings=[embedding], n_results=1)
         assert isinstance(result, dict)
         assert "documents" in result and isinstance(result["documents"], list)
@@ -105,7 +105,7 @@ def test_embedding_output_properties_and_structure():
         assert len(result["documents"][0]) > 0
         assert "ids" in result
     finally:
-        collection.delete(where={"$contains": text})
+        collection.delete(ids=collection.peek()["ids"])  # clear DB
 
 
 # ------------------ Query Behavior ------------------
@@ -134,5 +134,4 @@ def test_query_with_varied_n_results():
             assert len(unique_docs) <= n
 
     finally:
-        for text in sample_texts:
-            collection.delete(where={"$contains": text})
+        collection.delete(ids=collection.peek()["ids"])  # clear DB

@@ -2,6 +2,8 @@ from functools import lru_cache
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
+from .exceptions import EmbeddingError
+
 
 @lru_cache(maxsize=1)
 def _get_model() -> SentenceTransformer:
@@ -20,10 +22,10 @@ def embed_texts(texts: list[str]) -> np.ndarray:
         A NumPy array of embeddings.
 
     Raises:
-        ValueError: If texts is empty or contains only empty strings.
+        EmbeddingError: If texts is empty or contains only empty strings.
     """
     if not texts or all(not text.strip() for text in texts):
-        raise ValueError("Cannot embed empty or whitespace-only texts")
+        raise EmbeddingError("Cannot embed empty or whitespace-only texts")
     return _get_model().encode(texts, convert_to_numpy=True)
 
 
@@ -38,8 +40,8 @@ def embed_text(text: str) -> np.ndarray:
         A NumPy array representing the text embedding.
 
     Raises:
-        ValueError: If text is empty or whitespace-only.
+        EmbeddingError: If text is empty or whitespace-only.
     """
     if not text.strip():
-        raise ValueError("Cannot embed empty or whitespace-only text")
+        raise EmbeddingError("Cannot embed empty or whitespace-only text")
     return embed_texts([text])[0]

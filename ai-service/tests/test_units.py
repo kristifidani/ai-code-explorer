@@ -3,6 +3,8 @@ import numpy as np
 from ai_service.embedder import embed_text, embed_texts
 from ai_service.db import add_chunks, collection
 
+from ai_service.exceptions import EmbeddingError
+
 # ------------------ Input Validation ------------------
 
 
@@ -14,7 +16,7 @@ def test_embed_invalid_inputs_raise_errors(invalid_input):
             embed_text(invalid_input)
     else:
         with pytest.raises(
-            ValueError, match="Cannot embed empty or whitespace-only text"
+            EmbeddingError, match="Cannot embed empty or whitespace-only text"
         ):
             embed_text(invalid_input)
 

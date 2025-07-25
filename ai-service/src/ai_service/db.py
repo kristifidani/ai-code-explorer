@@ -18,7 +18,7 @@ load_dotenv()
 # Set up ChromaDB client and persistent collection
 chroma_path = os.getenv("CHROMA_STORE_PATH")
 if not chroma_path:
-    raise NotFound("CHROMA_STORE_PATH environment variable is required")
+    raise NotFound("Missing CHROMA_STORE_PATH environment variable")
 
 client = chromadb.PersistentClient(path=chroma_path)
 collection = client.get_or_create_collection("code_chunks")
@@ -44,4 +44,4 @@ def add_chunks(chunks: list[str], embeddings: list[list[float]]) -> None:
             ids=ids,
         )
     except Exception as e:
-        raise DatabaseError(f"Failed to add chunks to database: {e}") from e
+        raise DatabaseError(f"Failed to add chunks: {e}") from e

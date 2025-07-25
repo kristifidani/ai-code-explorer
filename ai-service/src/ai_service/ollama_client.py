@@ -14,15 +14,14 @@ def chat_with_ollama(prompt: str, model: str = "gemma3") -> str:
         Model-generated response text.
 
     Raises:
-        ConnectionError: If unable to connect to Ollama service.
-        KeyError: If the model is not available.
-        ResponseError: If response is invalid.
+        LLMQueryError: If the Ollama query fails for any reason.
     """
 
     try:
         response = ollama.chat(
-            model=model, messages=[{"role": "user", "content": prompt}]
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
         )
         return response["message"]["content"]
     except (ollama.ResponseError, ConnectionError, KeyError) as e:
-        raise LLMQueryError(f"Ollama query failed: {e}") from e
+        raise LLMQueryError(f"Query failed: {e}") from e

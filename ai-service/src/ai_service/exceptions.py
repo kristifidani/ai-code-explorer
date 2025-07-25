@@ -7,7 +7,7 @@ class AIServiceError(Exception):
 class EmbeddingError(AIServiceError):
     """Base exception for embedding errors."""
 
-    pass
+    EMPTY_INPUT_MESSAGE = "Cannot embed empty or whitespace-only texts"
 
 
 class LLMQueryError(AIServiceError):

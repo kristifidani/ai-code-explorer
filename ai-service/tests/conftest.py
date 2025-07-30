@@ -3,6 +3,7 @@ import chromadb
 from dotenv import load_dotenv
 import os
 from ai_service.exceptions import NotFound
+from ai_service import db
 
 
 def create_db_test_collection(collection_name: str):
@@ -22,8 +23,6 @@ def db_test_collection(request):
 
 @pytest.fixture(autouse=True)
 def patch_and_clean_db_collection(monkeypatch, db_test_collection):
-    from ai_service import db  # Make sure this matches your code
-
     monkeypatch.setattr(db, "collection", db_test_collection)
 
     yield

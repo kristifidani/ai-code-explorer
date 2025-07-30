@@ -4,14 +4,24 @@ from ai_service.ollama_client import chat_with_ollama
 from .exceptions import AIServiceError
 
 
-def upload_code(code: str):
+def upload_code(code: str) -> None:
     embedding = embed_text(code)
     db.add_chunks([code], [embedding])
 
 
-def answer_question(user_question: str, top_k: int = 3):
+def answer_question(user_question: str, top_k: int = 3) -> None:
     question_embedding = embed_text(user_question)
     results = db.query_chunks(question_embedding, number_of_results=top_k)
+
+    # Validate query results
+    if not results.get("documents") or not results["documents"][0]:
+        print("User question:", user_question)
+        print("\nNo relevant code snippets found.")
+        print(
+            "\nLLM answer: I couldn't find any relevant code snippets to answer your question."
+        )
+        return
+
     unique_snippets = list(dict.fromkeys(results["documents"][0]))
     relevant_code = "\n---\n".join(unique_snippets)
     prompt = f"Code context:\n{relevant_code}\nQuestion: {user_question}\nExplain how the code works."

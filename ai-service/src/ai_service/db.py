@@ -73,7 +73,8 @@ def query_chunks(text_embedding: list[float], number_of_results: int = 5) -> dic
 
     try:
         return collection.query(
-            query_embeddings=[text_embedding], n_results=number_of_results
+            query_embeddings=[text_embedding],
+            n_results=number_of_results,
         )
     except Exception as e:
         raise DatabaseError(f"Failed to query chunks: {e}") from e

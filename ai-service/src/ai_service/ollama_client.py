@@ -24,4 +24,4 @@ def chat_with_ollama(prompt: str) -> str:
         )
         return response["message"]["content"]
     except (ollama.ResponseError, ConnectionError, KeyError) as e:
-        raise errors.LLMQueryError.query_failed(e)
+        raise errors.LLMQueryError.query_failed(e) from e

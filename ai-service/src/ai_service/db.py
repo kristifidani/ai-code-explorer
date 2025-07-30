@@ -39,7 +39,7 @@ def add_chunks(chunks: list[str], embeddings: list[list[float]]) -> None:
             ids=ids,
         )
     except Exception as e:
-        raise errors.DatabaseError.add_chunks_failed(e)
+        raise errors.DatabaseError.add_chunks_failed(e) from e
 
 
 def query_chunks(text_embedding: list[float], number_of_results: int = 5) -> dict:
@@ -72,4 +72,4 @@ def query_chunks(text_embedding: list[float], number_of_results: int = 5) -> dic
             n_results=number_of_results,
         )
     except Exception as e:
-        raise errors.DatabaseError.query_chunks_failed(e)
+        raise errors.DatabaseError.query_chunks_failed(e) from e

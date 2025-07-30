@@ -24,7 +24,7 @@ def embed_texts(texts: list[str]) -> np.ndarray:
         EmbeddingError: If texts is empty or contains only empty strings.
     """
     if not texts or all(not text.strip() for text in texts):
-        raise errors.EmbeddingError(errors.EmbeddingError.EMPTY_INPUT_MESSAGE)
+        raise errors.EmbeddingError.empty_input()
     return _get_model().encode(texts, convert_to_numpy=True)
 
 
@@ -42,5 +42,5 @@ def embed_text(text: str) -> np.ndarray:
         EmbeddingError: If text is empty or whitespace-only.
     """
     if not text.strip():
-        raise errors.EmbeddingError(errors.EmbeddingError.EMPTY_INPUT_MESSAGE)
+        raise errors.EmbeddingError.empty_input()
     return embed_texts([text])[0]

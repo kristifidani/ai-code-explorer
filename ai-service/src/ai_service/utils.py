@@ -2,7 +2,7 @@ import os
 from ai_service import errors
 
 
-def get_env_var(name: str, required: bool = True) -> str:
+def get_env_var(name: str, *, required: bool = True) -> str:
     """
     Retrieve an environment variable, optionally raising if missing.
 
@@ -18,5 +18,5 @@ def get_env_var(name: str, required: bool = True) -> str:
     """
     value = os.getenv(name)
     if required and value is None:
-        raise errors.NotFound(errors.NotFound.ENV_VARIABLE(name))
+        raise errors.NotFound.env_variable(name)
     return value

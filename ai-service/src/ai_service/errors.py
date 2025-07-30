@@ -7,7 +7,9 @@ class AIServiceError(Exception):
 class EmbeddingError(AIServiceError):
     """Base exception for embedding errors."""
 
-    EMPTY_INPUT_MESSAGE = "Cannot embed empty or whitespace-only texts"
+    @classmethod
+    def empty_input(cls):
+        return cls("Cannot embed empty or whitespace-only texts")
 
 
 class LLMQueryError(AIServiceError):
@@ -25,15 +27,18 @@ class DatabaseError(AIServiceError):
 class NotFound(AIServiceError):
     """Raised when something is not found."""
 
-    @staticmethod
-    def ENV_VARIABLE(name: str) -> str:
-        return f"Missing {name} environment variable"
+    @classmethod
+    def env_variable(cls, name: str):
+        return cls(f"Missing {name} environment variable")
 
 
 class InvalidParam(AIServiceError):
     """Raised when something is invalid."""
 
-    EMPTY_EMBEDDING_MESSAGE = "Query embedding is empty."
-    INVALID_RESULTS_COUNT_MESSAGE = (
-        "number_of_results must be an integer between 1 and 100"
-    )
+    @classmethod
+    def empty_embedding(cls):
+        return cls("Query embedding is empty.")
+
+    @classmethod
+    def invalid_results_count(cls):
+        return cls("number_of_results must be an integer between 1 and 100")

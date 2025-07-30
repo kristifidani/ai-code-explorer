@@ -31,4 +31,7 @@ class NotFound(AIServiceError):
 class InvalidParam(AIServiceError):
     """Raised when something is invalid."""
 
-    pass
+    EMPTY_EMBEDDING_MESSAGE = "Query embedding is empty."
+    INVALID_RESULTS_COUNT_MESSAGE = (
+        "number_of_results must be an integer between 1 and 100"
+    )

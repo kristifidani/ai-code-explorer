@@ -63,13 +63,13 @@ def query_chunks(text_embedding: list[float], number_of_results: int = 5) -> dic
         InvalidParam: If parameters are invalid.
     """
     if text_embedding is None or len(text_embedding) == 0:
-        raise InvalidParam("Query embedding is empty.")
+        raise InvalidParam.EMPTY_EMBEDDING_MESSAGE
     if (
         not isinstance(number_of_results, int)
         or number_of_results < 1
         or number_of_results > 100
     ):
-        raise InvalidParam("number_of_results must be an integer between 1 and 100")
+        raise InvalidParam.INVALID_RESULTS_COUNT_MESSAGE
 
     try:
         return collection.query(

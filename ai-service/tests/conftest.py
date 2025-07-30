@@ -2,16 +2,12 @@ from typing import Generator
 import pytest
 import chromadb
 from dotenv import load_dotenv
-import os
-from ai_service.exceptions import NotFound
-from ai_service import db
+from ai_service import db, constants, utils
 
 
 def create_db_test_collection(collection_name: str) -> chromadb.Collection:
     load_dotenv()
-    chroma_path = os.getenv("CHROMA_STORE_PATH")
-    if not chroma_path:
-        raise NotFound("Missing CHROMA_STORE_PATH environment variable")
+    chroma_path = utils.get_env_var(constants.CHROMA_STORE_PATH)
     client = chromadb.PersistentClient(path=chroma_path)
     return client.get_or_create_collection(collection_name)
 

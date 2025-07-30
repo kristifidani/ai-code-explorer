@@ -1,8 +1,8 @@
-from .exceptions import LLMQueryError
+from ai_service import utils, errors, constants
 import ollama
 
 
-def chat_with_ollama(prompt: str, model: str = "gemma3") -> str:
+def chat_with_ollama(prompt: str) -> str:
     """
     Query Ollama with a prompt and get a response.
 
@@ -16,7 +16,7 @@ def chat_with_ollama(prompt: str, model: str = "gemma3") -> str:
     Raises:
         LLMQueryError: If the Ollama query fails for any reason.
     """
-
+    model = utils.get_env_var(constants.LLM_MODEL)
     try:
         response = ollama.chat(
             model=model,
@@ -24,4 +24,4 @@ def chat_with_ollama(prompt: str, model: str = "gemma3") -> str:
         )
         return response["message"]["content"]
     except (ollama.ResponseError, ConnectionError, KeyError) as e:
-        raise LLMQueryError(f"Query failed: {e}") from e
+        raise errors.LLMQueryError(f"Query failed: {e}") from e

@@ -25,7 +25,9 @@ class DatabaseError(AIServiceError):
 class NotFound(AIServiceError):
     """Raised when something is not found."""
 
-    pass
+    @staticmethod
+    def ENV_VARIABLE(name: str) -> str:
+        return f"Missing {name} environment variable"
 
 
 class InvalidParam(AIServiceError):

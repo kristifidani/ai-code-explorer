@@ -1,8 +1,7 @@
 import pytest
 import numpy as np
-from ai_service.embedder import embed_text, embed_texts
-from ai_service import db
-from ai_service.exceptions import EmbeddingError
+from ai_service import embedder, db, errors
+
 
 # ------------------ Input Validation ------------------
 
@@ -11,13 +10,14 @@ from ai_service.exceptions import EmbeddingError
 @pytest.mark.parametrize("invalid_input", ["", "   ", "\t", "\n", None])
 def test_embed_invalid_inputs_raise_errors(invalid_input):
     if invalid_input is None:
-        with pytest.raises(AttributeError):  # None has no strip() method
-            embed_text(invalid_input)
+        with pytest.raises(AttributeError):
+            embedder.embed_text(invalid_input)
     else:
         with pytest.raises(
-            EmbeddingError, match="Cannot embed empty or whitespace-only text"
+            errors.EmbeddingError,
+            match="Cannot embed empty or whitespace-only text",
         ):
-            embed_text(invalid_input)
+            embedder.embed_text(invalid_input)
 
 
 # ------------------ Core Functionality ------------------
@@ -33,7 +33,7 @@ def test_embed_and_store_and_retrieve_texts():
         "def a(): pass",
         "def b(): pass",
     ]
-    embeddings = embed_texts(sample_texts)
+    embeddings = embedder.embed_texts(sample_texts)
     db.add_chunks(sample_texts, embeddings)
 
     for i, embedding in enumerate(embeddings):
@@ -68,7 +68,7 @@ def test_embed_and_store_and_retrieve_texts():
 def test_embed_and_retrieve_special_and_unicode_texts(
     text,
 ):
-    embedding = embed_text(text)
+    embedding = embedder.embed_text(text)
     assert embedding is not None and len(embedding) > 0
 
     db.add_chunks([text], [embedding])
@@ -83,7 +83,7 @@ def test_embed_and_retrieve_special_and_unicode_texts(
 # Check the embedding's structure, type, and integration with chroma DB
 def test_embedding_output_properties_and_structure():
     text = "def test_function(): return True"
-    embedding = embed_text(text)
+    embedding = embedder.embed_text(text)
 
     # Validate basic embedding properties
     assert isinstance(embedding, np.ndarray)
@@ -92,7 +92,6 @@ def test_embedding_output_properties_and_structure():
     assert len(embedding) > 0
 
     # Validate output structure from the DB query
-
     db.add_chunks([text], [embedding])
     result = db.collection.query(query_embeddings=[embedding], n_results=1)
     assert isinstance(result, dict)
@@ -112,7 +111,7 @@ def test_query_with_varied_n_results():
         "def function_b(): pass",
         "def function_c(): pass",
     ]
-    embeddings = embed_texts(sample_texts)
+    embeddings = embedder.embed_texts(sample_texts)
     db.add_chunks(sample_texts, embeddings)
 
     for n in [1, 2, 5]:  # Requesting more results than stored is valid

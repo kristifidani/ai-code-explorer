@@ -1,16 +1,13 @@
-from ai_service import db
-from ai_service.embedder import embed_text
-from ai_service.ollama_client import chat_with_ollama
-from .exceptions import AIServiceError
+from ai_service import db, embedder, ollama_client, errors
 
 
 def upload_code(code: str) -> None:
-    embedding = embed_text(code)
+    embedding = embedder.embed_text(code)
     db.add_chunks([code], [embedding])
 
 
 def answer_question(user_question: str, top_k: int = 3) -> None:
-    question_embedding = embed_text(user_question)
+    question_embedding = embedder.embed_text(user_question)
     results = db.query_chunks(question_embedding, number_of_results=top_k)
 
     # Validate query results
@@ -25,7 +22,7 @@ def answer_question(user_question: str, top_k: int = 3) -> None:
     unique_snippets = list(dict.fromkeys(results["documents"][0]))
     relevant_code = "\n---\n".join(unique_snippets)
     prompt = f"Code context:\n{relevant_code}\nQuestion: {user_question}\nExplain how the code works."
-    answer = chat_with_ollama(prompt)
+    answer = ollama_client.chat_with_ollama(prompt)
     print("User question:", user_question)
     print("\nMost relevant code snippet(s):\n", relevant_code)
     print("\nLLM answer:\n", answer)
@@ -51,7 +48,7 @@ def add(a, b, c):
         for q in questions:
             answer_question(q)
             print("\n" + "=" * 40 + "\n")
-    except AIServiceError as e:
+    except errors.AIServiceError as e:
         print(f"AI Service error: {e}")
     except Exception as e:
         print(f"Unexpected error: {e}")

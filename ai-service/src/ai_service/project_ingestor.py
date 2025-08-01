@@ -5,8 +5,7 @@ import re
 
 from ai_service import errors
 
-# For GitHub cloning
-import subprocess
+from git import Repo, GitCommandError
 
 CODE_EXTENSIONS = {
     # Programming languages
@@ -62,15 +61,10 @@ def clone_github_repo(repo_url: str) -> str:
         raise errors.InvalidParam.invalid_repo_url()
     clone_to = tempfile.mkdtemp()
     try:
-        subprocess.run(
-            ["git", "clone", repo_url, clone_to],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
+        Repo.clone_from(repo_url, clone_to)
         return clone_to
-    except subprocess.CalledProcessError as e:
-        raise errors.InvalidParam.git_clone_failed(e) from e
+    except GitCommandError as e:
+        raise errors.GitCloneError.failed(e) from e
 
 
 def scan_code_files(root_dir: str) -> list[str]:

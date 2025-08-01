@@ -11,6 +11,7 @@ dependencies = [
     "chromadb (>=1.0.15,<2.0.0)",
     "sentence-transformers (>=5.0.0,<6.0.0)",
     "ollama (>=0.5.1,<0.6.0)",
+    "gitpython (>=3.1.45,<4.0.0)",
 
 ]
 

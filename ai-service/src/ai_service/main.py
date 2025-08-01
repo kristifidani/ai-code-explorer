@@ -6,7 +6,7 @@ load_dotenv()
 from ai_service import (
     db,
     embedder,
-    # ollama_client,
+    ollama_client,
     errors,
     project_ingestor,
 )
@@ -46,10 +46,46 @@ def ingest_github_project(repo_url):
         project_ingestor.cleanup_dir(project_dir)
 
 
+def answer_question(user_question: str, top_k: int = 3) -> None:
+    # Step 1: Embed the user question
+    question_embedding = embedder.embed_text(user_question)
+    # Step 2: Query ChromaDB for relevant code snippets
+    results = db.query_chunks(question_embedding, number_of_results=top_k)
+
+    # Step 3: Prepare context for the LLM
+    documents = results.get("documents", [[]])
+
+    if not documents or not documents[0]:
+        prompt = (
+            f"User question:\n{user_question}\n\n"
+            "No relevant code context found. Please answer using your general knowledge."
+        )
+        print("User question:", user_question)
+        print("\nNo relevant code snippets found.")
+    else:
+        unique_snippets = list(dict.fromkeys(documents[0]))
+        context = "\n---\n".join(unique_snippets)
+        prompt = (
+            "You are an AI assistant helping with a software project.\n\n"
+            "Here is some relevant context from the uploaded project:\n"
+            f"{context}\n\n"
+            "User question:\n"
+            f"{user_question}\n\n"
+            "Answer in detail using the project as context. If context isn't relevant, fall back to general reasoning."
+        )
+        print("User question:", user_question)
+        print("\nMost relevant code snippet(s):\n", context)
+
+    # Step 4: Get answer from LLM
+    answer = ollama_client.chat_with_ollama(prompt)
+    print("\nLLM answer:\n", answer)
+
+
 def main() -> None:
     try:
         repo_url = "https://github.com/kristifidani/rust_grpc_poc.git"
         ingest_github_project(repo_url)
+        answer_question("What is this project about? How does it work?")
     except errors.AIServiceError as e:
         print(f"AI Service error: {e}")
     except Exception as e:

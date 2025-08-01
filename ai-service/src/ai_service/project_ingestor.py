@@ -55,9 +55,13 @@ def clone_github_repo(repo_url: str) -> str:
     Returns the path to the cloned directory.
     Validates the repo_url to prevent command injection.
     """
-    # Only allow URLs matching the GitHub repo pattern
+    # Only allow URLs matching the GitHub repo pattern (HTTPS, SSH, and git protocols)
     github_repo_pattern = (
-        r"^https://github\.com/[A-Za-z0-9](?:-?[A-Za-z0-9])*/[A-Za-z0-9_.-]+(\.git)?/?$"
+        r"^(?:"
+        r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\.git)?/?"
+        r"|git@github\.com:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git"
+        r"|git://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git"
+        r")$"
     )
     if not re.match(github_repo_pattern, repo_url):
         raise errors.InvalidParam.invalid_repo_url()

@@ -56,15 +56,19 @@ def clone_github_repo(repo_url: str) -> str:
     Validates the repo_url to prevent command injection.
     """
     # Only allow URLs matching the GitHub repo pattern
-    github_repo_pattern = r"^https://github\.com/[\w\-\.]+/[\w\-\.]+(\.git)?/?$"
+    github_repo_pattern = (
+        r"^https://github\.com/[A-Za-z0-9](?:-?[A-Za-z0-9])*/[A-Za-z0-9_.-]+(\.git)?/?$"
+    )
     if not re.match(github_repo_pattern, repo_url):
         raise errors.InvalidParam.invalid_repo_url()
     clone_to = tempfile.mkdtemp()
     try:
         Repo.clone_from(repo_url, clone_to)
-        return clone_to
     except GitCommandError as e:
+        shutil.rmtree(clone_to, ignore_errors=True)
         raise errors.GitCloneError.failed(e) from e
+    else:
+        return clone_to
 
 
 def scan_code_files(root_dir: str) -> list[str]:

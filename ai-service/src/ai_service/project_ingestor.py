@@ -57,7 +57,7 @@ def clone_github_repo(repo_url: str) -> str:
     Validates the repo_url to prevent command injection.
     """
     # Only allow URLs matching the GitHub repo pattern
-    github_repo_pattern = r"^https://github\.com/[\w\-]+/[\w\-]+(\.git)?$"
+    github_repo_pattern = r"^https://github\.com/[\w\-\.]+/[\w\-\.]+(\.git)?/?$"
     if not re.match(github_repo_pattern, repo_url):
         raise errors.InvalidParam.invalid_repo_url()
     clone_to = tempfile.mkdtemp()

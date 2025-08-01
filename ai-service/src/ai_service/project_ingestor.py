@@ -1,5 +1,4 @@
 import os
-import zipfile
 import tempfile
 import shutil
 from typing import List, Dict
@@ -29,18 +28,6 @@ CODE_EXTENSIONS = {
     ".md",
     ".yml",
 }
-
-
-def extract_zip(zip_path: str) -> str:
-    """
-    Extracts a zip file to a temporary directory.
-    Returns the path to the extracted directory.
-    """
-
-    extract_to = tempfile.mkdtemp()
-    with zipfile.ZipFile(zip_path, "r") as zip_ref:
-        zip_ref.extractall(extract_to)
-    return extract_to
 
 
 def clone_github_repo(repo_url: str) -> str:

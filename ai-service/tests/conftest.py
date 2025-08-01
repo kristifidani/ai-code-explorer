@@ -1,6 +1,8 @@
 from typing import Generator
 import pytest
 import chromadb
+
+# ruff: noqa: E402
 from dotenv import load_dotenv
 
 load_dotenv()

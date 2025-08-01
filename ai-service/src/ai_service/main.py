@@ -1,7 +1,15 @@
+# ruff: noqa: E402
+
 from dotenv import load_dotenv
 
 load_dotenv()
-from ai_service import db, embedder, ollama_client, errors
+from ai_service import (
+    db,
+    embedder,
+    ollama_client,
+    errors,
+    project_ingestor,
+)
 
 
 def upload_code(code: str) -> None:
@@ -31,26 +39,32 @@ def answer_question(user_question: str, top_k: int = 3) -> None:
     print("\nLLM answer:\n", answer)
 
 
+def ingest_github_project(repo_url):
+    # Step 1: Clone the repo
+    project_dir = project_ingestor.clone_github_repo(repo_url)
+    try:
+        # Step 2: Scan for code files
+        code_files = project_ingestor.scan_code_files(project_dir)
+        print(f"Found {len(code_files)} code files:")
+        for f in code_files:
+            print(f)
+        # Step 3: (Optional) Pass code_files to your embedding/storage logic here
+        # Example:
+        # for file_path in code_files:
+        #     with open(file_path, "r") as f:
+        #         code = f.read()
+        #         # embed and store code...
+    finally:
+        # Step 4: Clean up
+        project_ingestor.cleanup_dir(project_dir)
+
+
 def main() -> None:
-    code = """"""
+    # code = """"""
 
     try:
-        if code is None or len(code) == 0:
-            pass
-        else:
-            # Upload code once
-            upload_code(code)
-
-        # Clear all documents in the collection so only the current code is present
-        # collection.delete(ids=collection.peek()["ids"])
-
-        # User asks multiple questions
-        questions = [
-            "Can you write me a 2 sentence essay on the importance of clean code?",
-        ]
-        for q in questions:
-            answer_question(q)
-            print("\n" + "=" * 40 + "\n")
+        repo_url = "https://github.com/kristifidani/rust_grpc_poc.git"
+        ingest_github_project(repo_url)
     except errors.AIServiceError as e:
         print(f"AI Service error: {e}")
     except Exception as e:

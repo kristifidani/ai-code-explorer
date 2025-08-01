@@ -33,17 +33,20 @@ def ingest_github_project(repo_url: str) -> None:
                         continue
                     code_snippets.append(code)
                     embeddings.append(embedder.embed_text(code))
-            except Exception as e:
-                if isinstance(e, FileNotFoundError):
-                    err = errors.FileReadError.file_not_found(file_path)
-                elif isinstance(e, PermissionError):
-                    err = errors.FileReadError.permission_denied(file_path)
-                elif isinstance(e, UnicodeDecodeError):
-                    err = errors.FileReadError.decode_error(file_path)
-                elif isinstance(e, OSError):
-                    err = errors.FileReadError.os_error(file_path, e)
-                else:
-                    err = errors.FileReadError.os_error(file_path, e)
+            except FileNotFoundError:
+                err = errors.FileReadError.file_not_found(file_path)
+                print(f"{err}")
+                continue
+            except PermissionError:
+                err = errors.FileReadError.permission_denied(file_path)
+                print(f"{err}")
+                continue
+            except UnicodeDecodeError:
+                err = errors.FileReadError.decode_error(file_path)
+                print(f"{err}")
+                continue
+            except OSError as e:
+                err = errors.FileReadError.os_error(file_path, e)
                 print(f"{err}")
                 continue
 

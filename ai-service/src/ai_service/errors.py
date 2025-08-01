@@ -38,3 +38,31 @@ class InvalidParam(AIServiceError):
     @classmethod
     def invalid_results_count(cls) -> "InvalidParam":
         return cls("number_of_results must be an integer between 1 and 100")
+
+    @classmethod
+    def invalid_repo_url(cls) -> "InvalidParam":
+        return cls("Invalid GitHub repository URL format")
+
+
+class GitCloneError(AIServiceError):
+    @classmethod
+    def failed(cls, error) -> "GitCloneError":
+        return cls(f"Failed to clone GitHub repository: {error}")
+
+
+class FileReadError(AIServiceError):
+    @classmethod
+    def file_not_found(cls, file_path: str) -> "FileReadError":
+        return cls(f"File not found: {file_path}")
+
+    @classmethod
+    def permission_denied(cls, file_path: str) -> "FileReadError":
+        return cls(f"Permission denied: {file_path}")
+
+    @classmethod
+    def decode_error(cls, file_path: str) -> "FileReadError":
+        return cls(f"Unicode decode error in file: {file_path}")
+
+    @classmethod
+    def os_error(cls, file_path: str, error) -> "FileReadError":
+        return cls(f"OS error reading file {file_path}: {error}")

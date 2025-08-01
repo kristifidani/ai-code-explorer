@@ -1,4 +1,4 @@
-from ai_service import utils, errors, constants
+from ai_service import constants, utils, errors
 import ollama
 
 
@@ -16,12 +16,12 @@ def chat_with_ollama(prompt: str) -> str:
     Raises:
         LLMQueryError: If the Ollama query fails for any reason.
     """
-    model = utils.get_env_var(constants.LLM_MODEL)
     try:
+        model = utils.get_env_var(constants.LLM_MODEL)
         response = ollama.chat(
             model=model,
             messages=[{"role": "user", "content": prompt}],
         )
         return response["message"]["content"]
-    except (ollama.ResponseError, ConnectionError, KeyError) as e:
+    except (ollama.ResponseError, ConnectionError, KeyError, errors.NotFound) as e:
         raise errors.LLMQueryError.query_failed(e) from e

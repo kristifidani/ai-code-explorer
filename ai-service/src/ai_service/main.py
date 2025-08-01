@@ -1,53 +1,106 @@
-from ai_service import db, embedder, ollama_client, errors
+# ruff: noqa: E402
+
+from dotenv import load_dotenv
+
+load_dotenv()
+from ai_service import (
+    db,
+    embedder,
+    ollama_client,
+    errors,
+    project_ingestor,
+)
 
 
-def upload_code(code: str) -> None:
-    embedding = embedder.embed_text(code)
-    db.add_chunks([code], [embedding])
+def ingest_github_project(repo_url: str) -> None:
+    # Clone the GitHub repository
+    project_dir = project_ingestor.clone_github_repo(repo_url)
+    try:
+        print("Scanning project directory ...")
+        code_files = project_ingestor.scan_code_files(project_dir)
+        print(f"Found {len(code_files)} code files to process.")
+
+        code_snippets = []
+        embeddings = []
+
+        print("Embedding content for each file ...")
+        for file_path in code_files:
+            try:
+                with open(file_path, encoding="utf-8") as f:
+                    code = f.read().strip()
+                    if not code:
+                        print(f"Skipping empty file: {file_path}")
+                        continue
+                    code_snippets.append(code)
+                    embeddings.append(embedder.embed_text(code))
+            except FileNotFoundError:
+                err = errors.FileReadError.file_not_found(file_path)
+                print(f"{err}")
+                continue
+            except PermissionError:
+                err = errors.FileReadError.permission_denied(file_path)
+                print(f"{err}")
+                continue
+            except UnicodeDecodeError:
+                err = errors.FileReadError.decode_error(file_path)
+                print(f"{err}")
+                continue
+            except OSError as e:
+                err = errors.FileReadError.os_error(file_path, e)
+                print(f"{err}")
+                continue
+
+        if code_snippets:
+            db.add_chunks(code_snippets, embeddings)
+            print(f"Stored {len(code_snippets)} code snippets in ChromaDB.")
+        else:
+            print("No valid code snippets found to store.")
+    finally:
+        print("Cleaning up project directory ...")
+        project_ingestor.cleanup_dir(project_dir)
 
 
 def answer_question(user_question: str, top_k: int = 3) -> None:
+    # Step 1: Embed the user question
     question_embedding = embedder.embed_text(user_question)
+    # Step 2: Query ChromaDB for relevant code snippets
     results = db.query_chunks(question_embedding, number_of_results=top_k)
 
-    # Validate query results
-    if not results.get("documents") or not results["documents"][0]:
+    # Step 3: Prepare context for the LLM
+    documents = results.get("documents", [[]])
+
+    if not documents or not documents[0]:
+        prompt = (
+            f"User question:\n{user_question}\n\n"
+            "No relevant code context found. Please answer using your general knowledge."
+        )
         print("User question:", user_question)
         print("\nNo relevant code snippets found.")
-        print(
-            "\nLLM answer: I couldn't find any relevant code snippets to answer your question."
+    else:
+        # Remove duplicate snippets while preserving order
+        unique_snippets = list(dict.fromkeys(documents[0]))
+        context = "\n---\n".join(unique_snippets)
+        prompt = (
+            "You are an AI assistant helping with a software project.\n\n"
+            "Here is some relevant context from the uploaded project:\n"
+            f"{context}\n\n"
+            "User question:\n"
+            f"{user_question}\n\n"
+            "Answer in detail using the project as context. If context isn't relevant, fall back to general reasoning."
         )
-        return
+        print("User question:", user_question)
+        print("\nMost relevant code snippet(s):\n", context)
 
-    unique_snippets = list(dict.fromkeys(results["documents"][0]))
-    relevant_code = "\n---\n".join(unique_snippets)
-    prompt = f"Code context:\n{relevant_code}\nQuestion: {user_question}\nExplain how the code works."
+    # Step 4: Get answer from LLM
     answer = ollama_client.chat_with_ollama(prompt)
-    print("User question:", user_question)
-    print("\nMost relevant code snippet(s):\n", relevant_code)
     print("\nLLM answer:\n", answer)
 
 
 def main() -> None:
-    code = """
-def add(a, b, c):
-    return a + b - c
-"""
     try:
-        # Upload code once
-        upload_code(code)
-
-        # Clear all documents in the collection so only the current code is present
-        # collection.delete(ids=collection.peek()["ids"])
-
-        # User asks multiple questions
-        questions = [
-            "How does the sum work here?",
-            "What happens if I pass strings to this function?",
-        ]
-        for q in questions:
-            answer_question(q)
-            print("\n" + "=" * 40 + "\n")
+        repo_url = "https://github.com/kristifidani/rust_grpc_poc.git"
+        ingest_github_project(repo_url)
+        answer_question("What is this project about? How does it work?")
     except errors.AIServiceError as e:
         print(f"AI Service error: {e}")
     except Exception as e:

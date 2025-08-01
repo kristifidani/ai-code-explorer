@@ -41,9 +41,9 @@ def add_chunks(chunks: list[str], embeddings: list[list[float]]) -> None:
         # Check which IDs already exist
         existing = set()
         if ids:
-            peek = collection.peek()
-            if "ids" in peek:
-                existing = set(peek["ids"])
+            get_result = collection.get(ids=ids)
+            if "ids" in get_result:
+                existing = set(get_result["ids"])
 
         # Filter out chunks that already exist
         new_chunks = []

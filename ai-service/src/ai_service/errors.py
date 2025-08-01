@@ -38,3 +38,7 @@ class InvalidParam(AIServiceError):
     @classmethod
     def invalid_results_count(cls) -> "InvalidParam":
         return cls("number_of_results must be an integer between 1 and 100")
+
+    @classmethod
+    def invalid_repo_url(cls) -> "InvalidParam":
+        return cls("Invalid GitHub repository URL format")

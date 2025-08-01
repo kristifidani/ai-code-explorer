@@ -1,12 +1,15 @@
 import os
 import tempfile
 import shutil
-from typing import List, Dict
+import re
+
+from ai_service import errors
 
 # For GitHub cloning
 import subprocess
 
 CODE_EXTENSIONS = {
+    # Programming languages
     ".py",
     ".js",
     ".ts",
@@ -22,11 +25,28 @@ CODE_EXTENSIONS = {
     ".kt",
     ".scala",
     ".sh",
+    ".jsx",
+    ".tsx",
+    ".vue",
+    ".dart",
+    ".r",
+    ".m",
+    # Web technologies
     ".html",
     ".css",
+    ".scss",
+    ".sass",
+    ".less",
+    # Configuration and documentation
     ".toml",
     ".md",
     ".yml",
+    ".yaml",
+    ".json",
+    ".xml",
+    ".ini",
+    ".cfg",
+    ".conf",
 }
 
 
@@ -34,13 +54,23 @@ def clone_github_repo(repo_url: str) -> str:
     """
     Clones a GitHub repo to a temporary directory.
     Returns the path to the cloned directory.
+    Validates the repo_url to prevent command injection.
     """
+    # Only allow URLs matching the GitHub repo pattern
+    github_repo_pattern = r"^https://github\.com/[\w\-]+/[\w\-]+(\.git)?$"
+    if not re.match(github_repo_pattern, repo_url):
+        raise errors.InvalidParam.invalid_repo_url()
     clone_to = tempfile.mkdtemp()
-    subprocess.run(["git", "clone", repo_url, clone_to], check=True)
+    subprocess.run(
+        ["git", "clone", repo_url, clone_to],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     return clone_to
 
 
-def scan_code_files(root_dir: str) -> List[Dict]:
+def scan_code_files(root_dir: str) -> list[str]:
     """
     Scans the project directory for code files with given extensions.
     Returns a list of file paths.

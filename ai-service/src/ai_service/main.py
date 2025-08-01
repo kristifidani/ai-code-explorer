@@ -12,7 +12,7 @@ from ai_service import (
 )
 
 
-def ingest_github_project(repo_url):
+def ingest_github_project(repo_url) -> None:
     # Clone the GitHub repository
     project_dir = project_ingestor.clone_github_repo(repo_url)
     try:
@@ -26,15 +26,21 @@ def ingest_github_project(repo_url):
         print("Embedding content for each file ...")
         for file_path in code_files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     code = f.read().strip()
                     if not code:
                         print(f"Skipping empty file: {file_path}")
                         continue
                     code_snippets.append(code)
                     embeddings.append(embedder.embed_text(code))
-            except Exception as e:
+            except (
+                OSError,
+                UnicodeDecodeError,
+                FileNotFoundError,
+                PermissionError,
+            ) as e:
                 print(f"Error reading {file_path}: {e}")
+                continue
 
         if code_snippets:
             db.add_chunks(code_snippets, embeddings)
@@ -63,6 +69,7 @@ def answer_question(user_question: str, top_k: int = 3) -> None:
         print("User question:", user_question)
         print("\nNo relevant code snippets found.")
     else:
+        # Remove duplicate snippets while preserving order
         unique_snippets = list(dict.fromkeys(documents[0]))
         context = "\n---\n".join(unique_snippets)
         prompt = (

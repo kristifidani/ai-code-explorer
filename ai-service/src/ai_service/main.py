@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+
+load_dotenv()
 from ai_service import db, embedder, ollama_client, errors
 
 
@@ -21,7 +24,7 @@ def answer_question(user_question: str, top_k: int = 3) -> None:
 
     unique_snippets = list(dict.fromkeys(results["documents"][0]))
     relevant_code = "\n---\n".join(unique_snippets)
-    prompt = f"Code context:\n{relevant_code}\nQuestion: {user_question}\nExplain how the code works."
+    prompt = f"User input:\n{relevant_code}\nQuestions: {user_question}\nAsk the user's question based on their input. If not input provided, answer the question based on your general knowledge."
     answer = ollama_client.chat_with_ollama(prompt)
     print("User question:", user_question)
     print("\nMost relevant code snippet(s):\n", relevant_code)
@@ -29,21 +32,21 @@ def answer_question(user_question: str, top_k: int = 3) -> None:
 
 
 def main() -> None:
-    code = """
-def add(a, b, c):
-    return a + b - c
-"""
+    code = """"""
+
     try:
-        # Upload code once
-        upload_code(code)
+        if code is None or len(code) == 0:
+            pass
+        else:
+            # Upload code once
+            upload_code(code)
 
         # Clear all documents in the collection so only the current code is present
         # collection.delete(ids=collection.peek()["ids"])
 
         # User asks multiple questions
         questions = [
-            "How does the sum work here?",
-            "What happens if I pass strings to this function?",
+            "Can you write me a 2 sentence essay on the importance of clean code?",
         ]
         for q in questions:
             answer_question(q)

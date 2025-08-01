@@ -2,7 +2,6 @@
 # ChromaDB may fail with newer NumPy versions >2.0 that removed np.float_
 # This ensures backward compatibility by aliasing float_ to float64
 import numpy as np
-from dotenv import load_dotenv
 from ai_service import constants, utils, errors
 
 if not hasattr(np, "float_"):
@@ -12,7 +11,6 @@ if not hasattr(np, "float_"):
 import uuid
 import chromadb
 
-load_dotenv()
 # Set up ChromaDB client and persistent collection
 chroma_path = utils.get_env_var(constants.CHROMA_STORE_PATH)
 client = chromadb.PersistentClient(path=chroma_path)

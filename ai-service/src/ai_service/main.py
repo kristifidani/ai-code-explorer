@@ -12,7 +12,7 @@ from ai_service import (
 )
 
 
-def ingest_github_project(repo_url) -> None:
+def ingest_github_project(repo_url: str) -> None:
     # Clone the GitHub repository
     project_dir = project_ingestor.clone_github_repo(repo_url)
     try:

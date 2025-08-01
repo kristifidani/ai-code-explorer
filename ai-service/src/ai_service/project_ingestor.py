@@ -61,13 +61,16 @@ def clone_github_repo(repo_url: str) -> str:
     if not re.match(github_repo_pattern, repo_url):
         raise errors.InvalidParam.invalid_repo_url()
     clone_to = tempfile.mkdtemp()
-    subprocess.run(
-        ["git", "clone", repo_url, clone_to],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return clone_to
+    try:
+        subprocess.run(
+            ["git", "clone", repo_url, clone_to],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return clone_to
+    except subprocess.CalledProcessError as e:
+        raise errors.InvalidParam.git_clone_failed(e) from e
 
 
 def scan_code_files(root_dir: str) -> list[str]:

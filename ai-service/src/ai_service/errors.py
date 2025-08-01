@@ -42,3 +42,10 @@ class InvalidParam(AIServiceError):
     @classmethod
     def invalid_repo_url(cls) -> "InvalidParam":
         return cls("Invalid GitHub repository URL format")
+
+    @classmethod
+    def git_clone_failed(cls, error=None) -> "InvalidParam":
+        msg = "Failed to clone GitHub repository."
+        if error:
+            msg += f" Details: {error}"
+        return cls(msg)

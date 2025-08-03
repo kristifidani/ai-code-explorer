@@ -17,7 +17,7 @@ def create_db_test_collection(collection_name: str) -> chromadb.Collection:
 
 @pytest.fixture(scope="module")
 def db_test_collection(request: pytest.FixtureRequest) -> chromadb.Collection:
-    module = getattr(request, "module", None)
+    module = getattr(request, "module")
     module_name = getattr(module, "__name__")
     collection_name: str = f"{module_name}"
     return create_db_test_collection(collection_name)

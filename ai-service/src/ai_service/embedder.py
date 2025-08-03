@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import cast
 from sentence_transformers import SentenceTransformer
 from ai_service import errors
 
@@ -27,7 +28,7 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
 
     model: SentenceTransformer = _get_model()
     embeddings = model.encode(texts, convert_to_numpy=True)  # type: ignore
-    return embeddings.tolist()  # type: ignore
+    return cast(list[list[float]], embeddings.tolist())
 
 
 def embed_text(text: str) -> list[float]:

@@ -5,15 +5,10 @@ import pytest
 # -------------- LLM Chat Tests --------------
 
 
-# Mock Ollama response for deterministic test
-def _mocked_chat_with_ollama(prompt: str) -> str:
-    return "Mocked LLM response for: " + prompt
-
-
 def test_llm_chat_basic_response(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(
         "ai_service.ollama_client.chat_with_ollama",
-        _mocked_chat_with_ollama,
+        lambda prompt: "Mocked LLM response for: " + prompt,  # type: ignore
     )
     prompt = "Code context:\ndef add(a, b): return a + b\nQuestion: How does the sum work?\nExplain."
     response = ollama_client.chat_with_ollama(prompt)
@@ -32,7 +27,7 @@ def test_db_search_and_llm_integration(monkeypatch: pytest.MonkeyPatch):
     # Mock LLM
     monkeypatch.setattr(
         "ai_service.ollama_client.chat_with_ollama",
-        _mocked_chat_with_ollama,
+        lambda prompt: f"LLM saw: {prompt}",  # type: ignore
     )
     # User question
     question = "How does the sum work?"
@@ -66,7 +61,7 @@ def test_llm_chat_with_long_prompt(monkeypatch: pytest.MonkeyPatch):
     # Mock LLM
     monkeypatch.setattr(
         "ai_service.ollama_client.chat_with_ollama",
-        _mocked_chat_with_ollama,
+        lambda prompt: "LLM received prompt of length: " + str(len(prompt)),  # type: ignore
     )
     long_code = "def foo(): pass\n" * 1000
     prompt = f"Code context:\n{long_code}\nQuestion: What does this do?\nExplain."

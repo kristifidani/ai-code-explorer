@@ -1,5 +1,4 @@
 import pytest
-import numpy as np
 from ai_service import embedder, db, errors
 
 
@@ -90,12 +89,7 @@ def test_embedding_output_properties_and_structure():
     embedding = embedder.embed_text(text)
 
     # Validate basic embedding properties
-    assert isinstance(embedding, np.ndarray)
-    assert embedding.ndim == 1
-    assert embedding.dtype in [  # pyright: ignore[reportUnknownMemberType]
-        np.float32,
-        np.float64,
-    ]
+    assert all(isinstance(x, float) for x in embedding)
     assert len(embedding) > 0
 
     # Validate output structure from the DB query
@@ -124,9 +118,9 @@ def test_query_with_varied_n_results():
     for n in [1, 2, 5]:  # Requesting more results than stored is valid
         result = db.collection.query(query_embeddings=[embeddings[0]], n_results=n)
         docs_list = result.get("documents")
-        assert (
-            docs_list is not None and len(docs_list) > 0
-        ), "Query returned None or empty documents"
+        assert docs_list is not None and len(docs_list) > 0, (
+            "Query returned None or empty documents"
+        )
         docs = docs_list[0]
         # NOTE:
         # ChromaDB may return duplicate documents when n_results exceeds the number

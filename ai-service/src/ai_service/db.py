@@ -66,7 +66,8 @@ def add_chunks(chunks: list[str], embeddings: list[list[float]]) -> None:
 
 
 def query_chunks(
-    text_embedding: list[float], number_of_results: int = 5
+    text_embedding: list[float],
+    number_of_results: int,
 ) -> chromadb.QueryResult:
     """
     Query ChromaDB for most similar documents.

@@ -6,7 +6,7 @@ import numpy as np
 from ai_service import constants, utils, errors
 
 if not hasattr(np, "float_"):
-    np.float_ = np.float64
+    np.float_ = np.float64  # type: ignore
 
 
 import chromadb
@@ -39,16 +39,16 @@ def add_chunks(chunks: list[str], embeddings: list[list[float]]) -> None:
         ids = [_chunk_hash(chunk) for chunk in chunks]
 
         # Check which IDs already exist
-        existing = set()
+        existing: set[str] = set()
         if ids:
             get_result = collection.get(ids=ids)
             if "ids" in get_result:
                 existing = set(get_result["ids"])
 
         # Filter out chunks that already exist
-        new_chunks = []
-        new_embeddings = []
-        new_ids = []
+        new_chunks: list[str] = []
+        new_embeddings: list[list[float]] = []
+        new_ids: list[str] = []
         for chunk, embedding, id_ in zip(chunks, embeddings, ids):
             if id_ not in existing:
                 new_chunks.append(chunk)
@@ -58,14 +58,16 @@ def add_chunks(chunks: list[str], embeddings: list[list[float]]) -> None:
         if new_chunks:
             collection.add(
                 documents=new_chunks,
-                embeddings=new_embeddings,
+                embeddings=np.array(new_embeddings, dtype=np.float32),
                 ids=new_ids,
             )
     except Exception as e:
         raise errors.DatabaseError.add_chunks_failed(e) from e
 
 
-def query_chunks(text_embedding: list[float], number_of_results: int = 5) -> dict:
+def query_chunks(
+    text_embedding: list[float], number_of_results: int = 5
+) -> chromadb.QueryResult:
     """
     Query ChromaDB for most similar documents.
 
@@ -80,13 +82,9 @@ def query_chunks(text_embedding: list[float], number_of_results: int = 5) -> dic
         DatabaseError: If the query fails.
         InvalidParam: If parameters are invalid.
     """
-    if text_embedding is None or len(text_embedding) == 0:
+    if len(text_embedding) == 0:
         raise errors.InvalidParam.empty_embedding()
-    if (
-        not isinstance(number_of_results, int)
-        or number_of_results < 1
-        or number_of_results > 100
-    ):
+    if number_of_results < 1 or number_of_results > 100:
         raise errors.InvalidParam.invalid_results_count()
 
     try:

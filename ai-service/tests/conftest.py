@@ -16,20 +16,21 @@ def create_db_test_collection(collection_name: str) -> chromadb.Collection:
 
 
 @pytest.fixture(scope="module")
-def db_test_collection(request) -> chromadb.Collection:
-    collection_name = f"{request.module.__name__}"
+def db_test_collection(request: pytest.FixtureRequest) -> chromadb.Collection:
+    module_name = getattr(request, "module", "__name__")
+    collection_name: str = f"{module_name}"
     return create_db_test_collection(collection_name)
 
 
 @pytest.fixture(autouse=True)
 def patch_and_clean_db_collection(
-    monkeypatch, db_test_collection
+    monkeypatch: pytest.MonkeyPatch, db_test_collection: chromadb.Collection
 ) -> Generator[None, None, None]:
     monkeypatch.setattr(db, "collection", db_test_collection)
 
     yield
 
     # Clean up after each test
-    ids = db_test_collection.peek()["ids"]
+    ids: chromadb.IDs = db_test_collection.peek()["ids"]
     if ids:
         db_test_collection.delete(ids=ids)

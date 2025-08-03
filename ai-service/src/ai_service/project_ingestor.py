@@ -80,7 +80,7 @@ def scan_code_files(root_dir: str) -> list[str]:
     Scans the project directory for code files with given extensions.
     Returns a list of file paths.
     """
-    code_files = []
+    code_files: list[str] = []
     for root, _, files in os.walk(root_dir):
         for file in files:
             if any(file.endswith(ext) for ext in CODE_EXTENSIONS):

@@ -20,8 +20,8 @@ def ingest_github_project(repo_url: str) -> None:
         code_files = project_ingestor.scan_code_files(project_dir)
         print(f"Found {len(code_files)} code files to process.")
 
-        code_snippets = []
-        embeddings = []
+        code_snippets: list[str] = []
+        embeddings: list[list[float]] = []
 
         print("Embedding content for each file ...")
         for file_path in code_files:

@@ -8,10 +8,10 @@ from ai_service import embedder, db, errors
 
 # Ensure invalid inputs (empty strings, whitespace, None) raise appropriate exceptions
 @pytest.mark.parametrize("invalid_input", ["", "   ", "\t", "\n", None])
-def test_embed_invalid_inputs_raise_errors(invalid_input):
+def test_embed_invalid_inputs_raise_errors(invalid_input: str | None):
     if invalid_input is None:
         with pytest.raises(AttributeError):
-            embedder.embed_text(invalid_input)
+            embedder.embed_text(invalid_input)  # pyright: ignore[reportArgumentType]
     else:
         with pytest.raises(
             errors.EmbeddingError,
@@ -38,7 +38,9 @@ def test_embed_and_store_and_retrieve_texts():
 
     for i, embedding in enumerate(embeddings):
         result = db.collection.query(query_embeddings=[embedding], n_results=1)
-        assert result["documents"][0][0] == sample_texts[i]  # Check exact match
+        docs = result.get("documents")
+        assert docs is not None, "Query returned None for documents"
+        assert docs[0][0] == sample_texts[i]  # Check exact match
 
 
 # ------------------ Unicode, Special Characters ------------------
@@ -66,7 +68,7 @@ def test_embed_and_store_and_retrieve_texts():
     ],
 )
 def test_embed_and_retrieve_special_and_unicode_texts(
-    text,
+    text: str,
 ):
     embedding = embedder.embed_text(text)
     assert embedding is not None and len(embedding) > 0
@@ -74,7 +76,9 @@ def test_embed_and_retrieve_special_and_unicode_texts(
     db.add_chunks([text], [embedding])
 
     result = db.collection.query(query_embeddings=[embedding], n_results=1)
-    assert result["documents"][0][0] == text
+    docs = result.get("documents")
+    assert docs is not None and docs[0] is not None, "Query returned None for documents"
+    assert docs[0][0] == text
 
 
 # ------------------ Embedding Properties & Structure ------------------
@@ -88,7 +92,10 @@ def test_embedding_output_properties_and_structure():
     # Validate basic embedding properties
     assert isinstance(embedding, np.ndarray)
     assert embedding.ndim == 1
-    assert embedding.dtype in [np.float32, np.float64]
+    assert embedding.dtype in [  # pyright: ignore[reportUnknownMemberType]
+        np.float32,
+        np.float64,
+    ]
     assert len(embedding) > 0
 
     # Validate output structure from the DB query
@@ -116,7 +123,11 @@ def test_query_with_varied_n_results():
 
     for n in [1, 2, 5]:  # Requesting more results than stored is valid
         result = db.collection.query(query_embeddings=[embeddings[0]], n_results=n)
-        docs = result["documents"][0]
+        docs_list = result.get("documents")
+        assert (
+            docs_list is not None and len(docs_list) > 0
+        ), "Query returned None or empty documents"
+        docs = docs_list[0]
         # NOTE:
         # ChromaDB may return duplicate documents when n_results exceeds the number
         # of uniquely stored items. This causes the length of the returned list

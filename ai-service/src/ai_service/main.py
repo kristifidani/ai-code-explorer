@@ -12,7 +12,7 @@ from ai_service import (
 )
 
 
-def ingest_github_project(repo_url: str) -> None:
+def ingest_github_project(repo_url: str, collection_name: str) -> None:
     # Clone the GitHub repository
     project_dir = project_ingestor.clone_github_repo(repo_url)
     try:
@@ -51,7 +51,7 @@ def ingest_github_project(repo_url: str) -> None:
                 continue
 
         if code_snippets:
-            db.add_chunks(code_snippets, embeddings)
+            db.add_chunks(code_snippets, embeddings, collection_name)
             print(f"Stored {len(code_snippets)} code snippets in ChromaDB.")
         else:
             print("No valid code snippets found to store.")
@@ -60,11 +60,13 @@ def ingest_github_project(repo_url: str) -> None:
         project_ingestor.cleanup_dir(project_dir)
 
 
-def answer_question(user_question: str, top_k: int = 3) -> None:
+def answer_question(
+    user_question: str, number_of_results: int, collection_name: str
+) -> None:
     # Step 1: Embed the user question
     question_embedding = embedder.embed_text(user_question)
     # Step 2: Query ChromaDB for relevant code snippets
-    results = db.query_chunks(question_embedding, number_of_results=top_k)
+    results = db.query_chunks(question_embedding, number_of_results, collection_name)
 
     # Step 3: Prepare context for the LLM
     documents = results.get("documents", [[]])
@@ -98,9 +100,12 @@ def answer_question(user_question: str, top_k: int = 3) -> None:
 
 def main() -> None:
     try:
-        repo_url = "https://github.com/kristifidani/rust_grpc_poc.git"
-        ingest_github_project(repo_url)
-        answer_question("What is this project about? How does it work?")
+        repo_url = "https://github.com/kristifidani/codewhisperer.git"
+        collection_name: str = db.generate_collection_name(repo_url)
+        ingest_github_project(repo_url, collection_name)
+        answer_question(
+            "What is this project about? How does it work?", 3, collection_name
+        )
     except errors.AIServiceError as e:
         print(f"AI Service error: {e}")
     except Exception as e:

@@ -8,13 +8,36 @@ from ai_service import constants, utils, errors
 if not hasattr(np, "float_"):
     np.float_ = np.float64  # type: ignore
 
-
+import uuid
+import re
 import chromadb
 
 # Set up ChromaDB client and persistent collection
 chroma_path = utils.get_env_var(constants.CHROMA_STORE_PATH)
 client = chromadb.PersistentClient(path=chroma_path)
-collection = client.get_or_create_collection("code_chunks")
+
+
+def generate_collection_name(repo_url: str) -> str:
+    """
+    Generate a unique collection name for a repo URL.
+    """
+    match = re.search(r"/([^/]+?)(?:\.git)?$", repo_url)
+    repo_name = match.group(1) if match else "project"
+    unique_id = str(uuid.uuid4())[:15]
+    return f"{repo_name}__{unique_id}"
+
+
+def get_collection(collection_name: str) -> chromadb.Collection:
+    """
+    Get or create a ChromaDB collection by name.
+    If a collection exists that starts with the repo name, use it.
+    Otherwise, create a new one.
+    """
+    repo_name = collection_name.split("__")[0]
+    for col in client.list_collections():
+        if col.name.startswith(f"{repo_name}__"):
+            return col
+    return client.get_or_create_collection(collection_name)
 
 
 def _chunk_hash(chunk: str) -> str:
@@ -22,18 +45,23 @@ def _chunk_hash(chunk: str) -> str:
     return hashlib.sha256(chunk.encode("utf-8")).hexdigest()
 
 
-def add_chunks(chunks: list[str], embeddings: list[list[float]]) -> None:
+def add_chunks(
+    chunks: list[str],
+    embeddings: list[list[float]],
+    collection_name: str,
+) -> None:
     """
     Add new code chunks and their embeddings to ChromaDB.
 
     Args:
         chunks: Code or text chunks to store.
         embeddings: Corresponding vector embeddings.
+        collection: Name of the ChromaDB collection.
 
     Raises:
         DatabaseError: If database operation fails.
     """
-
+    collection = get_collection(collection_name)
     try:
         # Compute hashes for all chunks
         ids = [_chunk_hash(chunk) for chunk in chunks]
@@ -68,6 +96,7 @@ def add_chunks(chunks: list[str], embeddings: list[list[float]]) -> None:
 def query_chunks(
     text_embedding: list[float],
     number_of_results: int,
+    collection_name: str,
 ) -> chromadb.QueryResult:
     """
     Query ChromaDB for most similar documents.
@@ -75,6 +104,7 @@ def query_chunks(
     Args:
         text_embedding: Vector embedding of a user query.
         number_of_results: Number of results to return (1-100).
+        collection: Name of the ChromaDB collection.
 
     Returns:
         Dict containing 'documents', 'distances', 'metadatas', and 'ids'.
@@ -88,6 +118,7 @@ def query_chunks(
     if number_of_results < 1 or number_of_results > 100:
         raise errors.InvalidParam.invalid_results_count()
 
+    collection = get_collection(collection_name)
     try:
         return collection.query(
             query_embeddings=[text_embedding],

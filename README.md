@@ -1,3 +1,8 @@
 # 🧠 CodeWhisperer
 
-**CodeWhisperer** is an AI-augmented developer assistant designed to enable semantic codebase search and intelligent Q&A over your source code. It aims to bridge the gap between natural language queries and source code understanding using embeddings, vector databases, and fast search interfaces.
+**CodeWhisperer** is an intelligent, AI-powered developer assistant that transforms how you interact with your codebase. It enables advanced semantic search and natural language Q&A directly over your source code, helping you quickly understand, navigate, and reason about complex projects. By combining code embeddings, vector databases, and large language models, CodeWhisperer bridges the gap between human questions and code comprehension—making your development workflow faster, smarter, and more intuitive.
+
+## Components
+
+- [AI Service (Python)](ai-service/README.md): Semantic codebase search and intelligent Q&A.
+- [Backend Service (Rust)](backend/README.md): API gateway for validation, authentication, and request routing between frontend and AI Service.

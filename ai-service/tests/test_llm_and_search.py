@@ -1,6 +1,7 @@
 from ai_service import db, embedder, ollama_client
 import pytest
 
+test_collection = db.get_collection(__name__)
 
 # -------------- LLM Chat Tests --------------
 
@@ -22,7 +23,7 @@ def test_db_search_and_llm_integration(monkeypatch: pytest.MonkeyPatch):
     # Add code to DB
     code = "def add(a, b): return a + b"
     embedding = embedder.embed_text(code)
-    db.add_chunks([code], [embedding])
+    db.add_chunks([code], [embedding], "does not matter")
 
     # Mock LLM
     monkeypatch.setattr(
@@ -32,7 +33,7 @@ def test_db_search_and_llm_integration(monkeypatch: pytest.MonkeyPatch):
     # User question
     question = "How does the sum work?"
     question_embedding = embedder.embed_text(question)
-    results = db.query_chunks(question_embedding, number_of_results=1)
+    results = db.query_chunks(question_embedding, 1, "does not matter")
     docs = results.get("documents")
     relevant_code = docs[0][0] if docs and docs[0] else ""
     prompt = f"Code context:\n{relevant_code}\nQuestion: {question}\nExplain."
@@ -47,11 +48,11 @@ def test_db_search_and_llm_integration(monkeypatch: pytest.MonkeyPatch):
 
 def test_db_search_no_results():
     # Ensure db is empty
-    if db.collection.peek()["ids"]:
-        db.collection.delete(ids=db.collection.peek()["ids"])
+    if test_collection.peek()["ids"]:
+        test_collection.delete(ids=test_collection.peek()["ids"])
     question = "This code does not exist."
     question_embedding = embedder.embed_text(question)
-    results = db.query_chunks(question_embedding, number_of_results=1)
+    results = db.query_chunks(question_embedding, 1, "does not matter")
     # Should return an empty or placeholder result
     docs = results.get("documents")
     assert docs is not None and (docs[0] == [] or (docs[0] and docs[0][0] == ""))

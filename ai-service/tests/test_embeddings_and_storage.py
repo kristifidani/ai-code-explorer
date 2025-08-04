@@ -1,6 +1,7 @@
 import pytest
 from ai_service import embedder, db, errors
 
+test_collection = db.get_collection(__name__)
 
 # ------------------ Input Validation ------------------
 
@@ -33,10 +34,10 @@ def test_embed_and_store_and_retrieve_texts():
         "def b(): pass",
     ]
     embeddings = embedder.embed_texts(sample_texts)
-    db.add_chunks(sample_texts, embeddings)
+    db.add_chunks(sample_texts, embeddings, "does not matter")
 
     for i, embedding in enumerate(embeddings):
-        result = db.collection.query(query_embeddings=[embedding], n_results=1)
+        result = test_collection.query(query_embeddings=[embedding], n_results=1)
         docs = result.get("documents")
         assert docs is not None, "Query returned None for documents"
         assert docs[0][0] == sample_texts[i]  # Check exact match
@@ -72,9 +73,9 @@ def test_embed_and_retrieve_special_and_unicode_texts(
     embedding = embedder.embed_text(text)
     assert embedding is not None and len(embedding) > 0
 
-    db.add_chunks([text], [embedding])
+    db.add_chunks([text], [embedding], "does not matter")
 
-    result = db.collection.query(query_embeddings=[embedding], n_results=1)
+    result = test_collection.query(query_embeddings=[embedding], n_results=1)
     docs = result.get("documents")
     assert docs is not None and docs[0] is not None, "Query returned None for documents"
     assert docs[0][0] == text
@@ -93,8 +94,8 @@ def test_embedding_output_properties_and_structure():
     assert len(embedding) > 0
 
     # Validate output structure from the DB query
-    db.add_chunks([text], [embedding])
-    result = db.collection.query(query_embeddings=[embedding], n_results=1)
+    db.add_chunks([text], [embedding], "does not matter")
+    result = test_collection.query(query_embeddings=[embedding], n_results=1)
     assert isinstance(result, dict)
     assert "documents" in result and isinstance(result["documents"], list)
     assert isinstance(result["documents"][0], list)
@@ -113,10 +114,10 @@ def test_query_with_varied_n_results():
         "def function_c(): pass",
     ]
     embeddings = embedder.embed_texts(sample_texts)
-    db.add_chunks(sample_texts, embeddings)
+    db.add_chunks(sample_texts, embeddings, "does not matter")
 
     for n in [1, 2, 5]:  # Requesting more results than stored is valid
-        result = db.collection.query(query_embeddings=[embeddings[0]], n_results=n)
+        result = test_collection.query(query_embeddings=[embeddings[0]], n_results=n)
         docs_list = result.get("documents")
         assert docs_list is not None and len(docs_list) > 0, (
             "Query returned None or empty documents"

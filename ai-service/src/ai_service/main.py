@@ -1,5 +1,6 @@
 # ruff: noqa: E402
 
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,7 +10,16 @@ from ai_service import (
     ollama_client,
     errors,
     project_ingestor,
+    utils,
+    constants,
 )
+
+# FastAPI imports
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import uvicorn
+
+app = FastAPI()
 
 
 def ingest_github_project(repo_url: str, collection_name: str) -> None:
@@ -60,9 +70,33 @@ def ingest_github_project(repo_url: str, collection_name: str) -> None:
         project_ingestor.cleanup_dir(project_dir)
 
 
+# Request models for FastAPI
+class IngestRequest(BaseModel):
+    repo_url: str
+    collection_name: str
+
+
+class AnswerRequest(BaseModel):
+    user_question: str
+    number_of_results: int
+    collection_name: str
+
+
+# Endpoint to ingest a GitHub project
+@app.post("/ingest")
+def ingest_endpoint(request: IngestRequest):
+    try:
+        ingest_github_project(request.repo_url, request.collection_name)
+        return {"status": "success"}
+    except errors.AIServiceError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 def answer_question(
     user_question: str, number_of_results: int, collection_name: str
-) -> None:
+) -> str:
     # Step 1: Embed the user question
     question_embedding = embedder.embed_text(user_question)
     # Step 2: Query ChromaDB for relevant code snippets
@@ -96,21 +130,30 @@ def answer_question(
     # Step 4: Get answer from LLM
     answer = ollama_client.chat_with_ollama(prompt)
     print("\nLLM answer:\n", answer)
+    return answer
 
 
-def main() -> None:
+# Endpoint to answer a question
+@app.post("/answer")
+def answer_endpoint(request: AnswerRequest):
     try:
-        repo_url = "https://github.com/kristifidani/codewhisperer.git"
-        collection_name: str = db.generate_collection_name(repo_url)
-        ingest_github_project(repo_url, collection_name)
-        answer_question(
-            "What is this project about? How does it work?", 3, collection_name
+        answer = answer_question(
+            request.user_question,
+            request.number_of_results,
+            request.collection_name,
         )
+        return {"answer": answer}
     except errors.AIServiceError as e:
-        print(f"AI Service error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        print(f"Unexpected error: {e}")
-        raise
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def main():
+    app_port = utils.get_env_var(constants.PORT)
+    uvicorn.run(
+        "ai_service.main:app", host="127.0.0.1", port=int(app_port), reload=True
+    )
 
 
 if __name__ == "__main__":

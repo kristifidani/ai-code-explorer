@@ -28,7 +28,7 @@ def patch_and_clean_db_collection(
     monkeypatch: pytest.MonkeyPatch,
     db_test_collection: chromadb.Collection,
 ) -> Generator[None, None, None]:
-    monkeypatch.setattr("ai_service.db.get_collection", lambda name: db_test_collection)  # type: ignore[arg-type]
+    monkeypatch.setattr("ai_service.db.get_collection", lambda _: db_test_collection)  # type: ignore[arg-type]
 
     yield
 

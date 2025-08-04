@@ -21,8 +21,16 @@ def generate_collection_name(repo_url: str) -> str:
     """
     Generate a unique collection name for a repo URL.
     """
-    match = re.search(r"/([^/]+?)(?:\.git)?$", repo_url)
-    repo_name = match.group(1) if match else "project"
+    patterns = [
+        r"/([^/]+?)(?:\.git)?/?$",  # HTTPS URLs
+        r":([^/]+?)(?:\.git)?$",  # SSH URLs
+    ]
+    repo_name = "project"  # Default fallback
+    for pattern in patterns:
+        match = re.search(pattern, repo_url)
+        if match:
+            repo_name = match.group(1)
+            break
     unique_id = str(uuid.uuid4())[:15]
     return f"{repo_name}__{unique_id}"
 
@@ -56,7 +64,7 @@ def add_chunks(
     Args:
         chunks: Code or text chunks to store.
         embeddings: Corresponding vector embeddings.
-        collection: Name of the ChromaDB collection.
+        collection_name: Name of the ChromaDB collection.
 
     Raises:
         DatabaseError: If database operation fails.
@@ -104,7 +112,7 @@ def query_chunks(
     Args:
         text_embedding: Vector embedding of a user query.
         number_of_results: Number of results to return (1-100).
-        collection: Name of the ChromaDB collection.
+        collection_name: Name of the ChromaDB collection.
 
     Returns:
         Dict containing 'documents', 'distances', 'metadatas', and 'ids'.

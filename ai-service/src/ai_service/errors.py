@@ -10,17 +10,17 @@ class EmbeddingError(AIServiceError):
 
 class LLMQueryError(AIServiceError):
     @classmethod
-    def query_failed(cls, error) -> "LLMQueryError":
+    def query_failed(cls, error: Exception) -> "LLMQueryError":
         return cls(f"Failed to query Ollama: {error}")
 
 
 class DatabaseError(AIServiceError):
     @classmethod
-    def add_chunks_failed(cls, error) -> "DatabaseError":
+    def add_chunks_failed(cls, error: Exception) -> "DatabaseError":
         return cls(f"Failed to add chunks: {error}")
 
     @classmethod
-    def query_chunks_failed(cls, error) -> "DatabaseError":
+    def query_chunks_failed(cls, error: Exception) -> "DatabaseError":
         return cls(f"Failed to query chunks: {error}")
 
 
@@ -46,7 +46,7 @@ class InvalidParam(AIServiceError):
 
 class GitCloneError(AIServiceError):
     @classmethod
-    def failed(cls, error) -> "GitCloneError":
+    def failed(cls, error: Exception) -> "GitCloneError":
         return cls(f"Failed to clone GitHub repository: {error}")
 
 
@@ -64,5 +64,5 @@ class FileReadError(AIServiceError):
         return cls(f"Unicode decode error in file: {file_path}")
 
     @classmethod
-    def os_error(cls, file_path: str, error) -> "FileReadError":
+    def os_error(cls, file_path: str, error: Exception) -> "FileReadError":
         return cls(f"OS error reading file {file_path}: {error}")

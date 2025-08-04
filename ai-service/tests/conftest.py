@@ -6,7 +6,7 @@ import chromadb
 from dotenv import load_dotenv
 
 load_dotenv()
-from ai_service import db, constants, utils
+from ai_service import constants, utils
 
 
 def create_db_test_collection(collection_name: str) -> chromadb.Collection:
@@ -16,16 +16,19 @@ def create_db_test_collection(collection_name: str) -> chromadb.Collection:
 
 
 @pytest.fixture(scope="module")
-def db_test_collection(request) -> chromadb.Collection:
-    collection_name = f"{request.module.__name__}"
+def db_test_collection(request: pytest.FixtureRequest) -> chromadb.Collection:
+    module = getattr(request, "module")
+    module_name = getattr(module, "__name__")
+    collection_name: str = f"{module_name}"
     return create_db_test_collection(collection_name)
 
 
 @pytest.fixture(autouse=True)
 def patch_and_clean_db_collection(
-    monkeypatch, db_test_collection
+    monkeypatch: pytest.MonkeyPatch,
+    db_test_collection: chromadb.Collection,
 ) -> Generator[None, None, None]:
-    monkeypatch.setattr(db, "collection", db_test_collection)
+    monkeypatch.setattr("ai_service.db.get_collection", lambda _: db_test_collection)  # type: ignore[arg-type]
 
     yield
 

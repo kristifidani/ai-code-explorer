@@ -18,7 +18,7 @@ def chat_with_ollama(prompt: str) -> str:
     """
     try:
         model = utils.get_env_var(constants.LLM_MODEL)
-        response = ollama.chat(
+        response = ollama.chat(  # pyright: ignore[reportUnknownMemberType]
             model=model,
             messages=[{"role": "user", "content": prompt}],
         )

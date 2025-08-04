@@ -1,111 +1,60 @@
 # ruff: noqa: E402
 
+
 from dotenv import load_dotenv
+from fastapi.responses import JSONResponse
+import logging
 
 load_dotenv()
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 from ai_service import (
-    db,
-    embedder,
-    ollama_client,
     errors,
-    project_ingestor,
+    utils,
+    constants,
 )
 
+# FastAPI imports
+from fastapi import FastAPI, Request
+import uvicorn
 
-def ingest_github_project(repo_url: str) -> None:
-    # Clone the GitHub repository
-    project_dir = project_ingestor.clone_github_repo(repo_url)
-    try:
-        print("Scanning project directory ...")
-        code_files = project_ingestor.scan_code_files(project_dir)
-        print(f"Found {len(code_files)} code files to process.")
+from .handlers import ingest, answer
 
-        code_snippets = []
-        embeddings = []
-
-        print("Embedding content for each file ...")
-        for file_path in code_files:
-            try:
-                with open(file_path, encoding="utf-8") as f:
-                    code = f.read().strip()
-                    if not code:
-                        print(f"Skipping empty file: {file_path}")
-                        continue
-                    code_snippets.append(code)
-                    embeddings.append(embedder.embed_text(code))
-            except FileNotFoundError:
-                err = errors.FileReadError.file_not_found(file_path)
-                print(f"{err}")
-                continue
-            except PermissionError:
-                err = errors.FileReadError.permission_denied(file_path)
-                print(f"{err}")
-                continue
-            except UnicodeDecodeError:
-                err = errors.FileReadError.decode_error(file_path)
-                print(f"{err}")
-                continue
-            except OSError as e:
-                err = errors.FileReadError.os_error(file_path, e)
-                print(f"{err}")
-                continue
-
-        if code_snippets:
-            db.add_chunks(code_snippets, embeddings)
-            print(f"Stored {len(code_snippets)} code snippets in ChromaDB.")
-        else:
-            print("No valid code snippets found to store.")
-    finally:
-        print("Cleaning up project directory ...")
-        project_ingestor.cleanup_dir(project_dir)
+app = FastAPI()
+app.include_router(ingest.router)
+app.include_router(answer.router)
 
 
-def answer_question(user_question: str, top_k: int = 3) -> None:
-    # Step 1: Embed the user question
-    question_embedding = embedder.embed_text(user_question)
-    # Step 2: Query ChromaDB for relevant code snippets
-    results = db.query_chunks(question_embedding, number_of_results=top_k)
+# FastAPI exception handlers
+@app.exception_handler(errors.AIServiceError)
+async def ai_service_error_handler(
+    _request: Request, exc: errors.AIServiceError
+) -> JSONResponse:
+    status_code = 404 if isinstance(exc, errors.NotFound) else 400
+    logger.error("AIServiceError: %s", exc)
+    return JSONResponse(
+        status_code=status_code,
+        content={"error": str(exc), "code": exc.__class__.__name__},
+    )
 
-    # Step 3: Prepare context for the LLM
-    documents = results.get("documents", [[]])
 
-    if not documents or not documents[0]:
-        prompt = (
-            f"User question:\n{user_question}\n\n"
-            "No relevant code context found. Please answer using your general knowledge."
-        )
-        print("User question:", user_question)
-        print("\nNo relevant code snippets found.")
-    else:
-        # Remove duplicate snippets while preserving order
-        unique_snippets = list(dict.fromkeys(documents[0]))
-        context = "\n---\n".join(unique_snippets)
-        prompt = (
-            "You are an AI assistant helping with a software project.\n\n"
-            "Here is some relevant context from the uploaded project:\n"
-            f"{context}\n\n"
-            "User question:\n"
-            f"{user_question}\n\n"
-            "Answer in detail using the project as context. If context isn't relevant, fall back to general reasoning."
-        )
-        print("User question:", user_question)
-        print("\nMost relevant code snippet(s):\n", context)
-
-    # Step 4: Get answer from LLM
-    answer = ollama_client.chat_with_ollama(prompt)
-    print("\nLLM answer:\n", answer)
+@app.exception_handler(Exception)
+async def general_exception_handler(_request: Request, exc: Exception) -> JSONResponse:
+    logger.exception("Unexpected error")
+    return JSONResponse(
+        status_code=500,
+        content={"error": str(exc), "code": "InternalError"},
+    )
 
 
 def main() -> None:
-    try:
-        repo_url = "https://github.com/kristifidani/rust_grpc_poc.git"
-        ingest_github_project(repo_url)
-        answer_question("What is this project about? How does it work?")
-    except errors.AIServiceError as e:
-        print(f"AI Service error: {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        raise
+    app_port = utils.get_env_var(constants.PORT)
+    uvicorn.run(
+        "ai_service.main:app",
+        host="127.0.0.1",
+        port=int(app_port),
+        reload=True,
+    )
 
 
 if __name__ == "__main__":

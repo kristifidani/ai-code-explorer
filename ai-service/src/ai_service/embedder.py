@@ -1,5 +1,5 @@
 from functools import lru_cache
-import numpy as np
+from typing import cast
 from sentence_transformers import SentenceTransformer
 from ai_service import errors
 
@@ -10,7 +10,7 @@ def _get_model() -> SentenceTransformer:
     return SentenceTransformer("all-MiniLM-L6-v2")
 
 
-def embed_texts(texts: list[str]) -> np.ndarray:
+def embed_texts(texts: list[str]) -> list[list[float]]:
     """
     Create embeddings for a list of texts.
 
@@ -18,25 +18,28 @@ def embed_texts(texts: list[str]) -> np.ndarray:
         texts: A list of strings to embed.
 
     Returns:
-        A NumPy array of embeddings.
+        A list of embeddings (each embedding is a list of floats).
 
     Raises:
         EmbeddingError: If texts is empty or contains only empty strings.
     """
     if not texts or all(not text.strip() for text in texts):
         raise errors.EmbeddingError.empty_input()
-    return _get_model().encode(texts, convert_to_numpy=True)
+
+    model: SentenceTransformer = _get_model()
+    embeddings = model.encode(texts, convert_to_numpy=True)  # type: ignore
+    return cast(list[list[float]], embeddings.tolist())
 
 
-def embed_text(text: str) -> np.ndarray:
+def embed_text(text: str) -> list[float]:
     """
-    Embed a single text input and return the embedding as a NumPy array.
+    Embed a single text input and return the embedding as a list of floats.
 
     Args:
         text: A string to embed.
 
     Returns:
-        A NumPy array representing the text embedding.
+        A list of floats representing the text embedding.
 
     Raises:
         EmbeddingError: If text is empty or whitespace-only.

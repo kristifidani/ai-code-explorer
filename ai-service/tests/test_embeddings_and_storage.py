@@ -1,17 +1,17 @@
 import pytest
-import numpy as np
 from ai_service import embedder, db, errors
 
+test_collection = db.get_collection(__name__)
 
 # ------------------ Input Validation ------------------
 
 
 # Ensure invalid inputs (empty strings, whitespace, None) raise appropriate exceptions
 @pytest.mark.parametrize("invalid_input", ["", "   ", "\t", "\n", None])
-def test_embed_invalid_inputs_raise_errors(invalid_input):
+def test_embed_invalid_inputs_raise_errors(invalid_input: str | None):
     if invalid_input is None:
         with pytest.raises(AttributeError):
-            embedder.embed_text(invalid_input)
+            embedder.embed_text(invalid_input)  # pyright: ignore[reportArgumentType]
     else:
         with pytest.raises(
             errors.EmbeddingError,
@@ -34,11 +34,13 @@ def test_embed_and_store_and_retrieve_texts():
         "def b(): pass",
     ]
     embeddings = embedder.embed_texts(sample_texts)
-    db.add_chunks(sample_texts, embeddings)
+    db.add_chunks(sample_texts, embeddings, "does not matter")
 
     for i, embedding in enumerate(embeddings):
-        result = db.collection.query(query_embeddings=[embedding], n_results=1)
-        assert result["documents"][0][0] == sample_texts[i]  # Check exact match
+        result = test_collection.query(query_embeddings=[embedding], n_results=1)
+        docs = result.get("documents")
+        assert docs is not None, "Query returned None for documents"
+        assert docs[0][0] == sample_texts[i]  # Check exact match
 
 
 # ------------------ Unicode, Special Characters ------------------
@@ -66,15 +68,17 @@ def test_embed_and_store_and_retrieve_texts():
     ],
 )
 def test_embed_and_retrieve_special_and_unicode_texts(
-    text,
+    text: str,
 ):
     embedding = embedder.embed_text(text)
     assert embedding is not None and len(embedding) > 0
 
-    db.add_chunks([text], [embedding])
+    db.add_chunks([text], [embedding], "does not matter")
 
-    result = db.collection.query(query_embeddings=[embedding], n_results=1)
-    assert result["documents"][0][0] == text
+    result = test_collection.query(query_embeddings=[embedding], n_results=1)
+    docs = result.get("documents")
+    assert docs is not None and docs[0] is not None, "Query returned None for documents"
+    assert docs[0][0] == text
 
 
 # ------------------ Embedding Properties & Structure ------------------
@@ -86,14 +90,12 @@ def test_embedding_output_properties_and_structure():
     embedding = embedder.embed_text(text)
 
     # Validate basic embedding properties
-    assert isinstance(embedding, np.ndarray)
-    assert embedding.ndim == 1
-    assert embedding.dtype in [np.float32, np.float64]
+    assert all(isinstance(x, float) for x in embedding)
     assert len(embedding) > 0
 
     # Validate output structure from the DB query
-    db.add_chunks([text], [embedding])
-    result = db.collection.query(query_embeddings=[embedding], n_results=1)
+    db.add_chunks([text], [embedding], "does not matter")
+    result = test_collection.query(query_embeddings=[embedding], n_results=1)
     assert isinstance(result, dict)
     assert "documents" in result and isinstance(result["documents"], list)
     assert isinstance(result["documents"][0], list)
@@ -112,11 +114,15 @@ def test_query_with_varied_n_results():
         "def function_c(): pass",
     ]
     embeddings = embedder.embed_texts(sample_texts)
-    db.add_chunks(sample_texts, embeddings)
+    db.add_chunks(sample_texts, embeddings, "does not matter")
 
     for n in [1, 2, 5]:  # Requesting more results than stored is valid
-        result = db.collection.query(query_embeddings=[embeddings[0]], n_results=n)
-        docs = result["documents"][0]
+        result = test_collection.query(query_embeddings=[embeddings[0]], n_results=n)
+        docs_list = result.get("documents")
+        assert docs_list is not None and len(docs_list) > 0, (
+            "Query returned None or empty documents"
+        )
+        docs = docs_list[0]
         # NOTE:
         # ChromaDB may return duplicate documents when n_results exceeds the number
         # of uniquely stored items. This causes the length of the returned list

@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 import shutil
@@ -6,6 +7,9 @@ import re
 from ai_service import errors
 
 from git import Repo, GitCommandError
+
+logger = logging.getLogger(__name__)
+
 
 CODE_EXTENSIONS = {
     # Programming languages
@@ -55,13 +59,9 @@ def clone_github_repo(repo_url: str) -> str:
     Returns the path to the cloned directory.
     Validates the repo_url to prevent command injection.
     """
-    # Only allow URLs matching the GitHub repo pattern (HTTPS, SSH, and git protocols)
+    # Only allow URLs matching the GitHub repo pattern (HTTPS)
     github_repo_pattern = (
-        r"^(?:"
-        r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\.git)?/?"
-        r"|git@github\.com:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git"
-        r"|git://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git"
-        r")$"
+        r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\.git)?/?$"
     )
     if not re.match(github_repo_pattern, repo_url):
         raise errors.InvalidParam.invalid_repo_url()
@@ -80,7 +80,8 @@ def scan_code_files(root_dir: str) -> list[str]:
     Scans the project directory for code files with given extensions.
     Returns a list of file paths.
     """
-    code_files = []
+    logger.info("Scanning project directory ...")
+    code_files: list[str] = []
     for root, _, files in os.walk(root_dir):
         for file in files:
             if any(file.endswith(ext) for ext in CODE_EXTENSIONS):
@@ -92,4 +93,5 @@ def cleanup_dir(path: str) -> None:
     """
     Removes a directory and all its contents.
     """
+    logger.info("Cleaning up project directory ...")
     shutil.rmtree(path, ignore_errors=True)

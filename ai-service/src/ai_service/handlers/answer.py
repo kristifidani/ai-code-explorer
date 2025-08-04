@@ -63,7 +63,7 @@ def answer_question(
 
 # Endpoint to answer a question
 @router.post("/answer")
-def answer_endpoint(request: AnswerRequest):
+def answer_endpoint(request: AnswerRequest) -> dict[str, str]:
     answer = answer_question(
         request.user_question,
         request.repo_url,

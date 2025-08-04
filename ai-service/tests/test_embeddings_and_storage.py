@@ -119,9 +119,9 @@ def test_query_with_varied_n_results():
     for n in [1, 2, 5]:  # Requesting more results than stored is valid
         result = test_collection.query(query_embeddings=[embeddings[0]], n_results=n)
         docs_list = result.get("documents")
-        assert docs_list is not None and len(docs_list) > 0, (
-            "Query returned None or empty documents"
-        )
+        assert (
+            docs_list is not None and len(docs_list) > 0
+        ), "Query returned None or empty documents"
         docs = docs_list[0]
         # NOTE:
         # ChromaDB may return duplicate documents when n_results exceeds the number

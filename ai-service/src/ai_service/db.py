@@ -31,7 +31,7 @@ def generate_collection_name(repo_url: str) -> str:
     return f"{repo_name}__{unique_id}"
 
 
-def _get_collection(collection_name: str) -> chromadb.Collection:
+def get_collection(collection_name: str) -> chromadb.Collection:
     """
     Get or create a ChromaDB collection by name.
     If a collection exists that starts with the repo name, use it.
@@ -65,7 +65,7 @@ def add_chunks(
     Raises:
         DatabaseError: If database operation fails.
     """
-    collection = _get_collection(collection_name)
+    collection = get_collection(collection_name)
     try:
         # Compute hashes for all chunks
         ids = [_chunk_hash(chunk) for chunk in chunks]
@@ -122,7 +122,7 @@ def query_chunks(
     if number_of_results < 1 or number_of_results > 100:
         raise errors.InvalidParam.invalid_results_count()
 
-    collection = _get_collection(collection_name)
+    collection = get_collection(collection_name)
     try:
         return collection.query(
             query_embeddings=[text_embedding],

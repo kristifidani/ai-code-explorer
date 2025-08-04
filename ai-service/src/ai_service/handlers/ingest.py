@@ -65,7 +65,7 @@ def ingest_github_project(repo_url: str) -> None:
 
 
 # Endpoint to ingest a GitHub project
-@router.post("/ingest")
-def ingest_endpoint(request: IngestRequest) -> dict[str, int]:
+@router.post("/ingest", status_code=200)
+def ingest_endpoint(request: IngestRequest) -> dict[str, str]:
     ingest_github_project(request.repo_url)
-    return {"status": 200}
+    return {"message": "Successfully ingested project"}

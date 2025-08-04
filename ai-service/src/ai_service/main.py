@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 import logging
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 from ai_service import (
     errors,
@@ -28,7 +29,7 @@ app.include_router(answer.router)
 @app.exception_handler(errors.AIServiceError)
 async def ai_service_error_handler(request: Request, exc: errors.AIServiceError):
     status_code = 404 if isinstance(exc, errors.NotFound) else 400
-    logging.error(f"AIServiceError: {exc}")
+    logger.error(f"AIServiceError: {exc}")
     return JSONResponse(
         status_code=status_code,
         content={"error": str(exc), "code": exc.__class__.__name__},
@@ -37,7 +38,7 @@ async def ai_service_error_handler(request: Request, exc: errors.AIServiceError)
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
-    logging.exception(f"Unexpected error: {exc}")
+    logger.exception(f"Unexpected error: {exc}")
     return JSONResponse(
         status_code=500,
         content={"error": str(exc), "code": "InternalError"},

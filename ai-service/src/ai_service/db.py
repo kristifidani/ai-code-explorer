@@ -21,16 +21,12 @@ def generate_collection_name(repo_url: str) -> str:
     """
     Generate a unique collection name for a repo URL.
     """
-    patterns = [
-        r"/([^/]+?)(?:\.git)?/?$",  # HTTPS URLs
-        r":([^/]+?)(?:\.git)?$",  # SSH URLs
-    ]
+    pattern = r"/([^/]+?)(?:\.git)?/?$"
     repo_name = "project"  # Default fallback
-    for pattern in patterns:
-        match = re.search(pattern, repo_url)
-        if match:
-            repo_name = match.group(1)
-            break
+    match = re.search(pattern, repo_url)
+    if match:
+        repo_name = match.group(1)
+
     unique_id = str(uuid.uuid4())[:15]
     return f"{repo_name}__{unique_id}"
 

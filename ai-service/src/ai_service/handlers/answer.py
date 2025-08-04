@@ -1,3 +1,4 @@
+import logging
 from pydantic import BaseModel
 from fastapi import APIRouter
 
@@ -7,7 +8,8 @@ from ai_service import (
     ollama_client,
     errors,
 )
-import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -35,8 +37,8 @@ def answer_question(
                 f"User question:\n{user_question}\n\n"
                 "No relevant code context found. Please answer using your general knowledge."
             )
-            logging.info(f"User question: {user_question}")
-            logging.info("No relevant code snippets found.")
+            logger.info(f"User question: {user_question}")
+            logger.info("No relevant code snippets found.")
         else:
             unique_snippets = list(dict.fromkeys(documents[0]))
             context = "\n---\n".join(unique_snippets)
@@ -48,14 +50,14 @@ def answer_question(
                 f"{user_question}\n\n"
                 "Answer in detail using the project as context. If context isn't relevant, fall back to general reasoning."
             )
-            logging.info(f"User question: {user_question}")
-            logging.info(f"Most relevant code snippet(s): {context}")
+            logger.info(f"User question: {user_question}")
+            logger.info(f"Most relevant code snippet(s): {context}")
 
         answer = ollama_client.chat_with_ollama(prompt)
-        logging.info(f"LLM answer: {answer}")
+        logger.info(f"LLM answer: {answer}")
         return answer
-    except errors.AIServiceError as e:
-        logging.error(f"Answer error: {e}")
+    except errors.AIServiceError:
+        logger.exception("Answer error")
         raise
 
 

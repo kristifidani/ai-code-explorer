@@ -3,7 +3,7 @@ POST http://localhost:8000/ingest
 Content-Type: application/json
 
 {
-  "repo_url": "https://github.com/kristifidani/rust_grpc_poc.git"
+  "repo_url": "https://github.com/kristifidani/codewhisperer.git"
 }
 
 ### Ask a question about a project
@@ -11,6 +11,6 @@ POST http://localhost:8000/answer
 Content-Type: application/json
 
 {
-  "user_question": "Summarize this project's purpose?",
+  "user_question": "Summarize this project in 3 sentences.",
   "repo_url": "https://github.com/kristifidani/rust_grpc_poc.git"
 }

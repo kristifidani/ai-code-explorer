@@ -55,10 +55,11 @@ def answer_question(
 
         answer = ollama_client.chat_with_ollama(prompt)
         logger.info("LLM answer: %s", answer)
-        return answer
     except errors.AIServiceError:
         logger.exception("Answer error")
         raise
+    else:
+        return answer
 
 
 # Endpoint to answer a question

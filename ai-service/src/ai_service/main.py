@@ -28,10 +28,10 @@ app.include_router(answer.router)
 # FastAPI exception handlers
 @app.exception_handler(errors.AIServiceError)
 async def ai_service_error_handler(
-    request: Request, exc: errors.AIServiceError
+    _request: Request, exc: errors.AIServiceError
 ) -> JSONResponse:
     status_code = 404 if isinstance(exc, errors.NotFound) else 400
-    logger.error(f"AIServiceError: {exc}")
+    logger.error("AIServiceError: %s", exc)
     return JSONResponse(
         status_code=status_code,
         content={"error": str(exc), "code": exc.__class__.__name__},
@@ -39,7 +39,7 @@ async def ai_service_error_handler(
 
 
 @app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+async def general_exception_handler(_request: Request, exc: Exception) -> JSONResponse:
     logger.exception("Unexpected error")
     return JSONResponse(
         status_code=500,

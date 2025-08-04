@@ -33,7 +33,7 @@ def test_db_search_and_llm_integration(monkeypatch: pytest.MonkeyPatch):
     # User question
     question = "How does the sum work?"
     question_embedding = embedder.embed_text(question)
-    results = db.query_chunks(question_embedding, 1, "does not matter")
+    results = db.query_chunks(question_embedding, "does not matter")
     docs = results.get("documents")
     relevant_code = docs[0][0] if docs and docs[0] else ""
     prompt = f"Code context:\n{relevant_code}\nQuestion: {question}\nExplain."
@@ -52,7 +52,7 @@ def test_db_search_no_results():
         test_collection.delete(ids=test_collection.peek()["ids"])
     question = "This code does not exist."
     question_embedding = embedder.embed_text(question)
-    results = db.query_chunks(question_embedding, 1, "does not matter")
+    results = db.query_chunks(question_embedding, "does not matter")
     # Should return an empty or placeholder result
     docs = results.get("documents")
     assert docs is not None and (docs[0] == [] or (docs[0] and docs[0][0] == ""))

@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 import shutil
@@ -80,6 +81,7 @@ def scan_code_files(root_dir: str) -> list[str]:
     Scans the project directory for code files with given extensions.
     Returns a list of file paths.
     """
+    logging.info("Scanning project directory ...")
     code_files: list[str] = []
     for root, _, files in os.walk(root_dir):
         for file in files:
@@ -92,4 +94,5 @@ def cleanup_dir(path: str) -> None:
     """
     Removes a directory and all its contents.
     """
+    logging.info("Cleaning up project directory ...")
     shutil.rmtree(path, ignore_errors=True)

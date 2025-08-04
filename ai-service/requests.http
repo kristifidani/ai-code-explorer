@@ -1,0 +1,16 @@
+### Ingest a GitHub project
+POST http://localhost:8000/ingest
+Content-Type: application/json
+
+{
+  "repo_url": "https://github.com/kristifidani/rust_grpc_poc.git"
+}
+
+### Ask a question about a project
+POST http://localhost:8000/answer
+Content-Type: application/json
+
+{
+  "user_question": "Summarize this project's purpose?",
+  "repo_url": "https://github.com/kristifidani/rust_grpc_poc.git"
+}

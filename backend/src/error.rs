@@ -4,11 +4,22 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 /// Placeholder for API errors
 #[derive(thiserror::Error, Debug)]
-pub enum Error {}
+pub enum Error {
+    #[error("MongoDbError: {0}")]
+    MongoDBError(mongodb::error::Error),
+    #[error("Invalid project id: {0}")]
+    InvalidProjectId(String),
+    #[error("Project not found: {0}")]
+    ProjectNotFound(String),
+}
 
 impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
-        StatusCode::INTERNAL_SERVER_ERROR
+        match self {
+            Error::MongoDBError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::InvalidProjectId(_) => StatusCode::BAD_REQUEST,
+            Error::ProjectNotFound(_) => StatusCode::NOT_FOUND,
+        }
     }
 
     /// Override error_response to return an empty response instead of the Display string

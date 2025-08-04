@@ -37,7 +37,7 @@ def answer_question(
                 f"User question:\n{user_question}\n\n"
                 "No relevant code context found. Please answer using your general knowledge."
             )
-            logger.info(f"User question: {user_question}")
+            logger.info("User question: %s", user_question)
             logger.info("No relevant code snippets found.")
         else:
             unique_snippets = list(dict.fromkeys(documents[0]))
@@ -50,11 +50,11 @@ def answer_question(
                 f"{user_question}\n\n"
                 "Answer in detail using the project as context. If context isn't relevant, fall back to general reasoning."
             )
-            logger.info(f"User question: {user_question}")
-            logger.info(f"Most relevant code snippet(s): {context}")
+            logger.info("User question: %s", user_question)
+            logger.info("Most relevant code snippet(s): %s", context)
 
         answer = ollama_client.chat_with_ollama(prompt)
-        logger.info(f"LLM answer: {answer}")
+        logger.info("LLM answer: %s", answer)
         return answer
     except errors.AIServiceError:
         logger.exception("Answer error")

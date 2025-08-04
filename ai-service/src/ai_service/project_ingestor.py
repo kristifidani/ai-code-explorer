@@ -61,7 +61,7 @@ def clone_github_repo(repo_url: str) -> str:
     """
     # Only allow URLs matching the GitHub repo pattern (HTTPS)
     github_repo_pattern = (
-        r"^(?:" r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\.git)?/?" r")$"
+        r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\.git)?/?$"
     )
     if not re.match(github_repo_pattern, repo_url):
         raise errors.InvalidParam.invalid_repo_url()

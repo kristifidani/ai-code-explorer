@@ -27,7 +27,7 @@ def generate_collection_name(repo_url: str) -> str:
     if match:
         repo_name = match.group(1)
 
-    unique_id = str(uuid.uuid4())[:15]
+    unique_id = str(uuid.uuid4())
     return f"{repo_name}__{unique_id}"
 
 

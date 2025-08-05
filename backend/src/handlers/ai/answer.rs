@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::{Error, db::ProjectRepository};
+use crate::{Error, clients::db::ProjectRepositoryImpl};
 use actix_web::{
     HttpResponse, Responder,
     web::{Data, Json, Path},
@@ -13,7 +13,7 @@ pub struct AnswerRequest {
 }
 
 pub async fn answer_question(
-    repo: Data<dyn ProjectRepository>,
+    repo: Data<ProjectRepositoryImpl>,
     path: Path<String>,
     req: Json<AnswerRequest>,
 ) -> Result<impl Responder> {

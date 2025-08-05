@@ -1,2 +1,11 @@
 ### Health check
 GET {{host}}/health
+
+### Test ingest endpoint
+POST {{host}}/projects
+Content-Type: application/json
+Accept: application/json
+
+{
+  "github_url": "https://github.com/kristifidani/codewhisperer.git"
+}

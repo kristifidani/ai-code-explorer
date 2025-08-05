@@ -1,4 +1,5 @@
-use crate::db::{Project, ProjectRepository};
+use crate::clients::ai_service_client::AiServiceClient;
+use crate::clients::db::{Project, ProjectRepositoryImpl};
 use crate::error::Result;
 use actix_web::{
     HttpResponse, Responder,
@@ -12,7 +13,8 @@ pub struct IngestRequest {
 }
 
 pub async fn ingest(
-    repo: Data<dyn ProjectRepository>,
+    repo: Data<ProjectRepositoryImpl>,
+    ai_client: Data<AiServiceClient>,
     req: Json<IngestRequest>,
 ) -> Result<impl Responder> {
     let project = Project {
@@ -20,12 +22,12 @@ pub async fn ingest(
         github_url: req.github_url.clone(),
     };
 
-    match repo.insert_if_not_exists(project).await? {
-        true => {
-            // TODO: Call ai-service ingestion here
-
-            Ok(HttpResponse::Created().body("Project ingested and stored."))
-        }
-        false => Ok(HttpResponse::Ok().body("Project already exists.")),
+    if repo.insert_if_not_exists(project).await? {
+        ai_client.ingest(&req.github_url).await?;
+        tracing::info!("Successfully ingested new project: {}", req.github_url);
+        Ok(HttpResponse::Created().body("Project ingested with success."))
+    } else {
+        tracing::info!("Project already exists: {}", req.github_url);
+        Ok(HttpResponse::Ok().body("Project already exists."))
     }
 }

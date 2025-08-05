@@ -1,5 +1,5 @@
 pub mod app_config;
-pub mod db;
+pub mod clients;
 pub mod handlers;
 pub mod tracing;
 pub mod utils;

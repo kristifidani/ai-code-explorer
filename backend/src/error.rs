@@ -1,4 +1,5 @@
 use actix_web::{HttpResponse, ResponseError, http::StatusCode};
+use url::ParseError;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
@@ -11,6 +12,15 @@ pub enum Error {
     InvalidProjectId(String),
     #[error("Project not found: {0}")]
     ProjectNotFound(String),
+    #[error("Reqwest error: {0}")]
+    Reqwest(#[from] reqwest::Error),
+    #[error("Unexpected response: code: {code}, body: {body}")]
+    UnexpectedResponse {
+        code: reqwest::StatusCode,
+        body: String,
+    },
+    #[error("Parse error: {0}")]
+    ParseError(ParseError),
 }
 
 impl ResponseError for Error {
@@ -19,6 +29,9 @@ impl ResponseError for Error {
             Error::MongoDBError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::InvalidProjectId(_) => StatusCode::BAD_REQUEST,
             Error::ProjectNotFound(_) => StatusCode::NOT_FOUND,
+            Error::Reqwest(_) => StatusCode::BAD_REQUEST,
+            Error::UnexpectedResponse { code: _, body: _ } => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::ParseError(_) => StatusCode::BAD_REQUEST,
         }
     }
 

@@ -2,7 +2,6 @@ import logging
 import os
 import tempfile
 import shutil
-import re
 
 from ai_service import errors
 
@@ -57,14 +56,7 @@ def clone_github_repo(repo_url: str) -> str:
     """
     Clones a GitHub repo to a temporary directory.
     Returns the path to the cloned directory.
-    Validates the repo_url to prevent command injection.
     """
-    # Only allow URLs matching the GitHub repo pattern (HTTPS)
-    github_repo_pattern = (
-        r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\.git)?/?$"
-    )
-    if not re.match(github_repo_pattern, repo_url):
-        raise errors.InvalidParam.invalid_repo_url()
     clone_to = tempfile.mkdtemp()
     try:
         Repo.clone_from(repo_url, clone_to)

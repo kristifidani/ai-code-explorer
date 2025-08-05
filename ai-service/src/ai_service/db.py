@@ -8,39 +8,27 @@ from ai_service import constants, utils, errors
 if not hasattr(np, "float_"):
     np.float_ = np.float64  # type: ignore
 
-import uuid
-import re
 import chromadb
+from contextvars import ContextVar
 
 # Set up ChromaDB client and persistent collection
 chroma_path = utils.get_env_var(constants.CHROMA_STORE_PATH)
 client = chromadb.PersistentClient(path=chroma_path)
 
-
-def generate_collection_name(repo_url: str) -> str:
-    """
-    Generate a unique collection name for a repo URL.
-    """
-    pattern = r"/([^/]+?)(?:\.git)?/?$"
-    repo_name = "project"  # Default fallback
-    match = re.search(pattern, repo_url)
-    if match:
-        repo_name = match.group(1)
-
-    unique_id = str(uuid.uuid4())
-    return f"{repo_name}__{unique_id}"
+_current_repo_url: ContextVar[str] = ContextVar("current_repo_url")
 
 
-def get_collection(collection_name: str) -> chromadb.Collection:
-    """
-    Get or create a ChromaDB collection by name.
-    If a collection exists that starts with the repo name, use it.
-    Otherwise, create a new one.
-    """
-    repo_name = collection_name.split("__")[0]
-    for col in client.list_collections():
-        if col.name.startswith(f"{repo_name}__"):
-            return col
+def set_repo_context(repo_url: str) -> None:
+    """Set the current repository URL context for all DB operations."""
+    _current_repo_url.set(repo_url)
+
+
+def get_collection() -> chromadb.Collection:
+    """Get or create a ChromaDB collection using the current repo context."""
+    repo_url = _current_repo_url.get()
+    url_hash = hashlib.sha256(repo_url.encode("utf-8")).hexdigest()[:12]
+    repo_name = repo_url.split("/")[-1].replace(".git", "")
+    collection_name = f"{repo_name}_{url_hash}"
     return client.get_or_create_collection(collection_name)
 
 
@@ -52,7 +40,6 @@ def _chunk_hash(chunk: str) -> str:
 def add_chunks(
     chunks: list[str],
     embeddings: list[list[float]],
-    collection_name: str,
 ) -> None:
     """
     Add new code chunks and their embeddings to ChromaDB.
@@ -60,12 +47,12 @@ def add_chunks(
     Args:
         chunks: Code or text chunks to store.
         embeddings: Corresponding vector embeddings.
-        collection_name: Name of the ChromaDB collection.
 
     Raises:
         DatabaseError: If database operation fails.
     """
-    collection = get_collection(collection_name)
+
+    collection = get_collection()
     try:
         # Compute hashes for all chunks
         ids = [_chunk_hash(chunk) for chunk in chunks]
@@ -99,7 +86,6 @@ def add_chunks(
 
 def query_chunks(
     text_embedding: list[float],
-    collection_name: str,
     number_of_results: int = 3,
 ) -> chromadb.QueryResult:
     """
@@ -108,7 +94,6 @@ def query_chunks(
     Args:
         text_embedding: Vector embedding of a user query.
         number_of_results: Number of results to return (1-100).
-        collection_name: Name of the ChromaDB collection.
 
     Returns:
         Dict containing 'documents', 'distances', 'metadatas', and 'ids'.
@@ -122,7 +107,7 @@ def query_chunks(
     if number_of_results < 1 or number_of_results > 100:
         raise errors.InvalidParam.invalid_results_count()
 
-    collection = get_collection(collection_name)
+    collection = get_collection()
     try:
         return collection.query(
             query_embeddings=[text_embedding],

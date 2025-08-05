@@ -1,13 +1,12 @@
-use crate::error::Result;
-use serde::{Deserialize, Serialize};
+use crate::{error::Result, types::entities::Project};
 
 const DB_COLLECTION_PROJECTS: &str = "projects";
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Project {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<mongodb::bson::oid::ObjectId>,
-    pub github_url: String,
+#[async_trait::async_trait]
+pub trait ProjectRepository: Send + Sync + 'static {
+    async fn find_by_github_url(&self, github_url: &str) -> Result<Option<Project>>;
+    async fn create(&self, project: Project) -> Result<Project>;
+    async fn exists_by_github_url(&self, github_url: &str) -> Result<bool>;
 }
 
 #[derive(Clone)]
@@ -23,30 +22,30 @@ impl ProjectRepositoryImpl {
     }
 }
 
-impl ProjectRepositoryImpl {
-    pub async fn insert_if_not_exists(&self, project: Project) -> Result<bool> {
-        let filter = mongodb::bson::doc! { "github_url": &project.github_url };
-        match self.collection.find_one(filter).await {
-            Ok(Some(_)) => Ok(false), // Already exists
-            Ok(None) => {
-                self.collection.insert_one(project).await.map_err(|e| {
-                    tracing::error!("Failed to insert project: {}", e);
-                    crate::error::Error::MongoDBError(e)
-                })?;
-                Ok(true)
-            }
-            Err(e) => {
-                tracing::error!("Failed to check project existence: {}", e);
-                Err(crate::error::Error::MongoDBError(e))
-            }
-        }
-    }
-
-    pub async fn find_by_id(&self, id: mongodb::bson::oid::ObjectId) -> Result<Option<Project>> {
-        let filter = mongodb::bson::doc! { "_id": id };
+#[async_trait::async_trait]
+impl ProjectRepository for ProjectRepositoryImpl {
+    async fn find_by_github_url(&self, github_url: &str) -> Result<Option<Project>> {
+        let filter = mongodb::bson::doc! { "github_url": github_url };
         self.collection.find_one(filter).await.map_err(|e| {
-            tracing::error!("Failed to find project by id: {}", e);
+            tracing::error!("Failed to find project by GitHub URL: {}", e);
             crate::error::Error::MongoDBError(e)
         })
+    }
+
+    async fn create(&self, project: Project) -> Result<Project> {
+        self.collection.insert_one(&project).await.map_err(|e| {
+            tracing::error!("Failed to insert project: {}", e);
+            crate::error::Error::MongoDBError(e)
+        })?;
+        Ok(project)
+    }
+
+    async fn exists_by_github_url(&self, github_url: &str) -> Result<bool> {
+        let filter = mongodb::bson::doc! { "github_url": github_url };
+        let count = self.collection.count_documents(filter).await.map_err(|e| {
+            tracing::error!("Failed to check project existence: {}", e);
+            crate::error::Error::MongoDBError(e)
+        })?;
+        Ok(count > 0)
     }
 }

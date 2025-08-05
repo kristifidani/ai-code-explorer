@@ -8,10 +8,10 @@ pub type Result<T> = core::result::Result<T, Error>;
 pub enum Error {
     #[error("MongoDbError: {0}")]
     MongoDBError(mongodb::error::Error),
-    #[error("Invalid project id: {0}")]
-    InvalidProjectId(String),
     #[error("Project not found: {0}")]
     ProjectNotFound(String),
+    #[error("Invalid GitHub URL: {0}")]
+    InvalidGithubUrl(String),
     #[error("Reqwest error: {0}")]
     Reqwest(#[from] reqwest::Error),
     #[error("Unexpected response: code: {code}, body: {body}")]
@@ -27,8 +27,8 @@ impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         match self {
             Error::MongoDBError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            Error::InvalidProjectId(_) => StatusCode::BAD_REQUEST,
             Error::ProjectNotFound(_) => StatusCode::NOT_FOUND,
+            Error::InvalidGithubUrl(_) => StatusCode::BAD_REQUEST,
             Error::Reqwest(_) => StatusCode::BAD_REQUEST,
             Error::UnexpectedResponse { code: _, body: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             Error::ParseError(_) => StatusCode::BAD_REQUEST,

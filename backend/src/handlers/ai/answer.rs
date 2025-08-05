@@ -1,30 +1,29 @@
 use crate::error::Result;
-use crate::{Error, clients::db::ProjectRepositoryImpl};
+use crate::types::answer::AnswerRequest;
+use crate::{
+    Error,
+    clients::db::{ProjectRepository, ProjectRepositoryImpl},
+};
 use actix_web::{
     HttpResponse, Responder,
-    web::{Data, Json, Path},
+    web::{Data, Json, Query},
 };
-use mongodb::bson::oid::ObjectId;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-pub struct AnswerRequest {
-    pub question: String,
+pub struct AnswerQuery {
+    pub github_url: String,
 }
 
 pub async fn answer_question(
     repo: Data<ProjectRepositoryImpl>,
-    path: Path<String>,
+    query: Query<AnswerQuery>,
     req: Json<AnswerRequest>,
 ) -> Result<impl Responder> {
-    let project_id = path.into_inner();
-    let obj_id =
-        ObjectId::parse_str(&project_id).map_err(|e| Error::InvalidProjectId(e.to_string()))?;
-
     let project = repo
-        .find_by_id(obj_id)
+        .find_by_github_url(&query.github_url)
         .await?
-        .ok_or(Error::ProjectNotFound(obj_id.to_string()))?;
+        .ok_or(Error::ProjectNotFound(query.github_url.clone()))?;
 
     // TODO: integrate with ai-service
 

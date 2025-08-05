@@ -14,7 +14,7 @@ async fn main() -> std::io::Result<()> {
     // get port from environment variable
     let port: u16 = parse_env_expect("APP_PORT");
 
-    // initialize mongodb
+    // Initialize mongodb
     let mongo_uri: String = parse_env_expect("MONGO_URI");
     let mongo_db_name: String = parse_env_expect("MONGO_DB_NAME");
     let client = Client::with_uri_str(&mongo_uri)
@@ -25,7 +25,7 @@ async fn main() -> std::io::Result<()> {
     // Initialize AiServiceClient
     let ai_service_url: String = parse_env_expect("AI_SERVICE_URL");
     let ai_service_client =
-        backend::clients::ai_service_client::AiServiceClient::new(&ai_service_url);
+        backend::clients::ai_service_client::AiServiceClientImpl::new(&ai_service_url);
 
     HttpServer::new(move || {
         App::new()

@@ -1,4 +1,4 @@
-use crate::clients::ai_service_client::AiServiceClient;
+use crate::clients::ai_service_client::{AiServiceClient, AiServiceClientImpl};
 use crate::clients::db::{ProjectRepository, ProjectRepositoryImpl};
 use crate::error::Result;
 use crate::types::entities::Project;
@@ -10,7 +10,7 @@ use actix_web::{
 
 pub async fn ingest(
     repo: Data<ProjectRepositoryImpl>,
-    ai_client: Data<AiServiceClient>,
+    ai_client: Data<AiServiceClientImpl>,
     req: Json<IngestRequest>,
 ) -> Result<impl Responder> {
     // Create and validate project before any database operations

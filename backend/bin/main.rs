@@ -1,6 +1,6 @@
 use actix_web::{App, HttpServer};
 use backend::{
-    app_config::config_app, clients::db::ProjectRepositoryImpl, tracing::tracing_setup,
+    app_config::config_app, clients::db::ProjectRepository, tracing::tracing_setup,
     utils::parse_env_expect,
 };
 use mongodb::Client;
@@ -20,12 +20,12 @@ async fn main() -> std::io::Result<()> {
     let client = Client::with_uri_str(&mongo_uri)
         .await
         .expect("Failed to connect to MongoDB");
-    let project_repo = ProjectRepositoryImpl::new(&client, &mongo_db_name);
+    let project_repo = ProjectRepository::new(&client, &mongo_db_name);
 
     // Initialize AiServiceClient
     let ai_service_url: String = parse_env_expect("AI_SERVICE_URL");
     let ai_service_client =
-        backend::clients::ai_service_client::AiServiceClientImpl::new(&ai_service_url);
+        backend::clients::ai_service_client::AiServiceClient::new(&ai_service_url);
 
     HttpServer::new(move || {
         App::new()

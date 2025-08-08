@@ -2,10 +2,10 @@
 GET {{host}}/health
 
 ### Test ingest endpoint
-POST {{host}}/projects
+POST {{host}}/ingest
 Content-Type: application/json
 Accept: application/json
 
 {
-  "github_url": "https://github.com/kristifidani/codewhisperer.git"
+  "github_url": "https://github.com/ETOSPHERES-Labs/etopay-sdk-quickstart-ts.git"
 }

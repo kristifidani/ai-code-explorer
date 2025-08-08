@@ -16,7 +16,7 @@ pub struct AnswerQuery {
 }
 
 pub async fn answer_question(
-    repo: Data<ProjectRepositoryImpl>,
+    repo: Data<ProjectRepository>,
     query: Query<AnswerQuery>,
     req: Json<AnswerRequest>,
 ) -> Result<impl Responder> {

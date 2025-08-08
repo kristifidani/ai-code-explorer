@@ -4,13 +4,13 @@ use url::Url;
 use crate::Error;
 
 #[derive(Serialize, Deserialize)]
-pub struct Project {
+pub struct ProjectEntity {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<mongodb::bson::oid::ObjectId>,
     pub github_url: String,
 }
 
-impl Project {
+impl ProjectEntity {
     pub fn new(github_url: String) -> Self {
         Self {
             id: None,

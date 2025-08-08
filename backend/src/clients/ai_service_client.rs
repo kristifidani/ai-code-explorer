@@ -3,18 +3,18 @@ use reqwest::{Client, StatusCode};
 use url::Url;
 
 #[async_trait::async_trait]
-pub trait AiServiceClient: Send + Sync + 'static {
+pub trait AiServiceClientImpl: Send + Sync + 'static {
     async fn ingest(&self, repo_url: &str) -> Result<()>;
     // async fn answer(&self, repo_url: &str, question: &str) -> Result<String>;
 }
 
 #[derive(Clone)]
-pub struct AiServiceClientImpl {
+pub struct AiServiceClient {
     client: Client,
     base_url: String,
 }
 
-impl AiServiceClientImpl {
+impl AiServiceClient {
     pub fn new(base_url: &str) -> Self {
         Self {
             client: Client::new(),
@@ -24,7 +24,7 @@ impl AiServiceClientImpl {
 }
 
 #[async_trait::async_trait]
-impl AiServiceClient for AiServiceClientImpl {
+impl AiServiceClientImpl for AiServiceClient {
     async fn ingest(&self, repo_url: &str) -> Result<()> {
         let base = Url::parse(&self.base_url).map_err(Error::ParseError)?;
         let url = base.join("ingest").map_err(Error::ParseError)?;

@@ -1,4 +1,5 @@
 use actix_web::{HttpResponse, ResponseError, http::StatusCode};
+use serde::Serialize;
 use url::ParseError;
 
 pub type Result<T> = core::result::Result<T, Error>;
@@ -23,20 +24,45 @@ pub enum Error {
     ParseError(ParseError),
 }
 
+// Error response body for API errors
+#[derive(Serialize)]
+struct ErrorResponseBody {
+    code: u16,
+    error: String,
+}
+
+impl Error {
+    fn user_description(&self) -> String {
+        match self {
+            Error::MongoDBError(_) | Error::UnexpectedResponse { .. } | Error::Reqwest(_) => {
+                "Internal server error".into()
+            }
+            Error::ProjectNotFound(msg) => format!("Project not found: {msg}"),
+            Error::InvalidGithubUrl(msg) => format!("Invalid GitHub URL: {msg}"),
+            Error::ParseError(_) => "Failed to parse the given input".into(),
+        }
+    }
+}
+
 impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         match self {
-            Error::MongoDBError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::MongoDBError(_) | Error::UnexpectedResponse { code: _, body: _ } => {
+                StatusCode::INTERNAL_SERVER_ERROR
+            }
             Error::ProjectNotFound(_) => StatusCode::NOT_FOUND,
-            Error::InvalidGithubUrl(_) => StatusCode::BAD_REQUEST,
-            Error::Reqwest(_) => StatusCode::BAD_REQUEST,
-            Error::UnexpectedResponse { code: _, body: _ } => StatusCode::INTERNAL_SERVER_ERROR,
-            Error::ParseError(_) => StatusCode::BAD_REQUEST,
+            Error::InvalidGithubUrl(_) | Error::ParseError(_) | Error::Reqwest(_) => {
+                StatusCode::BAD_REQUEST
+            }
         }
     }
 
-    /// Override error_response to return an empty response instead of the Display string
-    fn error_response(&self) -> HttpResponse<actix_web::body::BoxBody> {
-        HttpResponse::new(self.status_code())
+    fn error_response(&self) -> HttpResponse {
+        let body = ErrorResponseBody {
+            code: self.status_code().as_u16(),
+            error: self.user_description(),
+        };
+
+        HttpResponse::build(self.status_code()).json(body)
     }
 }

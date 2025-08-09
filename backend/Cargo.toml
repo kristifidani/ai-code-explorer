@@ -16,8 +16,17 @@ expect_used = "deny"
 [dependencies]
 actix-web = { version = "4", default-features = false, features = ["macros"] }
 dotenvy = { version = "0.15", default-features = false }
-# serde = { version = "1.0.217", default-features = false, features = ["derive"] }
-# serde_json = { version = "1.0", default-features = false }
+mongodb = { version = "3.2.4" }
+reqwest = { version = "0.12.22", default-features = false, features = [
+    "json",
+    "rustls-tls",
+    "charset",
+    "http2",
+] }
+serde = { version = "1.0.217", default-features = false, features = ["derive"] }
+async-trait = "0.1.88"
+serde_json = { version = "1.0", default-features = false }
+url = { version = "2", features = ["serde"] }
 # reqwest = { version = "0.12", default-features = false }
 
 # error handling
@@ -26,6 +35,10 @@ thiserror = { version = "2", default-features = false }
 # tracing
 tracing = { version = "0.1", default-features = false }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+rstest = { version = "0.26.1", default-features = false }
+
 
 [[bin]]
 name = "rest-api"

@@ -6,7 +6,7 @@ import chromadb
 from dotenv import load_dotenv
 
 load_dotenv()
-from ai_service import constants, utils
+from ai_service import constants, utils, db
 
 
 def create_db_test_collection(collection_name: str) -> chromadb.Collection:
@@ -24,11 +24,21 @@ def db_test_collection(request: pytest.FixtureRequest) -> chromadb.Collection:
 
 
 @pytest.fixture(autouse=True)
-def patch_and_clean_db_collection(
+def setup_test_context_and_clean_db(
     monkeypatch: pytest.MonkeyPatch,
+    request: pytest.FixtureRequest,
     db_test_collection: chromadb.Collection,
 ) -> Generator[None, None, None]:
-    monkeypatch.setattr("ai_service.db.get_collection", lambda _: db_test_collection)  # type: ignore[arg-type]
+    # Create a fake repo URL based on the test module name
+    module = getattr(request, "module")
+    module_name = getattr(module, "__name__")
+    test_repo_url = f"https://github.com/test/{module_name.replace('.', '-')}.git"
+
+    # Set the repo context for this test module
+    db.set_repo_context(test_repo_url)
+
+    # Patch get_collection to return our test collection
+    monkeypatch.setattr("ai_service.db.get_collection", lambda: db_test_collection)
 
     yield
 

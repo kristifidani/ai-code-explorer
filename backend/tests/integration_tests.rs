@@ -2,6 +2,7 @@ use std::str;
 
 use actix_web::{App, body::to_bytes, test};
 use backend::app_config::config_app;
+use serde_json::Value;
 
 #[actix_web::test]
 async fn test_health_check() {
@@ -18,5 +19,12 @@ async fn test_health_check() {
     assert_eq!(response.status(), actix_web::http::StatusCode::OK);
     let byte_sources = to_bytes(response.into_body()).await.unwrap();
     let body_str = str::from_utf8(&byte_sources).unwrap();
-    assert_eq!(body_str, "API is healthy ✅");
+
+    // Parse the JSON response
+    let json: Value = serde_json::from_str(body_str).expect("Response should be valid JSON");
+
+    // Assert the structure and content
+    assert_eq!(json["code"], 200);
+    assert_eq!(json["message"], "API is healthy ✅");
+    assert!(json["data"].is_null());
 }

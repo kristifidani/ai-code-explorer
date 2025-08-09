@@ -25,10 +25,9 @@ def answer_question(
 ) -> str:
     try:
         question_embedding = embedder.embed_text(user_question)
-        collection_name = db.generate_collection_name(repo_url)
+        db.set_repo_context(repo_url)
         results = db.query_chunks(
             question_embedding,
-            collection_name,
         )
         documents = results.get("documents", [[]])
 

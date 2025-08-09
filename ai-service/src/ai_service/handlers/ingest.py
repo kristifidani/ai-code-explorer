@@ -19,7 +19,7 @@ class IngestRequest(BaseModel):
 
 def ingest_github_project(repo_url: str) -> None:
     # Generate collection_name from repo_url
-    collection_name = db.generate_collection_name(repo_url)
+    db.set_repo_context(repo_url)  # Set context once at the start
     project_dir = project_ingestor.clone_github_repo(repo_url)
     try:
         code_files = project_ingestor.scan_code_files(project_dir)
@@ -56,7 +56,7 @@ def ingest_github_project(repo_url: str) -> None:
                 continue
 
         if code_snippets:
-            db.add_chunks(code_snippets, embeddings, collection_name)
+            db.add_chunks(code_snippets, embeddings)
             logger.info(f"Stored {len(code_snippets)} code snippets in ChromaDB.")
         else:
             logger.warning("No valid code snippets found to store.")

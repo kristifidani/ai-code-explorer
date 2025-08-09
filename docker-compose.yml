@@ -4,8 +4,13 @@ services:
     image: ollama/ollama:latest
     ports:
       - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
     restart: unless-stopped
-volumes:
-  ollama_data:
+
+  mongo:
+    image: mongo:latest
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example

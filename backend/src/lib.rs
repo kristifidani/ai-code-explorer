@@ -1,5 +1,8 @@
 pub mod app_config;
+pub mod clients;
+pub mod handlers;
 pub mod tracing;
+pub mod types;
 pub mod utils;
 
 mod error;

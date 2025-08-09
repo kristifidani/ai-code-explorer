@@ -23,6 +23,10 @@ class DatabaseError(AIServiceError):
     def query_chunks_failed(cls, error: Exception) -> "DatabaseError":
         return cls(f"Failed to query chunks: {error}")
 
+    @classmethod
+    def no_repo_context(cls, error: Exception) -> "DatabaseError":
+        return cls(f"No repository context set. Call set_repo_context() first. {error}")
+
 
 class NotFound(AIServiceError):
     @classmethod
@@ -40,8 +44,8 @@ class InvalidParam(AIServiceError):
         return cls("number_of_results must be an integer between 1 and 100")
 
     @classmethod
-    def invalid_repo_url(cls) -> "InvalidParam":
-        return cls("Invalid GitHub repository URL format")
+    def embeddings_count_mismatch(cls) -> "InvalidParam":
+        return cls("Number of embeddings must match number of chunks")
 
 
 class GitCloneError(AIServiceError):

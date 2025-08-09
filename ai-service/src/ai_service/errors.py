@@ -24,8 +24,8 @@ class DatabaseError(AIServiceError):
         return cls(f"Failed to query chunks: {error}")
 
     @classmethod
-    def no_repo_context(cls) -> "DatabaseError":
-        return cls("No repository context set. Call set_repo_context() first.")
+    def no_repo_context(cls, error: Exception) -> "DatabaseError":
+        return cls(f"No repository context set. Call set_repo_context() first. {error}")
 
 
 class NotFound(AIServiceError):

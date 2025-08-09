@@ -27,8 +27,8 @@ def get_collection() -> chromadb.Collection:
     """Get or create a ChromaDB collection using the current repo context."""
     try:
         repo_url = _current_repo_url.get()
-    except LookupError:
-        raise errors.DatabaseError.no_repo_context()
+    except LookupError as e:
+        raise errors.DatabaseError.no_repo_context(e) from e
 
     url_hash = hashlib.sha256(repo_url.encode("utf-8")).hexdigest()[:12]
     repo_name = repo_url.split("/")[-1].replace(".git", "")

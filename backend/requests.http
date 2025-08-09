@@ -1,11 +1,20 @@
+@repo = https://github.com/ETOSPHERES-Labs/etopay-sdk-quickstart-ts.git
+
 ### Health check
 GET {{host}}/health
 
-### Test ingest endpoint
+### Ingestion #####
+
+### Ingest ok
 POST {{host}}/v1/ingest
 Content-Type: application/json
 Accept: application/json
 
-{
-  "github_url": "https://github.com/ETOSPHERES-Labs/etopay-sdk-quickstart-ts.git"
-}
+{ "github_url": "{{repo}}" }
+
+### Invalid URL (expect 400)
+POST {{host}}/v1/ingest
+Content-Type: application/json
+Accept: application/json
+
+{ "github_url": "https://example.com/not-github" }

@@ -20,19 +20,20 @@ async fn main() -> std::io::Result<()> {
     let client = Client::with_uri_str(&mongo_uri)
         .await
         .expect("Failed to connect to MongoDB");
-    let project_repo = ProjectRepository::new(&client, &mongo_db_name);
+    let project_repo = actix_web::web::Data::new(ProjectRepository::new(&client, &mongo_db_name));
 
     // Initialize AiServiceClient
     let ai_service_url: String = parse_env_expect("AI_SERVICE_URL");
-    let ai_service_client =
-        backend::clients::ai_service_client::AiServiceClient::new(&ai_service_url);
+    let ai_service_client = actix_web::web::Data::new(
+        backend::clients::ai_service_client::AiServiceClient::new(&ai_service_url),
+    );
 
     HttpServer::new(move || {
         App::new()
             .configure(config_app)
             .wrap(actix_web::middleware::Logger::default())
-            .app_data(actix_web::web::Data::new(project_repo.clone()))
-            .app_data(actix_web::web::Data::new(ai_service_client.clone()))
+            .app_data(project_repo.clone())
+            .app_data(ai_service_client.clone())
     })
     .bind(("127.0.0.1", port))?
     .run()

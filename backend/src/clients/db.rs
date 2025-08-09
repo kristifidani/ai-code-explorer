@@ -5,7 +5,7 @@ const DB_COLLECTION_PROJECTS: &str = "projects";
 #[async_trait::async_trait]
 pub trait ProjectRepositoryImpl: Send + Sync + 'static {
     async fn find_by_github_url(&self, github_url: &str) -> Result<Option<ProjectEntity>>;
-    async fn create(&self, project: ProjectEntity) -> Result<ProjectEntity>;
+    async fn create(&self, project: &ProjectEntity) -> Result<()>;
 }
 
 #[derive(Clone)]
@@ -25,17 +25,19 @@ impl ProjectRepository {
 impl ProjectRepositoryImpl for ProjectRepository {
     async fn find_by_github_url(&self, github_url: &str) -> Result<Option<ProjectEntity>> {
         let filter = mongodb::bson::doc! { "github_url": github_url };
-        self.collection.find_one(filter).await.map_err(|e| {
+
+        Ok(self.collection.find_one(filter).await.map_err(|e| {
             tracing::error!("Failed to find project by GitHub URL: {}", e);
-            crate::error::Error::MongoDBError(e)
-        })
+            e
+        })?)
     }
 
-    async fn create(&self, project: ProjectEntity) -> Result<ProjectEntity> {
-        self.collection.insert_one(&project).await.map_err(|e| {
+    async fn create(&self, project: &ProjectEntity) -> Result<()> {
+        self.collection.insert_one(project).await.map_err(|e| {
             tracing::error!("Failed to insert project: {}", e);
-            crate::error::Error::MongoDBError(e)
+            e
         })?;
-        Ok(project)
+
+        Ok(())
     }
 }

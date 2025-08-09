@@ -25,7 +25,11 @@ def set_repo_context(repo_url: str) -> None:
 
 def get_collection() -> chromadb.Collection:
     """Get or create a ChromaDB collection using the current repo context."""
-    repo_url = _current_repo_url.get()
+    try:
+        repo_url = _current_repo_url.get()
+    except LookupError:
+        raise errors.DatabaseError.no_repo_context()
+
     url_hash = hashlib.sha256(repo_url.encode("utf-8")).hexdigest()[:12]
     repo_name = repo_url.split("/")[-1].replace(".git", "")
     collection_name = f"{repo_name}_{url_hash}"
@@ -50,7 +54,10 @@ def add_chunks(
 
     Raises:
         DatabaseError: If database operation fails.
+        InvalidParam: If chunks and embeddings counts don't match.
     """
+    if len(chunks) != len(embeddings):
+        raise errors.InvalidParam.embeddings_count_mismatch()
 
     collection = get_collection()
     try:

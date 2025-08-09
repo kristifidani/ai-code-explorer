@@ -3,9 +3,10 @@ use crate::clients::{
     db::{ProjectRepository, ProjectRepositoryImpl},
 };
 use crate::error::Result;
-use crate::types::{entities::ProjectEntity, ingestion::IngestRequest};
+use crate::types::{entities::ProjectEntity, ingestion::IngestRequest, response::ApiResponse};
 use actix_web::{
-    HttpResponse, Responder,
+    Responder,
+    http::StatusCode,
     web::{Data, Json},
 };
 
@@ -14,26 +15,31 @@ pub async fn ingest(
     ai_client: Data<AiServiceClient>,
     req: Json<IngestRequest>,
 ) -> Result<impl Responder> {
-    // Create and validate project
-    let project = ProjectEntity::new(req.github_url.clone());
-    project.validate_github_url()?;
+    // Create and validate project with canonical URL
+    let project = ProjectEntity::new_validated(&req.github_url)?;
+    let github_url: &str = &project.github_url;
 
     // Check if project already exists
-    if project_repo
-        .find_by_github_url(&project.github_url)
-        .await?
-        .is_some()
-    {
-        tracing::info!("Project already exists: {}", project.github_url);
-        return Ok(HttpResponse::Ok().body("Project already exists."));
+    if project_repo.find_by_github_url(github_url).await?.is_some() {
+        tracing::info!("Project already exists: {}", github_url);
+
+        return Ok(ApiResponse::<()>::new(
+            StatusCode::OK,
+            None,
+            "Project already exists and is ready to use",
+        )
+        .into_response());
     }
 
     // Ingest into the ai service
-    ai_client.ingest(&project.github_url).await?;
+    ai_client.ingest(github_url).await?;
 
-    // Only store in DB if AI service ingestion succeeds
-    let created_project = project_repo.create(project).await?;
-    tracing::info!("Ingested: {}", created_project.github_url);
+    // Store in DB
+    project_repo.create(&project).await?;
+    tracing::info!("Ingested: {}", github_url);
 
-    Ok(HttpResponse::Created().body("Project ingested with success."))
+    Ok(
+        ApiResponse::<()>::new(StatusCode::CREATED, None, "Project ingested successfully")
+            .into_response(),
+    )
 }

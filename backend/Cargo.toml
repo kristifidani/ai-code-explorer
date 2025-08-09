@@ -36,6 +36,9 @@ thiserror = { version = "2", default-features = false }
 tracing = { version = "0.1", default-features = false }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
+[dev-dependencies]
+rstest = { version = "0.26.1", default-features = false }
+
 
 [[bin]]
 name = "rest-api"

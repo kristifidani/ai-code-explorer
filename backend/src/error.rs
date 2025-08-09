@@ -1,5 +1,5 @@
+use crate::types::response::ApiResponse;
 use actix_web::{HttpResponse, ResponseError, http::StatusCode};
-use serde::Serialize;
 use url::ParseError;
 
 pub type Result<T> = core::result::Result<T, Error>;
@@ -8,7 +8,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("MongoDbError: {0}")]
-    MongoDBError(mongodb::error::Error),
+    MongoDBError(#[from] mongodb::error::Error),
     #[error("Project not found: {0}")]
     ProjectNotFound(String),
     #[error("Invalid GitHub URL: {0}")]
@@ -21,25 +21,19 @@ pub enum Error {
         body: String,
     },
     #[error("Parse error: {0}")]
-    ParseError(ParseError),
-}
-
-// Error response body for API errors
-#[derive(Serialize)]
-struct ErrorResponseBody {
-    code: u16,
-    error: String,
+    ParseError(#[from] ParseError),
 }
 
 impl Error {
     fn user_description(&self) -> String {
         match self {
-            Error::MongoDBError(_) | Error::UnexpectedResponse { .. } | Error::Reqwest(_) => {
+            Error::MongoDBError(_) | Error::UnexpectedResponse { .. } => {
                 "Internal server error".into()
             }
             Error::ProjectNotFound(msg) => format!("Project not found: {msg}"),
             Error::InvalidGithubUrl(msg) => format!("Invalid GitHub URL: {msg}"),
             Error::ParseError(_) => "Failed to parse the given input".into(),
+            Error::Reqwest(_) => "Upstream service error; please try again later".into(),
         }
     }
 }
@@ -51,18 +45,12 @@ impl ResponseError for Error {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
             Error::ProjectNotFound(_) => StatusCode::NOT_FOUND,
-            Error::InvalidGithubUrl(_) | Error::ParseError(_) | Error::Reqwest(_) => {
-                StatusCode::BAD_REQUEST
-            }
+            Error::InvalidGithubUrl(_) | Error::ParseError(_) => StatusCode::BAD_REQUEST,
+            Error::Reqwest(_) => StatusCode::BAD_GATEWAY,
         }
     }
 
     fn error_response(&self) -> HttpResponse {
-        let body = ErrorResponseBody {
-            code: self.status_code().as_u16(),
-            error: self.user_description(),
-        };
-
-        HttpResponse::build(self.status_code()).json(body)
+        ApiResponse::<()>::new(self.status_code(), None, &self.user_description()).into_response()
     }
 }

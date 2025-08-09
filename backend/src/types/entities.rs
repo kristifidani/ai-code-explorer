@@ -1,26 +1,32 @@
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::Error;
-
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Debug))]
 pub struct ProjectEntity {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<mongodb::bson::oid::ObjectId>,
     pub github_url: String,
 }
 
 impl ProjectEntity {
-    pub fn new(github_url: String) -> Self {
-        Self {
-            id: None,
-            github_url,
-        }
+    /// Creates a new ProjectEntity with a canonicalized and validated GitHub URL
+    pub fn new_validated(github_url: &str) -> crate::error::Result<Self> {
+        let canonical_url = Self::canonicalize_and_validate(github_url)?;
+        Ok(Self {
+            github_url: canonical_url,
+        })
     }
 
-    pub fn validate_github_url(&self) -> crate::error::Result<()> {
-        // Parse as URL first
-        let url = Url::parse(&self.github_url).map_err(Error::ParseError)?;
+    /// Canonicalizes and validates a GitHub URL in one step
+    fn canonicalize_and_validate(github_url: &str) -> crate::error::Result<String> {
+        // Parse the URL
+        let url = Url::parse(github_url)?;
+
+        // Validate it's a GitHub URL with HTTPS
+        if url.scheme() != "https" {
+            return Err(crate::error::Error::InvalidGithubUrl(
+                "URL scheme must be https".to_string(),
+            ));
+        }
 
         // Check if it's a GitHub URL
         if url.host_str() != Some("github.com") {
@@ -29,28 +35,17 @@ impl ProjectEntity {
             ));
         }
 
-        // Check if url ends with `.git` for HTTPS
-        if !self.github_url.ends_with(".git") {
-            return Err(crate::error::Error::InvalidGithubUrl(
-                "URL must end with .git".to_string(),
-            ));
-        }
-
-        // Check path format (should be /{owner}/{repo}.git)
-        let path = url.path();
-        let path_parts: Vec<&str> = path
-            .trim_start_matches('/')
-            .trim_end_matches('/')
-            .split('/')
-            .collect();
+        // Extract and normalize the path
+        let path = url.path().trim_start_matches('/').trim_end_matches('/');
+        let path_parts: Vec<&str> = path.split('/').collect();
 
         if path_parts.len() != 2 || path_parts[0].is_empty() || path_parts[1].is_empty() {
             return Err(crate::error::Error::InvalidGithubUrl(
-                "GitHub URL must be in format: https://github.com/owner/repo.git".to_string(),
+                "GitHub URL must be in format: https://github.com/owner/repo".to_string(),
             ));
         }
 
-        // Check for valid GitHub repository name characters
+        // Validate characters in owner and repo names
         let valid_chars = |s: &str| {
             s.chars()
                 .all(|c| c.is_alphanumeric() || c == '-' || c == '_' || c == '.')
@@ -60,6 +55,53 @@ impl ProjectEntity {
             return Err(crate::error::Error::InvalidGithubUrl("Repository owner and name can only contain alphanumeric characters, hyphens, underscores, and dots".to_string()));
         }
 
-        Ok(())
+        // Canonicalize: lowercase and ensure .git suffix
+        let owner = path_parts[0].to_lowercase();
+        let repo = repo_name.to_lowercase();
+
+        Ok(format!("https://github.com/{}/{}.git", owner, repo))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case("https://github.com/owner/repo", "https://github.com/owner/repo.git")] // Basic case
+    #[case(
+        "https://github.com/owner/repo.git",
+        "https://github.com/owner/repo.git"
+    )] // Already has .git
+    #[case("https://github.com/OWNER/REPO", "https://github.com/owner/repo.git")] // Uppercase
+    #[case(
+        "https://github.com/MyOwner/MyRepo.git",
+        "https://github.com/myowner/myrepo.git"
+    )] // Mixed case
+    #[case("https://github.com/owner/repo/", "https://github.com/owner/repo.git")] // Trailing slash
+    #[case(
+        "https://github.com/test-user/my_repo.git",
+        "https://github.com/test-user/my_repo.git"
+    )] // Valid special chars
+    fn test_project_entity_canonicalization_success(#[case] input: &str, #[case] expected: &str) {
+        let project = ProjectEntity::new_validated(input).unwrap();
+        assert_eq!(project.github_url, expected);
+    }
+
+    #[rstest]
+    #[case("http://github.com/owner/repo")] // HTTP instead of HTTPS
+    #[case("https://gitlab.com/owner/repo")] // Not GitHub
+    #[case("https://github.com/owner")] // Missing repo
+    #[case("https://github.com//repo")] // Empty owner
+    #[case("https://github.com/owner/")] // Empty repo
+    #[case("https://github.com/owner/repo/extra")] // Too many path segments
+    #[case("https://github.com/own er/repo")] // Invalid character (space)
+    #[case("https://github.com/owner/re@po")] // Invalid character (@)
+    fn test_project_entity_canonicalization_failure(#[case] input: &str) {
+        use crate::Error;
+
+        let result = ProjectEntity::new_validated(input);
+        assert!(matches!(result.unwrap_err(), Error::InvalidGithubUrl(_)));
     }
 }

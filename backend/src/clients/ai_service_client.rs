@@ -26,8 +26,8 @@ impl AiServiceClient {
 #[async_trait::async_trait]
 impl AiServiceClientImpl for AiServiceClient {
     async fn ingest(&self, repo_url: &str) -> Result<()> {
-        let base = Url::parse(&self.base_url).map_err(Error::ParseError)?;
-        let url = base.join("ingest").map_err(Error::ParseError)?;
+        let base = Url::parse(&self.base_url)?;
+        let url = base.join("ingest")?;
         let payload = serde_json::json!({ "repo_url": repo_url });
         let response = self.client.post(url).json(&payload).send().await?;
 
@@ -39,11 +39,7 @@ impl AiServiceClientImpl for AiServiceClient {
                 tracing::error!(
                     "Failed to ingest github project: Response status: {}, Response text: {}",
                     code,
-                    if body.len() > 200 {
-                        &body[..200]
-                    } else {
-                        &body
-                    }
+                    body
                 );
                 Err(Error::UnexpectedResponse { code, body })
             }

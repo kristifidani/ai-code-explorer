@@ -2,7 +2,7 @@
 GET {{host}}/health
 
 ### Test ingest endpoint
-POST {{host}}/ingest
+POST {{host}}/v1/ingest
 Content-Type: application/json
 Accept: application/json
 

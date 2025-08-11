@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MONGO_URI: "mongodb://root:example@localhost:27017/"
-      MONGO_DB_NAME: "codewhisperer"
+      MONGO_DB_NAME: "aicodeexplorer"
 
     services:
       mongodb:

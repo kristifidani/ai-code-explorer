@@ -3,7 +3,7 @@ POST http://localhost:8000/ingest
 Content-Type: application/json
 
 {
-  "repo_url": "https://github.com/kristifidani/codewhisperer.git"
+  "repo_url": "https://github.com/kristifidani/ai-code-explorer.git"
 }
 
 ### Ask a question about a project

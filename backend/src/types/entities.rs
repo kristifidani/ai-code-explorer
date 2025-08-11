@@ -345,7 +345,7 @@ mod tests {
         let result = ProjectEntity::new_validated(input);
 
         // Extract repo name length from URL
-        let repo_part = input.split('/').last().unwrap();
+        let repo_part = input.split('/').next_back().unwrap();
 
         if repo_part.len() == 100 {
             assert!(result.is_ok(), "100-character repo name should be valid");

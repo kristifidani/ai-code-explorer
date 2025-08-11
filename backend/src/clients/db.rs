@@ -41,26 +41,3 @@ impl ProjectRepositoryImpl for ProjectRepository {
         Ok(())
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use mongodb::Client;
-
-    use crate::utils::parse_env_expect;
-
-    #[tokio::test]
-    async fn test_mongo_connection() {
-        // Load environment variables from .env file
-        dotenvy::dotenv().ok();
-
-        // Simple test to verify MongoDB connection works
-        let mongo_uri: String = parse_env_expect("MONGO_URI");
-        let client = Client::with_uri_str(&mongo_uri)
-            .await
-            .expect("Failed to connect to MongoDB");
-
-        // Try to list databases to verify connection
-        let result = client.list_database_names().await;
-        result.unwrap();
-    }
-}

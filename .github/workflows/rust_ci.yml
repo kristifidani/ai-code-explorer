@@ -75,14 +75,42 @@ jobs:
       - name: Check for clippy warnings
         run: cargo clippy --all-targets --all-features --color always -- -D warnings
 
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Run unit tests
+        run: cargo test --lib --color always -- --nocapture
+
   integration-tests:
     runs-on: ubuntu-latest
     env:
-      APP_PORT: 8080
+      MONGO_URI: "mongodb://root:example@localhost:27017/"
+      MONGO_DB_NAME: "codewhisperer"
+
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: example
 
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
 
+      - name: Wait for MongoDB to be ready
+        run: |
+          # Simple check using netcat instead of mongosh
+          until nc -z localhost 27017; do
+            echo "Waiting for MongoDB..."
+            sleep 2
+          done
+          echo "MongoDB is ready!"
+
       - name: Integration tests
-        run: cargo test --test integration_tests -- --nocapture
+        run: cargo test --test integration_tests --color always -- --nocapture

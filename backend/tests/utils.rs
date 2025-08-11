@@ -4,10 +4,21 @@ use actix_web::web;
 use backend::{clients::db::ProjectRepository, utils::parse_env_expect};
 use mockito::{Matcher, ServerGuard};
 use mongodb::Client;
+use std::sync::OnceLock;
+use tokio::sync::Mutex;
 
 const TEST_DB_NAME: &str = "integration_tests_db";
 
+// Global async mutex to ensure only one test accesses the database at a time
+static DB_MUTEX: OnceLock<Mutex<()>> = OnceLock::new();
+
 pub async fn init_db() -> web::Data<ProjectRepository> {
+    // Get or initialize the mutex
+    let mutex = DB_MUTEX.get_or_init(|| Mutex::new(()));
+
+    // Acquire the lock to ensure sequential database access
+    let _guard = mutex.lock().await;
+
     // load env
     dotenvy::dotenv().ok();
 
@@ -45,9 +56,9 @@ impl MockAiService {
             .match_body(Matcher::Json(serde_json::json!({
                 "repo_url": expected_repo_url
             })))
-            .with_status(200)
+            .with_status(201)
             .with_header("content-type", "application/json")
-            .with_body("{\"status\": \"success\"}")
+            .with_body("{\"message\": \"Successfully ingested project\", \"repo_url\": \"test\"}")
             .create()
     }
 

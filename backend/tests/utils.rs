@@ -4,14 +4,10 @@ use actix_web::web;
 use backend::{clients::db::ProjectRepository, utils::parse_env_expect};
 use mockito::{Matcher, ServerGuard};
 use mongodb::Client;
-use tokio::sync::OnceCell;
 
 const TEST_DB_NAME: &str = "integration_tests_db";
 
-// Once-per-suite initialized ProjectRepository
-static PROJECT_REPO: OnceCell<web::Data<ProjectRepository>> = OnceCell::const_new();
-
-async fn init_project_repo_once() -> web::Data<ProjectRepository> {
+pub async fn init_db() -> web::Data<ProjectRepository> {
     // load env
     dotenvy::dotenv().ok();
 
@@ -21,22 +17,13 @@ async fn init_project_repo_once() -> web::Data<ProjectRepository> {
         .await
         .expect("Failed to connect to MongoDB");
 
-    // clean collection once per test suite
+    // clean collection
     let collection = mongo_client
         .database(TEST_DB_NAME)
         .collection::<mongodb::bson::Document>("projects");
     let _ = collection.delete_many(mongodb::bson::doc! {}).await;
-    println!("[tests] Projects collection cleared");
 
     web::Data::new(ProjectRepository::new(&mongo_client, TEST_DB_NAME))
-}
-
-// Public helper returning a clone of the once-initialized repo
-pub async fn init_db() -> web::Data<ProjectRepository> {
-    PROJECT_REPO
-        .get_or_init(init_project_repo_once)
-        .await
-        .clone()
 }
 
 // Mock AI service helpers

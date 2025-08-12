@@ -1,9 +1,9 @@
 use actix_web::{HttpResponse, http::StatusCode};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// Unified API Response structure
 /// Provides consistent format for all API responses
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ApiResponse<T> {
     /// HTTP status code
     pub code: u16,

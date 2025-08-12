@@ -1,3 +1,4 @@
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from fastapi import APIRouter
 
@@ -65,7 +66,13 @@ def ingest_github_project(repo_url: str) -> None:
 
 
 # Endpoint to ingest a GitHub project
-@router.post("/ingest", status_code=200)
-def ingest_endpoint(request: IngestRequest) -> dict[str, str]:
+@router.post("/ingest")
+def ingest_endpoint(request: IngestRequest) -> JSONResponse:
     ingest_github_project(request.repo_url)
-    return {"message": "Successfully ingested project"}
+    return JSONResponse(
+        status_code=201,
+        content={
+            "message": "Successfully ingested project",
+            "repo_url": request.repo_url,
+        },
+    )

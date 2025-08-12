@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The **Backend Service** acts as an intermediary layer between the AI Service and the web-service frontend in the CodeWhisperer architecture. Its primary role is to handle and route API calls, providing a central point for validation, authentication, and request management. This design ensures that communication between the frontend and AI Service is secure, reliable, and scalable.
+The **Backend Service** acts as an intermediary layer between the AI Service and the web-service frontend in the AICodeExplorer architecture. Its primary role is to handle and route API calls, providing a central point for validation, authentication, and request management. This design ensures that communication between the frontend and AI Service is secure, reliable, and scalable.
 
 ## Intended Functionalities
 
@@ -24,4 +24,4 @@ The **Backend Service** acts as an intermediary layer between the AI Service and
 
 ---
 
-This backend is designed to be modular and extensible making it easy to evolve as the needs of CodeWhisperer grow.
+This backend is designed to be modular and extensible making it easy to evolve as the needs of AICodeExplorer grow.

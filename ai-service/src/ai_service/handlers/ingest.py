@@ -66,7 +66,7 @@ def ingest_github_project(repo_url: str) -> None:
 
 
 # Endpoint to ingest a GitHub project
-@router.post("/ingest", status_code=201)
+@router.post("/ingest")
 def ingest_endpoint(request: IngestRequest) -> JSONResponse:
     ingest_github_project(request.repo_url)
     return JSONResponse(

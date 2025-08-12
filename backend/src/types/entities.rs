@@ -145,7 +145,7 @@ impl ProjectEntity {
             || owner.ends_with('-')
         {
             return Err(crate::error::Error::InvalidGithubUrl(
-                "Owner name cannot begin with dot, underscoreor or hyphen end with a hyphen"
+                "Owner name cannot begin with dot, underscore, or hyphen, or end with a hyphen"
                     .to_string(),
             ));
         }

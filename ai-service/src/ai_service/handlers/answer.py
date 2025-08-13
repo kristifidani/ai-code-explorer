@@ -1,4 +1,5 @@
 import logging
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from fastapi import APIRouter
 
@@ -24,8 +25,8 @@ def answer_question(
     repo_url: str,
 ) -> str:
     try:
-        question_embedding = embedder.embed_text(user_question)
         db.set_repo_context(repo_url)
+        question_embedding = embedder.embed_text(user_question)
         results = db.query_chunks(
             question_embedding,
         )
@@ -63,9 +64,15 @@ def answer_question(
 
 # Endpoint to answer a question
 @router.post("/answer")
-def answer_endpoint(request: AnswerRequest) -> dict[str, str]:
+def answer_endpoint(request: AnswerRequest) -> JSONResponse:
     answer = answer_question(
         request.user_question,
         request.repo_url,
     )
-    return {"answer": answer}
+    return JSONResponse(
+        status_code=200,
+        content={
+            "message": "LLM answer generated successfully.",
+            "answer": answer,
+        },
+    )

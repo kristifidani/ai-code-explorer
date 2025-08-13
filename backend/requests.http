@@ -1,4 +1,5 @@
 @repo = https://github.com/ETOSPHERES-Labs/etopay-sdk-quickstart-ts.git
+@canonical_repo = https://github.com/etospheres-labs/etopay-sdk-quickstart-ts.git
 
 ### Health check
 GET {{host}}/health
@@ -18,3 +19,46 @@ Content-Type: application/json
 Accept: application/json
 
 { "github_url": "https://example.com/not-github" }
+
+### Answer Questions #####
+
+### Ask a question about the project
+# Note: Use the canonical_url returned from the ingest response
+POST {{host}}/v1/answer
+Content-Type: application/json
+Accept: application/json
+
+{
+  "repo_url": "{{canonical_repo}}",
+  "question": "What is this project about? Explain the main purpose in 3 sentences."
+}
+
+### Ask about implementation details
+POST {{host}}/v1/answer
+Content-Type: application/json
+Accept: application/json
+
+{
+  "repo_url": "{{canonical_repo}}",
+  "question": "How do I authenticate with the API? Show me the authentication flow."
+}
+
+### Project not found (expect 404)
+POST {{host}}/v1/answer
+Content-Type: application/json
+Accept: application/json
+
+{
+  "repo_url": "https://github.com/nonexistent/project.git",
+  "question": "This should fail because project was not ingested"
+}
+
+### Invalid repo URL (expect 404 - no validation, just DB lookup fails)
+POST {{host}}/v1/answer
+Content-Type: application/json
+Accept: application/json
+
+{
+  "repo_url": "not-a-valid-url",
+  "question": "This will fail because DB lookup won't find this malformed URL"
+}

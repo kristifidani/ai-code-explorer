@@ -3,7 +3,11 @@ use crate::clients::{
     db::{ProjectRepository, ProjectRepositoryImpl},
 };
 use crate::error::Result;
-use crate::types::{entities::ProjectEntity, ingestion::IngestRequest, response::ApiResponse};
+use crate::types::{
+    entities::ProjectEntity,
+    external::{IngestRequest, IngestResponse},
+    response::ApiResponse,
+};
 use actix_web::{
     Responder,
     http::StatusCode,
@@ -23,9 +27,11 @@ pub async fn ingest(
     if project_repo.find_by_github_url(github_url).await?.is_some() {
         tracing::info!("Project already exists: {}", github_url);
 
-        return Ok(ApiResponse::<()>::new(
+        return Ok(ApiResponse::new(
             StatusCode::OK,
-            None,
+            Some(IngestResponse {
+                canonical_url: github_url.to_string(),
+            }),
             "Project already exists and is ready to use",
         )
         .into_response());
@@ -38,8 +44,12 @@ pub async fn ingest(
     project_repo.create(&project).await?;
     tracing::info!("Ingested: {}", github_url);
 
-    Ok(
-        ApiResponse::<()>::new(StatusCode::CREATED, None, "Project ingested successfully")
-            .into_response(),
+    Ok(ApiResponse::new(
+        StatusCode::CREATED,
+        Some(IngestResponse {
+            canonical_url: github_url.to_string(),
+        }),
+        "Project ingested successfully",
     )
+    .into_response())
 }

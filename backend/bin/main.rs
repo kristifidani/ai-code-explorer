@@ -23,9 +23,9 @@ async fn main() -> std::io::Result<()> {
     let project_repo = actix_web::web::Data::new(ProjectRepository::new(&client, &mongo_db_name));
 
     // Initialize AiServiceClient
-    let ai_service_url: String = parse_env_expect("AI_SERVICE_URL");
+    let ai_service_url: url::Url = parse_env_expect("AI_SERVICE_URL");
     let ai_service_client = actix_web::web::Data::new(
-        backend::clients::ai_service_client::AiServiceClient::new(&ai_service_url),
+        backend::clients::ai_service_client::AiServiceClient::new(ai_service_url),
     );
 
     HttpServer::new(move || {

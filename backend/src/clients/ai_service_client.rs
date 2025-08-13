@@ -3,38 +3,36 @@ use crate::{
     types::internal::{AiServiceAnswerRequest, AiServiceAnswerResponse, AiServiceIngestRequest},
 };
 use reqwest::{Client, StatusCode};
-use url::Url;
 
 #[async_trait::async_trait]
 pub(crate) trait AiServiceClientImpl: Send + Sync + 'static {
-    async fn ingest(&self, repo_url: &str) -> Result<()>;
-    async fn answer(&self, repo_url: &str, question: &str) -> Result<AiServiceAnswerResponse>;
+    async fn ingest(&self, repo_url: &url::Url) -> Result<()>;
+    async fn answer(&self, repo_url: &url::Url, question: &str) -> Result<AiServiceAnswerResponse>;
 }
 
 #[derive(Clone)]
 pub struct AiServiceClient {
     client: Client,
-    base_url: String,
+    base_url: url::Url,
 }
 
 impl AiServiceClient {
-    pub fn new(base_url: &str) -> Self {
+    pub fn new(base_url: url::Url) -> Self {
         Self {
             client: Client::new(),
-            base_url: base_url.into(),
+            base_url,
         }
     }
 }
 
 #[async_trait::async_trait]
 impl AiServiceClientImpl for AiServiceClient {
-    async fn ingest(&self, repo_url: &str) -> Result<()> {
-        let base = Url::parse(&self.base_url)?;
-        let url = base.join("ingest")?;
+    async fn ingest(&self, repo_url: &url::Url) -> Result<()> {
+        let request_url = self.base_url.join("ingest")?;
         let payload = AiServiceIngestRequest {
-            repo_url: repo_url.to_string(),
+            canonical_github_url: repo_url.clone(),
         };
-        let response = self.client.post(url).json(&payload).send().await?;
+        let response = self.client.post(request_url).json(&payload).send().await?;
 
         match response.status() {
             StatusCode::CREATED => Ok(()),
@@ -51,14 +49,13 @@ impl AiServiceClientImpl for AiServiceClient {
         }
     }
 
-    async fn answer(&self, repo_url: &str, question: &str) -> Result<AiServiceAnswerResponse> {
-        let base = Url::parse(&self.base_url)?;
-        let url = base.join("answer")?;
+    async fn answer(&self, repo_url: &url::Url, question: &str) -> Result<AiServiceAnswerResponse> {
+        let request_url = self.base_url.join("answer")?;
         let payload = AiServiceAnswerRequest {
-            repo_url: repo_url.to_string(),
+            canonical_github_url: repo_url.clone(),
             user_question: question.to_string(),
         };
-        let response = self.client.post(url).json(&payload).send().await?;
+        let response = self.client.post(request_url).json(&payload).send().await?;
 
         match response.status() {
             StatusCode::OK => {

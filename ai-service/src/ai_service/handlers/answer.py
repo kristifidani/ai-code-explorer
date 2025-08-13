@@ -17,7 +17,7 @@ router = APIRouter()
 
 class AnswerRequest(BaseModel):
     user_question: str
-    repo_url: str
+    canonical_github_url: str
 
 
 def answer_question(
@@ -67,7 +67,7 @@ def answer_question(
 def answer_endpoint(request: AnswerRequest) -> JSONResponse:
     answer = answer_question(
         request.user_question,
-        request.repo_url,
+        request.canonical_github_url,
     )
     return JSONResponse(
         status_code=200,

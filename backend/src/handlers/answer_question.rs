@@ -19,28 +19,31 @@ pub async fn answer_question(
     req: Json<AnswerRequest>,
 ) -> Result<impl Responder> {
     // Check if the project exists in our database
-    let stored_project = project_repo.find_by_github_url(&req.repo_url).await?;
-
-    if stored_project.is_none() {
-        tracing::warn!("Project not found in database: {}", req.repo_url);
+    let Some(stored_project) = project_repo
+        .find_by_github_url(&req.canonical_github_url)
+        .await?
+    else {
+        tracing::warn!(
+            "Project not found in database: {}",
+            req.canonical_github_url
+        );
         return Ok(ApiResponse::<()>::new(
             StatusCode::NOT_FOUND,
             None,
-            "Project not found. Please ingest the project first using the /ingest endpoint.",
+            "Project not found. Please ingest a project first.",
         )
         .into_response());
-    }
+    };
 
-    // Call the AI service to get the answer
-    let resp = ai_client.answer(&req.repo_url, &req.question).await?;
+    let stored_project_url = stored_project.canonical_github_url.clone();
+    let resp = ai_client.answer(&stored_project_url, &req.question).await?;
 
-    tracing::info!("Question answered for project: {}", req.repo_url);
+    tracing::info!("Question answered for project: {}", stored_project_url);
 
     Ok(ApiResponse::new(
         StatusCode::OK,
         Some(AnswerResponse {
             answer: resp.answer,
-            project_url: req.repo_url.clone(),
         }),
         "Question answered successfully",
     )

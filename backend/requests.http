@@ -29,7 +29,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "repo_url": "{{canonical_repo}}",
+  "canonical_github_url": "{{canonical_repo}}",
   "question": "What is this project about? Explain the main purpose in 3 sentences."
 }
 
@@ -39,7 +39,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "repo_url": "{{canonical_repo}}",
+  "canonical_github_url": "{{canonical_repo}}",
   "question": "How do I authenticate with the API? Show me the authentication flow."
 }
 
@@ -49,7 +49,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "repo_url": "https://github.com/nonexistent/project.git",
+  "canonical_github_url": "https://github.com/nonexistent/project.git",
   "question": "This should fail because project was not ingested"
 }
 
@@ -59,6 +59,6 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "repo_url": "not-a-valid-url",
+  "canonical_github_url": "not-a-valid-url",
   "question": "This will fail because DB lookup won't find this malformed URL"
 }

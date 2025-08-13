@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 class IngestRequest(BaseModel):
-    repo_url: str
+    canonical_github_url: str
 
 
 def ingest_github_project(repo_url: str) -> None:
@@ -68,11 +68,11 @@ def ingest_github_project(repo_url: str) -> None:
 # Endpoint to ingest a GitHub project
 @router.post("/ingest")
 def ingest_endpoint(request: IngestRequest) -> JSONResponse:
-    ingest_github_project(request.repo_url)
+    ingest_github_project(request.canonical_github_url)
     return JSONResponse(
         status_code=201,
         content={
             "message": "Successfully ingested project",
-            "repo_url": request.repo_url,
+            "canonical_github_url": request.canonical_github_url,
         },
     )

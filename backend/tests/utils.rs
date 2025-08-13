@@ -54,11 +54,14 @@ impl MockAiService {
             .mock("POST", "/ingest")
             .match_header("content-type", "application/json")
             .match_body(Matcher::Json(serde_json::json!({
-                "repo_url": expected_repo_url
+                "canonical_github_url": expected_repo_url
             })))
             .with_status(201)
             .with_header("content-type", "application/json")
-            .with_body("{\"message\": \"Successfully ingested project\", \"repo_url\": \"test\"}")
+            .with_body(format!(
+                r#"{{"canonical_github_url": "{}"}}"#,
+                expected_repo_url
+            ))
             .create()
     }
 
@@ -73,7 +76,7 @@ impl MockAiService {
             .mock("POST", "/ingest")
             .match_header("content-type", "application/json")
             .match_body(Matcher::Json(serde_json::json!({
-                "repo_url": expected_repo_url
+                "canonical_github_url": expected_repo_url
             })))
             .with_status(status_code)
             .with_header("content-type", "application/json")

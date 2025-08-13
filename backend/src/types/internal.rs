@@ -15,7 +15,7 @@ pub(crate) struct AiServiceIngestRequest {
     ///
     /// Should always be in canonical format: `https://github.com/owner/repo.git`
     /// This URL will be used by the AI service to clone and process the repository.
-    pub(crate) repo_url: String,
+    pub(crate) canonical_github_url: url::Url,
 }
 
 /// Request payload for AI service question answering
@@ -27,7 +27,7 @@ pub(crate) struct AiServiceAnswerRequest {
     /// The canonical GitHub repository URL to query
     ///
     /// Must match a previously ingested repository in the AI service.
-    pub(crate) repo_url: String,
+    pub(crate) canonical_github_url: url::Url,
 
     /// The user's question about the repository
     ///

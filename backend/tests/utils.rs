@@ -46,6 +46,7 @@ impl MockAiService {
         mockito::Server::new_async().await
     }
 
+    #[allow(dead_code)]
     pub fn create_successful_ingest_mock(
         server: &mut ServerGuard,
         expected_repo_url: &str,
@@ -77,6 +78,47 @@ impl MockAiService {
             .match_header("content-type", "application/json")
             .match_body(Matcher::Json(serde_json::json!({
                 "canonical_github_url": expected_repo_url
+            })))
+            .with_status(status_code)
+            .with_header("content-type", "application/json")
+            .with_body(error_message)
+            .create()
+    }
+
+    #[allow(dead_code)]
+    pub fn create_successful_answer_mock(
+        server: &mut ServerGuard,
+        expected_repo_url: &str,
+        expected_question: &str,
+        answer_response: &str,
+    ) -> mockito::Mock {
+        server
+            .mock("POST", "/answer")
+            .match_header("content-type", "application/json")
+            .match_body(Matcher::Json(serde_json::json!({
+                "canonical_github_url": expected_repo_url,
+                "user_question": expected_question
+            })))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(format!(r#"{{"answer": "{}"}}"#, answer_response))
+            .create()
+    }
+
+    #[allow(dead_code)]
+    pub fn create_error_answer_mock(
+        server: &mut ServerGuard,
+        expected_repo_url: &str,
+        expected_question: &str,
+        status_code: usize,
+        error_message: &str,
+    ) -> mockito::Mock {
+        server
+            .mock("POST", "/answer")
+            .match_header("content-type", "application/json")
+            .match_body(Matcher::Json(serde_json::json!({
+                "canonical_github_url": expected_repo_url,
+                "user_question": expected_question
             })))
             .with_status(status_code)
             .with_header("content-type", "application/json")

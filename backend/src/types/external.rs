@@ -40,7 +40,7 @@ pub struct IngestResponse {
 ///
 /// The frontend sends this to get AI-powered answers about a specific
 /// repository that has been previously ingested.
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[cfg_attr(test, derive(Debug))]
 pub struct AnswerRequest {
     /// The canonical GitHub repository URL (from IngestResponse)
@@ -106,7 +106,7 @@ impl AnswerRequest {
 /// Response containing the AI-generated answer
 ///
 /// Provides both the answer and confirmation of which project was queried.
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AnswerResponse {
     /// The AI-generated answer to the user's question
     ///

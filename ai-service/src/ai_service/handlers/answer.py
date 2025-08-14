@@ -69,10 +69,4 @@ def answer_endpoint(request: AnswerRequest) -> JSONResponse:
         request.user_question,
         str(request.canonical_github_url),
     )
-    return JSONResponse(
-        status_code=200,
-        content={
-            "message": "LLM answer generated successfully.",
-            "answer": answer,
-        },
-    )
+    return JSONResponse(status_code=200, content={"answer": answer})

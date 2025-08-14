@@ -52,14 +52,14 @@ CODE_EXTENSIONS = {
 }
 
 
-def clone_github_repo(repo_url: str) -> str:
+def clone_github_repo(canonical_github_url: str) -> str:
     """
     Clones a GitHub repo to a temporary directory.
     Returns the path to the cloned directory.
     """
     clone_to = tempfile.mkdtemp()
     try:
-        Repo.clone_from(repo_url, clone_to)
+        Repo.clone_from(canonical_github_url, clone_to)
     except GitCommandError as e:
         shutil.rmtree(clone_to, ignore_errors=True)
         raise errors.GitCloneError.failed(e) from e

@@ -102,9 +102,9 @@ async fn test_ingest_project_already_exists() {
     let response = test::call_service(&app, req).await;
 
     // Assert
-    assert_eq!(response.status(), actix_web::http::StatusCode::OK);
+    assert_eq!(response.status(), actix_web::http::StatusCode::CONFLICT);
     let msg: ApiResponse<IngestResponse> = test::read_body_json(response).await;
-    assert_eq!(msg.code, 200);
+    assert_eq!(msg.code, 409);
     assert_eq!(msg.message, "Project already exists and is ready to use");
     assert_eq!(
         msg.data.unwrap().canonical_github_url,

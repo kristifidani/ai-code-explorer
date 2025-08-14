@@ -32,7 +32,7 @@ pub async fn ingest(
         tracing::info!("Project already exists: {}", canonical_github_url);
 
         return Ok(ApiResponse::new(
-            StatusCode::OK,
+            StatusCode::CONFLICT,
             Some(IngestResponse {
                 canonical_github_url: canonical_github_url.clone(),
             }),

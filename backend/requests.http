@@ -1,5 +1,5 @@
 @repo = https://github.com/kristifidani/ai-code-explorer
-@canonical_repo = https://github.com/etospheres-labs/etopay-sdk-quickstart-ts.git
+@canonical_repo = https://github.com/kristifidani/ai-code-explorer.git
 
 ### Health check
 GET {{host}}/health
@@ -31,16 +31,6 @@ Accept: application/json
 {
   "canonical_github_url": "{{canonical_repo}}",
   "question": "What is this project about? Explain the main purpose in 3 sentences."
-}
-
-### Ask about implementation details
-POST {{host}}/v1/answer
-Content-Type: application/json
-Accept: application/json
-
-{
-  "canonical_github_url": "{{canonical_repo}}",
-  "question": "How do I authenticate with the API? Show me the authentication flow."
 }
 
 ### Project not found (expect 404)

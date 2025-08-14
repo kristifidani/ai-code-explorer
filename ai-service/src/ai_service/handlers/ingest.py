@@ -18,10 +18,10 @@ class IngestRequest(BaseModel):
     canonical_github_url: HttpUrl
 
 
-def ingest_github_project(repo_url: str) -> None:
-    # Generate collection_name from repo_url
-    db.set_repo_context(repo_url)  # Set context once at the start
-    project_dir = project_ingestor.clone_github_repo(repo_url)
+def ingest_github_project(canonical_github_url: str) -> None:
+    # Generate collection_name from canonical_github_url
+    db.set_repo_context(canonical_github_url)  # Set context once at the start
+    project_dir = project_ingestor.clone_github_repo(canonical_github_url)
     try:
         code_files = project_ingestor.scan_code_files(project_dir)
         logger.info(f"Found {len(code_files)} code files to process.")

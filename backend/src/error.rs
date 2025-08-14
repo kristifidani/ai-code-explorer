@@ -4,6 +4,17 @@ use url::ParseError;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
+/// Validation errors for user inputs
+#[derive(thiserror::Error, Debug)]
+pub enum ValidationError {
+    #[error("Empty input: {0}")]
+    EmptyInput(String),
+    #[error("Input too long: {0}")]
+    InputTooLong(String),
+    #[error("Invalid characters: {0}")]
+    InvalidCharacters(String),
+}
+
 /// Placeholder for API errors
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -22,6 +33,8 @@ pub enum Error {
     },
     #[error("Parse error: {0}")]
     ParseError(#[from] ParseError),
+    #[error("Validation error: {0}")]
+    ValidationError(#[from] ValidationError),
 }
 
 impl Error {
@@ -34,6 +47,7 @@ impl Error {
             Error::InvalidGithubUrl(msg) => format!("Invalid GitHub URL: {msg}"),
             Error::ParseError(_) => "Failed to parse the given input".into(),
             Error::Reqwest(_) => "Upstream service error; please try again later".into(),
+            Error::ValidationError(err) => err.to_string(),
         }
     }
 }
@@ -45,7 +59,9 @@ impl ResponseError for Error {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
             Error::ProjectNotFound(_) => StatusCode::NOT_FOUND,
-            Error::InvalidGithubUrl(_) | Error::ParseError(_) => StatusCode::BAD_REQUEST,
+            Error::InvalidGithubUrl(_) | Error::ParseError(_) | Error::ValidationError(_) => {
+                StatusCode::BAD_REQUEST
+            }
             Error::Reqwest(_) => StatusCode::BAD_GATEWAY,
         }
     }

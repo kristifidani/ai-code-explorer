@@ -1,6 +1,6 @@
 import logging
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from fastapi import APIRouter
 
 from ai_service import (
@@ -17,7 +17,7 @@ router = APIRouter()
 
 class AnswerRequest(BaseModel):
     user_question: str
-    canonical_github_url: str
+    canonical_github_url: HttpUrl
 
 
 def answer_question(
@@ -67,7 +67,7 @@ def answer_question(
 def answer_endpoint(request: AnswerRequest) -> JSONResponse:
     answer = answer_question(
         request.user_question,
-        request.canonical_github_url,
+        str(request.canonical_github_url),
     )
     return JSONResponse(
         status_code=200,

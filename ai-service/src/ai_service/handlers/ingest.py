@@ -1,5 +1,5 @@
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from fastapi import APIRouter
 
 from ai_service import (
@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 class IngestRequest(BaseModel):
-    canonical_github_url: str
+    canonical_github_url: HttpUrl
 
 
 def ingest_github_project(repo_url: str) -> None:
@@ -68,11 +68,10 @@ def ingest_github_project(repo_url: str) -> None:
 # Endpoint to ingest a GitHub project
 @router.post("/ingest")
 def ingest_endpoint(request: IngestRequest) -> JSONResponse:
-    ingest_github_project(request.canonical_github_url)
+    ingest_github_project(str(request.canonical_github_url))
     return JSONResponse(
         status_code=201,
         content={
-            "message": "Successfully ingested project",
-            "canonical_github_url": request.canonical_github_url,
+            "message": f"Successfully ingested project: {request.canonical_github_url}",
         },
     )

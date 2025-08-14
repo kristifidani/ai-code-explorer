@@ -39,36 +39,23 @@
 ///
 ///
 use serde::{Deserialize, Serialize};
-use url::Url;
 
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Debug))]
 pub struct ProjectEntity {
-    pub github_url: String,
+    pub canonical_github_url: url::Url,
 }
 
 impl ProjectEntity {
-    pub fn new_validated(github_url: &str) -> crate::error::Result<Self> {
-        let canonical_url = Self::canonicalize_and_validate(github_url)?;
+    pub fn new_validated(github_url: &url::Url) -> crate::error::Result<Self> {
+        let canonical_github_url = Self::canonicalize_and_validate(github_url)?;
         Ok(Self {
-            github_url: canonical_url,
+            canonical_github_url,
         })
     }
 
     /// Canonicalizes and validates a GitHub URL according to GitHub's official rules.
-    fn canonicalize_and_validate(github_url: &str) -> crate::error::Result<String> {
-        // Check for empty string first
-        if github_url.trim().is_empty() {
-            return Err(crate::error::Error::InvalidGithubUrl(
-                "URL cannot be empty".to_string(),
-            ));
-        }
-
-        // Parse the URL
-        let url = Url::parse(github_url).map_err(|e| {
-            crate::error::Error::InvalidGithubUrl(format!("Invalid URL format: {:?}", e))
-        })?;
-
+    fn canonicalize_and_validate(url: &url::Url) -> crate::error::Result<url::Url> {
         // Validate it's a GitHub URL with HTTPS
         if url.scheme() != "https" {
             return Err(crate::error::Error::InvalidGithubUrl(
@@ -120,10 +107,10 @@ impl ProjectEntity {
         let canonical_owner = owner.to_lowercase();
         let canonical_repo = repo_name.to_lowercase();
 
-        Ok(format!(
+        Ok(url::Url::parse(&format!(
             "https://github.com/{}/{}.git",
             canonical_owner, canonical_repo
-        ))
+        ))?)
     }
 
     fn validate_owner_name(owner: &str) -> crate::error::Result<()> {
@@ -275,8 +262,10 @@ mod tests {
         "https://github.com/test-user123/my_repo-name.example.git"
     )]
     fn test_project_entity_canonicalization_success(#[case] input: &str, #[case] expected: &str) {
-        let project = ProjectEntity::new_validated(input).unwrap();
-        assert_eq!(project.github_url, expected);
+        let input = url::Url::parse(input).unwrap();
+        let expected = url::Url::parse(expected).unwrap();
+        let project = ProjectEntity::new_validated(&input).unwrap();
+        assert_eq!(project.canonical_github_url, expected);
     }
 
     /// Tests for invalid GitHub URLs that should be rejected
@@ -284,11 +273,8 @@ mod tests {
     // Protocol and domain validation
     #[case::http_instead_of_https("http://github.com/owner/repo")]
     #[case::not_github_domain("https://gitlab.com/owner/repo")]
-    #[case::missing_protocol("github.com/owner/repo")]
     #[case::wrong_protocol("ftp://github.com/owner/repo")]
     // URL structure validation
-    #[case::empty_string("")]
-    #[case::not_a_url("not-a-url")]
     #[case::no_path("https://github.com")]
     #[case::no_owner_repo("https://github.com/")]
     #[case::empty_owner("https://github.com//repo")]
@@ -326,7 +312,9 @@ mod tests {
     // Mixed invalid scenarios
     #[case::multiple_issues("https://github.com/.invalid/repo-?param=value")]
     fn test_project_entity_canonicalization_failure(#[case] input: &str) {
-        let result = ProjectEntity::new_validated(input);
+        let input = url::Url::parse(input).unwrap();
+
+        let result = ProjectEntity::new_validated(&input);
         assert!(matches!(
             result.unwrap_err(),
             crate::Error::InvalidGithubUrl(_)
@@ -342,10 +330,12 @@ mod tests {
         "https://github.com/owner/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     )]
     fn test_project_entity_boundary_conditions(#[case] input: &str) {
-        let result = ProjectEntity::new_validated(input);
+        let input = url::Url::parse(input).unwrap();
+
+        let result = ProjectEntity::new_validated(&input);
 
         // Extract repo name length from URL
-        let repo_part = input.split('/').next_back().unwrap();
+        let repo_part = input.as_str().split('/').next_back().unwrap();
 
         if repo_part.len() == 100 {
             assert!(result.is_ok(), "100-character repo name should be valid");

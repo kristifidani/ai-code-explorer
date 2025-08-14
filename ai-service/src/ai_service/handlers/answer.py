@@ -1,5 +1,6 @@
 import logging
-from pydantic import BaseModel
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, HttpUrl
 from fastapi import APIRouter
 
 from ai_service import (
@@ -16,7 +17,7 @@ router = APIRouter()
 
 class AnswerRequest(BaseModel):
     user_question: str
-    repo_url: str
+    canonical_github_url: HttpUrl
 
 
 def answer_question(
@@ -24,8 +25,8 @@ def answer_question(
     repo_url: str,
 ) -> str:
     try:
-        question_embedding = embedder.embed_text(user_question)
         db.set_repo_context(repo_url)
+        question_embedding = embedder.embed_text(user_question)
         results = db.query_chunks(
             question_embedding,
         )
@@ -63,9 +64,9 @@ def answer_question(
 
 # Endpoint to answer a question
 @router.post("/answer")
-def answer_endpoint(request: AnswerRequest) -> dict[str, str]:
+def answer_endpoint(request: AnswerRequest) -> JSONResponse:
     answer = answer_question(
         request.user_question,
-        request.repo_url,
+        str(request.canonical_github_url),
     )
-    return {"answer": answer}
+    return JSONResponse(status_code=200, content={"answer": answer})

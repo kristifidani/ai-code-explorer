@@ -1,5 +1,5 @@
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from fastapi import APIRouter
 
 from ai_service import (
@@ -15,13 +15,13 @@ router = APIRouter()
 
 
 class IngestRequest(BaseModel):
-    repo_url: str
+    canonical_github_url: HttpUrl
 
 
-def ingest_github_project(repo_url: str) -> None:
-    # Generate collection_name from repo_url
-    db.set_repo_context(repo_url)  # Set context once at the start
-    project_dir = project_ingestor.clone_github_repo(repo_url)
+def ingest_github_project(canonical_github_url: str) -> None:
+    # Generate collection_name from canonical_github_url
+    db.set_repo_context(canonical_github_url)  # Set context once at the start
+    project_dir = project_ingestor.clone_github_repo(canonical_github_url)
     try:
         code_files = project_ingestor.scan_code_files(project_dir)
         logger.info(f"Found {len(code_files)} code files to process.")
@@ -68,11 +68,10 @@ def ingest_github_project(repo_url: str) -> None:
 # Endpoint to ingest a GitHub project
 @router.post("/ingest")
 def ingest_endpoint(request: IngestRequest) -> JSONResponse:
-    ingest_github_project(request.repo_url)
+    ingest_github_project(str(request.canonical_github_url))
     return JSONResponse(
         status_code=201,
         content={
-            "message": "Successfully ingested project",
-            "repo_url": request.repo_url,
+            "message": f"Successfully ingested project: {request.canonical_github_url}",
         },
     )

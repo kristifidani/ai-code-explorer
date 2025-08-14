@@ -19,11 +19,12 @@ pub async fn answer_question(
     req: Json<AnswerRequest>,
 ) -> Result<impl Responder> {
     // Validate the request (trim whitespace and check for empty question)
-    let validated_req = AnswerRequest::new(req.canonical_github_url.clone(), req.question.clone())?;
+    let req = req.into_inner();
+    let validated_req = AnswerRequest::new(req.canonical_github_url, req.question)?;
 
     // Check if the project exists in our database
     let Some(stored_project) = project_repo
-        .find_by_github_url(&validated_req.canonical_github_url)
+        .find_by_canonical_github_url(&validated_req.canonical_github_url)
         .await?
     else {
         tracing::warn!(
@@ -38,7 +39,7 @@ pub async fn answer_question(
         .into_response());
     };
 
-    let stored_project_url = stored_project.canonical_github_url.clone();
+    let stored_project_url = stored_project.canonical_github_url;
     let resp = ai_client
         .answer(&stored_project_url, &validated_req.question)
         .await?;

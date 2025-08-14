@@ -6,8 +6,8 @@ use reqwest::{Client, StatusCode};
 
 #[async_trait::async_trait]
 pub(crate) trait AiServiceClientImpl: Send + Sync + 'static {
-    async fn ingest(&self, repo_url: &url::Url) -> Result<()>;
-    async fn answer(&self, repo_url: &url::Url, question: &str) -> Result<AiServiceAnswerResponse>;
+    async fn ingest(&self, url: &url::Url) -> Result<()>;
+    async fn answer(&self, url: &url::Url, question: &str) -> Result<AiServiceAnswerResponse>;
 }
 
 #[derive(Clone)]
@@ -27,10 +27,10 @@ impl AiServiceClient {
 
 #[async_trait::async_trait]
 impl AiServiceClientImpl for AiServiceClient {
-    async fn ingest(&self, repo_url: &url::Url) -> Result<()> {
+    async fn ingest(&self, url: &url::Url) -> Result<()> {
         let request_url = self.base_url.join("ingest")?;
         let payload = AiServiceIngestRequest {
-            canonical_github_url: repo_url.clone(),
+            canonical_github_url: url.clone(),
         };
         let response = self.client.post(request_url).json(&payload).send().await?;
 
@@ -49,10 +49,10 @@ impl AiServiceClientImpl for AiServiceClient {
         }
     }
 
-    async fn answer(&self, repo_url: &url::Url, question: &str) -> Result<AiServiceAnswerResponse> {
+    async fn answer(&self, url: &url::Url, question: &str) -> Result<AiServiceAnswerResponse> {
         let request_url = self.base_url.join("answer")?;
         let payload = AiServiceAnswerRequest {
-            canonical_github_url: repo_url.clone(),
+            canonical_github_url: url.clone(),
             user_question: question.to_string(),
         };
         let response = self.client.post(request_url).json(&payload).send().await?;

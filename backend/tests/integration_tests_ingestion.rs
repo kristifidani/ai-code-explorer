@@ -16,18 +16,24 @@ use utils::{MockAiService, init_db};
 
 #[actix_web::test]
 async fn test_ingest_project_success() {
+    // Init db
     let project_repo = init_db().await;
 
-    // Test basic successful ingestion flow
-    let input_url = Url::parse("https://github.com/TestOwner/TestRepo").unwrap();
-    let expected_canonical = "https://github.com/testowner/testrepo.git";
+    // Setup urls
+    let github_url =
+        Url::parse("https://github.com/TestOwner/TestRepo").expect("invalid input url");
+    let expected_canonical = ProjectEntity::new_validated(&github_url)
+        .expect("invalid url")
+        .canonical_github_url;
 
     // Mock AI service
     let mut mock_server = MockAiService::new().await;
-    let mock = MockAiService::create_successful_ingest_mock(&mut mock_server, expected_canonical);
-
+    let mock =
+        MockAiService::create_successful_ingest_mock(&mut mock_server, expected_canonical.as_str());
     let server_url = Url::parse(&mock_server.url()).unwrap();
     let ai_service_client = web::Data::new(AiServiceClient::new(server_url));
+
+    // Init test app
     let app = test::init_service(
         App::new()
             .app_data(project_repo.clone())
@@ -36,94 +42,96 @@ async fn test_ingest_project_success() {
     )
     .await;
 
-    let request_body = IngestRequest {
-        github_url: input_url,
-    };
-
+    // Make call
     let req = test::TestRequest::post()
         .uri("/v1/ingest")
-        .set_json(&request_body)
+        .set_json(&IngestRequest { github_url })
         .to_request();
-
     let response = test::call_service(&app, req).await;
-    assert_eq!(response.status(), actix_web::http::StatusCode::CREATED);
 
+    // Assert
+    assert_eq!(response.status(), actix_web::http::StatusCode::CREATED);
     let msg: ApiResponse<IngestResponse> = test::read_body_json(response).await;
     assert_eq!(msg.code, 201);
     assert_eq!(msg.message, "Project ingested successfully");
-    assert!(msg.data.is_some());
+    assert_eq!(msg.data.unwrap().canonical_github_url, expected_canonical);
 
     mock.assert();
 
-    let expected_url = Url::parse(expected_canonical).unwrap();
+    // Followup check db
     let stored_project = project_repo
-        .as_ref()
-        .find_by_github_url(&expected_url)
+        .find_by_canonical_github_url(&expected_canonical)
         .await
         .expect("DB query failed")
         .expect("Project should exist in DB");
-    assert_eq!(stored_project.canonical_github_url, expected_url);
+    assert_eq!(stored_project.canonical_github_url, expected_canonical);
 }
 
 #[actix_web::test]
 async fn test_ingest_project_already_exists() {
+    // Init db and pre-insert project
     let project_repo = init_db().await;
 
-    // Pre-insert project with canonical form
     let github_url = Url::parse("https://github.com/Already/Exists").unwrap();
-    let preexisting = ProjectEntity::new_validated(&github_url).expect("valid canonical");
+    let project_entity = ProjectEntity::new_validated(&github_url).expect("invalid canonical");
     project_repo
-        .as_ref()
-        .create(&preexisting)
+        .create(&project_entity)
         .await
-        .expect("seed insert");
+        .expect("failed to pre-insert url");
 
     // Mock AI service should NOT be called
     let server = MockAiService::new().await;
     let server_url = Url::parse(&server.url()).unwrap();
+    let ai_service_client = web::Data::new(AiServiceClient::new(server_url));
 
+    // Init test app
     let app = test::init_service(
         App::new()
             .configure(config_app)
-            .app_data(project_repo.clone())
-            .app_data(web::Data::new(AiServiceClient::new(server_url))),
+            .app_data(project_repo)
+            .app_data(ai_service_client),
     )
     .await;
 
-    let request_body = IngestRequest {
-        github_url: github_url.clone(),
-    };
-
+    // Make call
     let req = test::TestRequest::post()
         .uri("/v1/ingest")
-        .set_json(&request_body)
+        .set_json(&IngestRequest { github_url })
         .to_request();
 
     let response = test::call_service(&app, req).await;
-    assert_eq!(response.status(), actix_web::http::StatusCode::OK);
 
+    // Assert
+    assert_eq!(response.status(), actix_web::http::StatusCode::OK);
     let msg: ApiResponse<IngestResponse> = test::read_body_json(response).await;
     assert_eq!(msg.code, 200);
     assert_eq!(msg.message, "Project already exists and is ready to use");
-    assert!(msg.data.is_some());
+    assert_eq!(
+        msg.data.unwrap().canonical_github_url,
+        project_entity.canonical_github_url
+    );
 }
 
 #[actix_web::test]
 async fn test_ingest_invalid_github_url_returns_bad_request() {
+    // Init db
     let project_repo = init_db().await;
 
     // AI service should not be called for invalid URLs
     let server = MockAiService::new().await;
     let server_url = Url::parse(&server.url()).unwrap();
+    let ai_service_client = web::Data::new(AiServiceClient::new(server_url));
 
+    // Init test app
     let app = test::init_service(
         App::new()
             .configure(config_app)
-            .app_data(project_repo.clone())
-            .app_data(web::Data::new(AiServiceClient::new(server_url))),
+            .app_data(project_repo)
+            .app_data(ai_service_client),
     )
     .await;
 
+    // Make call
     let invalid_url = Url::parse("https://gitlab.com/owner/repo").unwrap(); // not github.com
     let request_body = IngestRequest {
         github_url: invalid_url,
@@ -135,8 +143,9 @@ async fn test_ingest_invalid_github_url_returns_bad_request() {
         .to_request();
 
     let response = test::call_service(&app, req).await;
-    assert_eq!(response.status(), actix_web::http::StatusCode::BAD_REQUEST);
 
+    // Assert
+    assert_eq!(response.status(), actix_web::http::StatusCode::BAD_REQUEST);
     let msg: ApiResponse<()> = test::read_body_json(response).await;
     assert_eq!(msg.code, 400);
     assert!(msg.message.starts_with("Invalid GitHub URL:"));
@@ -152,22 +161,27 @@ async fn test_ingest_project_ai_service_errors(
     #[case] ai_status_code: usize,
     #[case] ai_response_body: &str,
 ) {
+    // Init db
     let project_repo = init_db().await;
 
-    let input_url = Url::parse("https://github.com/TestOwner/TestRepo").unwrap();
-    let expected_canonical = "https://github.com/testowner/testrepo.git";
+    // Used urls
+    let github_url = Url::parse("https://github.com/TestOwner/TestRepo").unwrap();
+    let expected_canonical = ProjectEntity::new_validated(&github_url)
+        .expect("invalid url")
+        .canonical_github_url;
 
     // Mock AI service to return the specified error
     let mut mock_server = MockAiService::new().await;
     let mock = MockAiService::create_error_ingest_mock(
         &mut mock_server,
-        expected_canonical,
+        expected_canonical.as_str(),
         ai_status_code,
         ai_response_body,
     );
-
     let server_url = Url::parse(&mock_server.url()).unwrap();
     let ai_service_client = web::Data::new(AiServiceClient::new(server_url));
+
+    // Init test app
     let app = test::init_service(
         App::new()
             .app_data(project_repo.clone())
@@ -176,18 +190,16 @@ async fn test_ingest_project_ai_service_errors(
     )
     .await;
 
-    let request_body = IngestRequest {
-        github_url: input_url,
-    };
-
+    // Make call
     let req = test::TestRequest::post()
         .uri("/v1/ingest")
-        .set_json(&request_body)
+        .set_json(&IngestRequest { github_url })
         .to_request();
 
     let response = test::call_service(&app, req).await;
-    assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
 
+    // Assert
+    assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
     let msg: ApiResponse<()> = test::read_body_json(response).await;
     assert_eq!(msg.code, 500);
     assert_eq!(msg.message, "Internal server error");
@@ -195,11 +207,9 @@ async fn test_ingest_project_ai_service_errors(
 
     mock.assert();
 
-    // Check if project was stored based on expected behavior
-    let expected_url = Url::parse(expected_canonical).unwrap();
+    // Post db check should not store
     let stored_project = project_repo
-        .as_ref()
-        .find_by_github_url(&expected_url)
+        .find_by_canonical_github_url(&expected_canonical)
         .await
         .expect("DB query failed");
 
@@ -211,13 +221,20 @@ async fn test_ingest_project_ai_service_errors(
 
 #[actix_web::test]
 async fn test_ingest_project_ai_service_unavailable() {
+    // Init db
     let project_repo = init_db().await;
 
-    let input_url = Url::parse("https://github.com/TestOwner/TestRepo").unwrap();
+    // Used urls
+    let github_url = Url::parse("https://github.com/TestOwner/TestRepo").unwrap();
+    let expected_canonical = ProjectEntity::new_validated(&github_url)
+        .expect("invalid url")
+        .canonical_github_url;
 
     // Use an invalid URL to simulate AI service being completely unavailable
     let invalid_service_url = Url::parse("http://localhost:0").unwrap();
     let ai_service_client = web::Data::new(AiServiceClient::new(invalid_service_url));
+
+    // Init test app
     let app = test::init_service(
         App::new()
             .app_data(project_repo.clone())
@@ -226,18 +243,16 @@ async fn test_ingest_project_ai_service_unavailable() {
     )
     .await;
 
-    let request_body = IngestRequest {
-        github_url: input_url,
-    };
-
+    // Make call
     let req = test::TestRequest::post()
         .uri("/v1/ingest")
-        .set_json(&request_body)
+        .set_json(&IngestRequest { github_url })
         .to_request();
 
     let response = test::call_service(&app, req).await;
-    assert_eq!(response.status(), StatusCode::BAD_GATEWAY);
 
+    // Assert
+    assert_eq!(response.status(), StatusCode::BAD_GATEWAY);
     let msg: ApiResponse<()> = test::read_body_json(response).await;
     assert_eq!(msg.code, 502);
     assert_eq!(
@@ -247,10 +262,8 @@ async fn test_ingest_project_ai_service_unavailable() {
     assert!(msg.data.is_none());
 
     // Project should NOT be stored in DB when AI service is unavailable
-    let expected_canonical = Url::parse("https://github.com/testowner/testrepo.git").unwrap();
     let stored_project = project_repo
-        .as_ref()
-        .find_by_github_url(&expected_canonical)
+        .find_by_canonical_github_url(&expected_canonical)
         .await
         .expect("DB query failed");
     assert!(stored_project.is_none());

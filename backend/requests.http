@@ -53,7 +53,7 @@ Accept: application/json
   "question": "This should fail because project was not ingested"
 }
 
-### Invalid repo URL (expect 404 - no validation, just DB lookup fails)
+### Invalid repo URL (expect 400 - no validation, just DB lookup fails)
 POST {{host}}/v1/answer
 Content-Type: application/json
 Accept: application/json

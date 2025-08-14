@@ -39,7 +39,6 @@
 ///
 ///
 use serde::{Deserialize, Serialize};
-use url::Url;
 
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Debug))]
@@ -108,13 +107,10 @@ impl ProjectEntity {
         let canonical_owner = owner.to_lowercase();
         let canonical_repo = repo_name.to_lowercase();
 
-        Ok(Url::parse(
-            format!(
-                "https://github.com/{}/{}.git",
-                canonical_owner, canonical_repo
-            )
-            .as_str(),
-        )?)
+        Ok(url::Url::parse(&format!(
+            "https://github.com/{}/{}.git",
+            canonical_owner, canonical_repo
+        ))?)
     }
 
     fn validate_owner_name(owner: &str) -> crate::error::Result<()> {
@@ -266,8 +262,8 @@ mod tests {
         "https://github.com/test-user123/my_repo-name.example.git"
     )]
     fn test_project_entity_canonicalization_success(#[case] input: &str, #[case] expected: &str) {
-        let input = Url::parse(input).unwrap();
-        let expected = Url::parse(expected).unwrap();
+        let input = url::Url::parse(input).unwrap();
+        let expected = url::Url::parse(expected).unwrap();
         let project = ProjectEntity::new_validated(&input).unwrap();
         assert_eq!(project.canonical_github_url, expected);
     }
@@ -316,7 +312,7 @@ mod tests {
     // Mixed invalid scenarios
     #[case::multiple_issues("https://github.com/.invalid/repo-?param=value")]
     fn test_project_entity_canonicalization_failure(#[case] input: &str) {
-        let input = Url::parse(input).unwrap();
+        let input = url::Url::parse(input).unwrap();
 
         let result = ProjectEntity::new_validated(&input);
         assert!(matches!(
@@ -334,7 +330,7 @@ mod tests {
         "https://github.com/owner/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     )]
     fn test_project_entity_boundary_conditions(#[case] input: &str) {
-        let input = Url::parse(input).unwrap();
+        let input = url::Url::parse(input).unwrap();
 
         let result = ProjectEntity::new_validated(&input);
 

@@ -25,7 +25,7 @@ pub async fn ingest(
 
     // Check if project already exists
     if project_repo
-        .find_by_github_url(canonical_github_url)
+        .find_by_canonical_github_url(canonical_github_url)
         .await?
         .is_some()
     {

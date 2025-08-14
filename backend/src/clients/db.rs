@@ -4,7 +4,7 @@ const DB_COLLECTION_PROJECTS: &str = "projects";
 
 #[async_trait::async_trait]
 pub trait ProjectRepositoryImpl: Send + Sync + 'static {
-    async fn find_by_github_url(&self, github_url: &url::Url) -> Result<Option<ProjectEntity>>;
+    async fn find_by_canonical_github_url(&self, url: &url::Url) -> Result<Option<ProjectEntity>>;
     async fn create(&self, project: &ProjectEntity) -> Result<()>;
 }
 
@@ -23,8 +23,8 @@ impl ProjectRepository {
 
 #[async_trait::async_trait]
 impl ProjectRepositoryImpl for ProjectRepository {
-    async fn find_by_github_url(&self, github_url: &url::Url) -> Result<Option<ProjectEntity>> {
-        let filter = mongodb::bson::doc! { "canonical_github_url": github_url.as_str() };
+    async fn find_by_canonical_github_url(&self, url: &url::Url) -> Result<Option<ProjectEntity>> {
+        let filter = mongodb::bson::doc! { "canonical_github_url": url.as_str() };
 
         Ok(self.collection.find_one(filter).await.map_err(|e| {
             tracing::error!("Failed to find project by GitHub URL: {}", e);

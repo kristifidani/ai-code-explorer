@@ -37,7 +37,7 @@ pub(crate) struct AiServiceAnswerRequest {
 
 /// Response from AI service answer endpoint
 ///
-/// Contains the AI-generated answer along with status information.
+/// Contains the AI-generated answer.
 #[derive(Deserialize)]
 pub(crate) struct AiServiceAnswerResponse {
     /// The AI-generated answer to the user's question

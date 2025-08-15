@@ -26,7 +26,7 @@ def answer_question(
 ) -> str:
     try:
         db.set_repo_context(repo_url)
-        question_embedding = embedder.embed_text(user_question)
+        question_embedding = embedder.embed_query(user_question)
         results = db.query_chunks(
             question_embedding,
         )

@@ -7,6 +7,10 @@ class EmbeddingError(AIServiceError):
     def empty_input(cls) -> "EmbeddingError":
         return cls("Cannot embed empty or whitespace-only texts")
 
+    @classmethod
+    def model_load_failed(cls, model_name: str, error: Exception) -> "EmbeddingError":
+        return cls(f"Failed to load embedding model '{model_name}': {error}")
+
 
 class LLMQueryError(AIServiceError):
     @classmethod

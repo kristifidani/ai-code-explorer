@@ -1,14 +1,14 @@
+import logging
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, HttpUrl
 from fastapi import APIRouter
 
 from ai_service import (
     db,
-    embedder,
     errors,
     project_ingestor,
 )
-import logging
+from ai_service.embeddings import embedder
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

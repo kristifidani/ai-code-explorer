@@ -1,7 +1,10 @@
 # Makefile
 
 # Combined
-.PHONY: all check lint format format-check test clean
+.PHONY: all start check lint format format-check test clean
+
+start:
+	poetry run start
 
 lint:
 	poetry run ruff check

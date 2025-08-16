@@ -1,0 +1,32 @@
+name: "Setup Python with Poetry"
+
+description: "Set up Python and install Poetry dependencies"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/pypoetry
+          ai-service/.venv
+        key: poetry-${{ runner.os }}-${{ hashFiles('ai-service/poetry.lock') }}
+        restore-keys: |
+          poetry-${{ runner.os }}-
+
+    - name: Install Poetry
+      shell: bash
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ai-service
+      run: poetry install --no-root --with dev

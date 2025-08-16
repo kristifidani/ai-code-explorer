@@ -1,14 +1,14 @@
+import logging
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, HttpUrl
 from fastapi import APIRouter
 
 from ai_service import (
     db,
-    embedder,
     errors,
     project_ingestor,
 )
-import logging
+from ai_service.embeddings import encoding
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -19,7 +19,6 @@ class IngestRequest(BaseModel):
 
 
 def ingest_github_project(canonical_github_url: str) -> None:
-    # Generate collection_name from canonical_github_url
     db.set_repo_context(canonical_github_url)  # Set context once at the start
     project_dir = project_ingestor.clone_github_repo(canonical_github_url)
     try:
@@ -27,9 +26,8 @@ def ingest_github_project(canonical_github_url: str) -> None:
         logger.info(f"Found {len(code_files)} code files to process.")
 
         code_snippets: list[str] = []
-        embeddings: list[list[float]] = []
 
-        logger.info("Embedding content for each file ...")
+        logger.info("Processing and embedding code files...")
         for file_path in code_files:
             try:
                 with open(file_path, encoding="utf-8") as f:
@@ -38,7 +36,6 @@ def ingest_github_project(canonical_github_url: str) -> None:
                         logger.warning(f"Skipping empty file: {file_path}")
                         continue
                     code_snippets.append(code)
-                    embeddings.append(embedder.embed_text(code))
             except FileNotFoundError:
                 err = errors.FileReadError.file_not_found(file_path)
                 logger.error(err)
@@ -57,6 +54,9 @@ def ingest_github_project(canonical_github_url: str) -> None:
                 continue
 
         if code_snippets:
+            # Batch embed all documents at once for better performance
+            embeddings = encoding.embed_documents(code_snippets)
+
             db.add_chunks(code_snippets, embeddings)
             logger.info(f"Stored {len(code_snippets)} code snippets in ChromaDB.")
         else:

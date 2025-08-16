@@ -1,7 +1,10 @@
 # Makefile
 
 # Combined
-.PHONY: all check lint format format-check test clean
+.PHONY: all start check lint format format-check unit-tests integration-tests test-all clean
+
+start:
+	poetry run start
 
 lint:
 	poetry run ruff check
@@ -14,10 +17,18 @@ format-check:
 
 check: lint format-check
 
-test:
-	poetry run pytest
+# Unit tests
+unit-tests:
+	poetry run pytest src/ai_service/ -v
 
-all: format-check test
+# Integration tests (main tests directory)
+integration-tests:
+	poetry run pytest tests/ -v
+
+# Run all tests
+test-all: unit-tests integration-tests
+
+all: format-check test-all
 
 clean:
 	poetry env remove --all

@@ -23,7 +23,7 @@ defaults:
     working-directory: ai-service
 
 jobs:
-  lint:
+  python_lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -45,7 +45,7 @@ jobs:
       - name: Run linter
         run: make lint
 
-  format:
+  python_format:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -67,7 +67,7 @@ jobs:
       - name: Run formatter check
         run: make check
 
-  unit-tests:
+  python_unit_tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -87,9 +87,9 @@ jobs:
         run: poetry install --no-root --with dev
 
       - name: Run unit tests
-        run: PYTHONPATH=src make unit-test
+        run: PYTHONPATH=src make unit-tests
 
-  integration-tests:
+  python_integration_tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -109,6 +109,6 @@ jobs:
         run: poetry install --no-root --with dev
 
       - name: Run integration tests
-        run: PYTHONPATH=src make test
+        run: PYTHONPATH=src make integration-tests
         env:
           CHROMA_STORE_PATH: ./chroma_store

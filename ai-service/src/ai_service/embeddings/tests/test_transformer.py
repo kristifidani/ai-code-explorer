@@ -31,7 +31,7 @@ class TestDeviceDetection:
         cuda_available: bool,
         mps_available: bool,
         expected_device: str,
-        _test_name: str,
+        test_name: str,
     ):
         """Test device detection logic with different hardware availability scenarios."""
         mock_cuda.return_value = cuda_available

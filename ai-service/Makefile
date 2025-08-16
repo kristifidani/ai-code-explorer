@@ -1,7 +1,7 @@
 # Makefile
 
 # Combined
-.PHONY: all start check lint format format-check test test-unit test-integration test-all clean
+.PHONY: all start check lint format format-check unit-tests integration-tests test-all clean
 
 start:
 	poetry run start
@@ -26,10 +26,7 @@ integration-tests:
 	poetry run pytest tests/ -v
 
 # Run all tests
-test-all: test-unit test-integration
-
-# Default test command (integration tests for backwards compatibility)
-test: test-integration
+test-all: unit-tests integration-tests
 
 all: format-check test-all
 

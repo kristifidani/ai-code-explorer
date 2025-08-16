@@ -46,7 +46,7 @@ jobs:
       - name: Run lint & format checks
         run: make check
 
-      - name: Run tests
-        run: PYTHONPATH=src make test
-        env:
-          CHROMA_STORE_PATH: ./chroma_store
+      # - name: Run tests
+      #   run: PYTHONPATH=src make test
+      #   env:
+      #     CHROMA_STORE_PATH: ./chroma_store

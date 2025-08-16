@@ -67,26 +67,48 @@ jobs:
       - name: Run formatter check
         run: make check
 
-  # test:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: "3.10"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-  #     - name: Install Poetry
-  #       run: |
-  #         curl -sSL https://install.python-poetry.org | python3 -
-  #         echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-  #     - name: Install dependencies
-  #       run: poetry install --no-root --with dev
+      - name: Install dependencies
+        run: poetry install --no-root --with dev
 
-  #     - name: Run tests
-  #       run: PYTHONPATH=src make test
-  #       env:
-  #         CHROMA_STORE_PATH: ./chroma_store
+      - name: Run unit tests
+        run: PYTHONPATH=src make unit-test
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: poetry install --no-root --with dev
+
+      - name: Run integration tests
+        run: PYTHONPATH=src make test
+        env:
+          CHROMA_STORE_PATH: ./chroma_store

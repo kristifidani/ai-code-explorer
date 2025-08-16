@@ -77,6 +77,8 @@ jobs:
 
   rust_unit_tests:
     runs-on: ubuntu-latest
+    needs:
+      [rust_fmt, rust_audit_dependencies, rust_unused_dependencies, rust_lint]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -86,6 +88,7 @@ jobs:
 
   rust_integration_tests:
     runs-on: ubuntu-latest
+    needs: [rust_unit_tests]
     env:
       MONGO_URI: "mongodb://root:example@localhost:27017/"
       MONGO_DB_NAME: "aicodeexplorer"

@@ -52,7 +52,10 @@ class TestModelLoading:
     @patch("ai_service.utils.get_env_var")
     @patch("ai_service.embeddings.transformer._get_device")
     def test_get_model_loads_successfully(
-        self, mock_get_device, mock_get_env, mock_transformer  # type: ignore
+        self,
+        mock_get_device,  # type: ignore
+        mock_get_env,  # type: ignore
+        mock_transformer,  # type: ignore
     ):
         mock_get_env.return_value = "test-model"
         mock_get_device.return_value = "cpu"

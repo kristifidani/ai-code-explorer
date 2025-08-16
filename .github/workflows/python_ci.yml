@@ -88,6 +88,8 @@ jobs:
 
       - name: Run unit tests
         run: PYTHONPATH=src make unit-tests
+        env:
+          EMBEDDING_MODEL: jinaai/jina-embeddings-v2-base-code
 
   python_integration_tests:
     runs-on: ubuntu-latest
@@ -112,3 +114,4 @@ jobs:
         run: PYTHONPATH=src make integration-tests
         env:
           CHROMA_STORE_PATH: ./chroma_store
+          EMBEDDING_MODEL: jinaai/jina-embeddings-v2-base-code

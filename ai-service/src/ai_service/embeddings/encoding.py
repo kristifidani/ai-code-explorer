@@ -24,7 +24,7 @@ def _encode_texts(
         texts: A list of strings to embed.
         is_query: Whether these are search queries (True) or documents (False).
         batch_size: Batch size for processing (default: 32).
-        show_progress_bar: Show progress bar. (default: True)
+        show_progress_bar: Show progress bar. (default: False)
 
     Returns:
         A list of embeddings (each embedding is a list of floats).
@@ -36,6 +36,7 @@ def _encode_texts(
         raise errors.EmbeddingError.empty_input()
     model: SentenceTransformer = get_model()
 
+    embeddings = None
     try:
         # Use appropriate encoding method based on context
         if is_query and hasattr(model, "encode_query"):

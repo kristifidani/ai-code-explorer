@@ -18,10 +18,11 @@ def _get_device() -> str:
 
     if torch.cuda.is_available():
         return "cuda"
-    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
         return "mps"
-    else:
-        return "cpu"
+
+    return "cpu"
 
 
 @lru_cache(maxsize=1)

@@ -42,62 +42,92 @@ Designed to work seamlessly with SentenceTransformers (and frameworks like Hayst
 
 More information about this model can be found on [Hugging Face](https://huggingface.co/jinaai/jina-embeddings-v2-base-code).
 
-## Encoding Configuration
+## Transformer Configuration
+
+Our transformer setup uses a singleton pattern with automatic device detection for optimal performance:
 
 ```python
+@lru_cache(maxsize=1)
+def get_model(trust_remote_code: bool = False) -> SentenceTransformer:
+    model_name = utils.get_env_var(constants.EMBEDDING_MODEL)
+    device = _get_device()
+
+    return SentenceTransformer(
+        model_name_or_path=model_name,
+        device=device,
+        trust_remote_code=trust_remote_code,
+        cache_folder=None,
+    )
+```
+
+**Configuration Parameters:**
+
+- **`model_name_or_path`**: The previous mentioned model retrieved from environment variable `EMBEDDING_MODEL`.
+- **`device`**: Automatically detects and uses best available hardware: `CUDA` → `MPS` → `CPU`.
+- **`trust_remote_code`**: Set to `False` by default for security, but might be required for some specialized code models.
+- **`cache_folder`**: Uses default HuggingFace cache location for model storage.
+- **`@lru_cache(maxsize=1)`**: Ensures single model instance per process, preventing memory waste from repeated loading.
+
+## Encoding Configuration
+
+Our encoding system uses context-aware methods with automatic fallback for maximum compatibility:
+
+```python
+# For documents (during ingestion)
 embeddings = model.encode_document(
     texts,
     convert_to_numpy=True,
     normalize_embeddings=True,
     batch_size=32,
     precision="float32",
-    show_progress_bar=True,
+    show_progress_bar=False,
+    device=None,
+)
+
+# For queries (during search)
+embeddings = model.encode_query(
+    texts,
+    convert_to_numpy=True,
+    normalize_embeddings=True,
+    batch_size=32,
+    precision="float32",
+    show_progress_bar=False,
     device=None,
 )
 ```
 
-- **`convert_to_numpy=True`:** Returns NumPy arrays for ChromaDB compatibility.
-- **`normalize_embeddings=True`:** Converts to unit vectors enabling fast dot-product similarity.
-- **`batch_size=32`:** Balances memory usage and processing speed.
-- **`precision="float32"`:** Full precision for maximum accuracy.
-- **`show_progress_bar`:** Auto-displayed for batches >10 items.
-- **`device=None`:** Uses device configured during model loading.
+**Context-Aware Encoding:**
 
-## Current Implementation
+- Uses `encode_document()` for code files during ingestion (`is_query=False`).
+- Uses `encode_query()` for user search queries (`is_query=True`).
+- Automatically falls back to default `encode()` if specialized methods are unavailable.
 
-1. **Auto Device Detection** - Automatically detects and uses best available hardware: `CUDA` → `MPS` → `CPU`.
+**Configuration Parameters:**
 
-2. **Memory-Efficient Model Caching**
-   - Single model instance per process using `@lru_cache(maxsize=1)`.
-   - Prevents repeated model loading and saves memory.
-   - Model stays in memory for entire application lifetime.
+- **`convert_to_numpy=True`**: Returns NumPy arrays for ChromaDB compatibility and efficient storage.
+- **`normalize_embeddings=True`**: Converts to unit vectors enabling fast dot-product similarity calculations.
+- **`batch_size=32`**: Fixed batch size that balances memory usage and processing speed.
+- **`precision="float32"`**: Full precision for maximum accuracy in similarity calculations.
+- **`show_progress_bar=False`**: Disabled by default to reduce overhead, automatically enabled for large batches.
+- **`device=None`**: Uses device configured during model loading (inherits from transformer setup).
 
-3. **Context-Aware Encoding**
-   - Uses `encode_query()` for user search queries (`is_query=True`).
-   - Uses `encode_document()` for code files during ingestion (`is_query=False`).
-   - Automatically detects available methods with `hasattr()` checks.
+## Possible Future Optimizations
 
-4. **Production-Ready Configuration**
-   - `trust_remote_code=False` but might be required for code-specific models.
-   - `normalize_embeddings=True` for fast cosine similarity.
-   - `convert_to_numpy=True` for ChromaDB compatibility.
-   - `precision="float32"` for maximum accuracy.
+**Code Understanding Improvements:**
 
-5. **Batch Processing**
-   - Fixed batch size of 32 for balanced speed/memory usage.
-   - Progress bar display for user feedback. Default is `False` since it can add overhead.
-   - Efficient handling of multiple texts simultaneously.
+- **Intelligent Text Chunking:** Split large files at logical boundaries (functions, classes, modules) rather than arbitrary character limits.
+- **Context-Preserving Preprocessing:** Maintain code structure and comments during embedding to improve semantic understanding.
+- **Multi-file Context:** Consider file relationships and imports when embedding for better code comprehension.
 
-## Future Optimizations
+**Performance Improvements:**
 
-### Performance Enhancements (Next Phase)
+- **Adaptive Batch Sizing:** Dynamic batch sizes based on available GPU memory and text length.
+- **Dimension Optimization:** Configurable output dimensions (768→512→256) for speed/storage trade-offs based on use case.
 
-- **ONNX Backend:** 2-3x faster inference with `backend="onnx"`. Default is `torch`.
-- **Adaptive Batch Sizing:** Dynamic batch sizes based on available GPU memory.
-- **Dimension Truncation:** Configurable dimensions (768→256) for speed/storage trade-offs.
+**Flow Improvements:**
 
-### Code Understanding Improvements (Later Phases)
+- **Incremental Embedding:** Only re-embed changed code sections rather than entire files.
+- **Caching Strategy:** Implement file-level embedding cache with content hash validation.
+- **Error Recovery:** Better handling of malformed code and encoding failures with graceful degradation.
 
-- **Intelligent Chunking:** Split large files at logical boundaries (functions, classes)
-- **Model Benchmarking:** Compare Jina vs CodeBERT vs other code-specific models
-- **Domain Fine-tuning:** Train on your specific codebase patterns
+**Note:** Our focus is on practical optimizations for code understanding and embedding efficiency. We avoid benchmarking multiple models or training custom models, instead concentrating on optimizing the current pipeline for better performance and accuracy.

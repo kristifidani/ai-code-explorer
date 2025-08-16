@@ -1,5 +1,7 @@
 name: "Setup Python with Poetry"
+
 description: "Set up Python and install Poetry dependencies"
+
 runs:
   using: "composite"
   steps:

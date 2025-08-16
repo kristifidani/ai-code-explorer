@@ -23,9 +23,8 @@ defaults:
     working-directory: ai-service
 
 jobs:
-  lint_format_test:
+  lint:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,10 +42,51 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root --with dev
 
-      - name: Run lint & format checks
+      - name: Run linter
+        run: make lint
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: poetry install --no-root --with dev
+
+      - name: Run formatter check
         run: make check
 
-      # - name: Run tests
-      #   run: PYTHONPATH=src make test
-      #   env:
-      #     CHROMA_STORE_PATH: ./chroma_store
+  # test:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.10"
+
+  #     - name: Install Poetry
+  #       run: |
+  #         curl -sSL https://install.python-poetry.org | python3 -
+  #         echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+  #     - name: Install dependencies
+  #       run: poetry install --no-root --with dev
+
+  #     - name: Run tests
+  #       run: PYTHONPATH=src make test
+  #       env:
+  #         CHROMA_STORE_PATH: ./chroma_store

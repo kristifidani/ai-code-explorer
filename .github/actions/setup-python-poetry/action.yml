@@ -26,4 +26,5 @@ runs:
 
     - name: Install dependencies
       shell: bash
+      working-directory: ai-service
       run: poetry install --no-root --with dev

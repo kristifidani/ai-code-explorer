@@ -31,8 +31,6 @@ jobs:
 
       - name: Setup Python with Poetry
         uses: ./.github/actions/setup-python-poetry
-        with:
-          working-directory: ai-service
 
       - name: Run linter
         run: make lint
@@ -45,8 +43,6 @@ jobs:
 
       - name: Setup Python with Poetry
         uses: ./.github/actions/setup-python-poetry
-        with:
-          working-directory: ai-service
 
       - name: Run formatter check
         run: make check
@@ -60,8 +56,6 @@ jobs:
 
       - name: Setup Python with Poetry
         uses: ./.github/actions/setup-python-poetry
-        with:
-          working-directory: ai-service
 
       - name: Run unit tests
         run: PYTHONPATH=src make unit-tests
@@ -77,8 +71,6 @@ jobs:
 
       - name: Setup Python with Poetry
         uses: ./.github/actions/setup-python-poetry
-        with:
-          working-directory: ai-service
 
       - name: Run integration tests
         run: PYTHONPATH=src make integration-tests

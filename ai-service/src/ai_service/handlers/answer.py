@@ -4,11 +4,11 @@ from pydantic import BaseModel, HttpUrl
 from fastapi import APIRouter
 
 from ai_service import (
-    db,
     ollama_client,
     errors,
 )
 from ai_service.embeddings import encoding
+from ai_service.db_setup import set_repo_context, query_chunks
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +25,9 @@ def answer_question(
     repo_url: str,
 ) -> str:
     try:
-        db.set_repo_context(repo_url)
+        set_repo_context(repo_url)
         query_embedding = encoding.embed_query(user_question)
-        results = db.query_chunks(
+        results = query_chunks(
             query_embedding,
         )
         documents = results.get("documents", [[]])

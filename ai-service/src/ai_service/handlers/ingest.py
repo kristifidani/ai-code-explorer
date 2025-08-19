@@ -4,11 +4,11 @@ from pydantic import BaseModel, HttpUrl
 from fastapi import APIRouter
 
 from ai_service import (
-    db,
     errors,
     project_ingestor,
 )
 from ai_service.embeddings import encoding
+from ai_service.db_setup import set_repo_context, add_chunks
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -19,7 +19,7 @@ class IngestRequest(BaseModel):
 
 
 def ingest_github_project(canonical_github_url: str) -> None:
-    db.set_repo_context(canonical_github_url)  # Set context once at the start
+    set_repo_context(canonical_github_url)  # Set context once at the start
     project_dir = project_ingestor.clone_github_repo(canonical_github_url)
     try:
         code_files = project_ingestor.scan_code_files(project_dir)
@@ -57,7 +57,7 @@ def ingest_github_project(canonical_github_url: str) -> None:
             # Batch embed all documents at once for better performance
             embeddings = encoding.embed_documents(code_snippets)
 
-            db.add_chunks(code_snippets, embeddings)
+            add_chunks(code_snippets, embeddings)
             logger.info(f"Stored {len(code_snippets)} code snippets in ChromaDB.")
         else:
             logger.warning("No valid code snippets found to store.")

@@ -7,7 +7,7 @@ from ai_service import (
     errors,
     project_ingestor,
 )
-from ai_service.embeddings import encoding
+from ai_service.embeddings import embed_documents
 from ai_service.db_setup import set_repo_context, add_chunks
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def ingest_github_project(canonical_github_url: str) -> None:
 
         if code_snippets:
             # Batch embed all documents at once for better performance
-            embeddings = encoding.embed_documents(code_snippets)
+            embeddings = embed_documents(code_snippets)
 
             add_chunks(code_snippets, embeddings)
             logger.info(f"Stored {len(code_snippets)} code snippets in ChromaDB.")

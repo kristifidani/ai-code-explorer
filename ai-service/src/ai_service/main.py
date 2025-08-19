@@ -18,11 +18,11 @@ from ai_service import (
 from fastapi import FastAPI, Request
 import uvicorn
 
-from .handlers import ingest, answer
+from .handlers import ingest_router, answer_router
 
 app = FastAPI()
-app.include_router(ingest.router)
-app.include_router(answer.router)
+app.include_router(ingest_router)
+app.include_router(answer_router)
 
 
 # FastAPI exception handlers

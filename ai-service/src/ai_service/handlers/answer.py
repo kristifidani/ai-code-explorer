@@ -7,7 +7,7 @@ from ai_service import (
     ollama_client,
     errors,
 )
-from ai_service.embeddings import encoding
+from ai_service.embeddings import embed_query
 from ai_service.db_setup import set_repo_context, query_chunks
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ def answer_question(
 ) -> str:
     try:
         set_repo_context(repo_url)
-        query_embedding = encoding.embed_query(user_question)
+        query_embedding = embed_query(user_question)
         results = query_chunks(
             query_embedding,
         )

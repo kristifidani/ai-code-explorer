@@ -6,7 +6,8 @@ import chromadb
 from dotenv import load_dotenv
 
 load_dotenv()
-from ai_service import constants, utils, db
+from ai_service import constants, utils
+from ai_service.db_setup import set_repo_context
 
 
 def create_db_test_collection(collection_name: str) -> chromadb.Collection:
@@ -35,7 +36,7 @@ def setup_test_context_and_clean_db(
     test_repo_url = f"https://github.com/test/{module_name.replace('.', '-')}.git"
 
     # Set the repo context for this test module
-    db.set_repo_context(test_repo_url)
+    set_repo_context(test_repo_url)
 
     # Patch get_collection to return our test collection
     monkeypatch.setattr("ai_service.db.get_collection", lambda: db_test_collection)

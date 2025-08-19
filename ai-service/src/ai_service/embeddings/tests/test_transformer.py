@@ -5,7 +5,7 @@ Tests for the transformer module - model loading, device detection, caching.
 import pytest
 from unittest.mock import patch, MagicMock
 from ai_service import errors
-from ai_service.embeddings import transformer
+from ai_service.embeddings import get_model
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -63,9 +63,9 @@ class TestModelLoading:
         mock_transformer.return_value = mock_model
 
         # Clear cache before test
-        transformer.get_model.cache_clear()
+        get_model.cache_clear()
 
-        model = transformer.get_model()
+        model = get_model()
 
         assert model == mock_model
         mock_transformer.assert_called_once_with(  # type: ignore
@@ -82,10 +82,10 @@ class TestModelLoading:
         mock_transformer.side_effect = Exception("Model not found")
 
         # Clear cache before test
-        transformer.get_model.cache_clear()
+        get_model.cache_clear()
 
         with pytest.raises(errors.EmbeddingError) as exc_info:
-            transformer.get_model()
+            get_model()
 
         assert "Failed to load embedding model 'invalid-model'" in str(exc_info.value)
 
@@ -100,12 +100,12 @@ class TestModelLoading:
         mock_transformer.return_value = mock_model
 
         # Clear cache first
-        transformer.get_model.cache_clear()
+        get_model.cache_clear()
 
         # Call multiple times
-        model1 = transformer.get_model()
-        model2 = transformer.get_model()
-        model3 = transformer.get_model()
+        model1 = get_model()
+        model2 = get_model()
+        model3 = get_model()
 
         # Should all return the same instance
         assert model1 is model2 is model3

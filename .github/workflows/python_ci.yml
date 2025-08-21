@@ -72,6 +72,3 @@ jobs:
 
       - name: Run integration tests
         run: PYTHONPATH=src make integration-tests
-        env:
-          CHROMA_STORE_PATH: ./chroma_store
-          EMBEDDING_MODEL: jinaai/jina-embeddings-v2-base-code

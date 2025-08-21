@@ -44,57 +44,14 @@ More information about this model can be found on [Hugging Face](https://hugging
 
 ## Transformer Configuration
 
-Our transformer setup uses a singleton pattern with automatic device detection for optimal performance:
-
-```python
-@lru_cache(maxsize=1)
-def get_model(trust_remote_code: bool = False) -> SentenceTransformer:
-    model_name = utils.get_env_var(constants.EMBEDDING_MODEL)
-    device = _get_device()
-
-    return SentenceTransformer(
-        model_name_or_path=model_name,
-        device=device,
-        trust_remote_code=trust_remote_code,
-        cache_folder=None,
-    )
-```
-
-**Configuration Parameters:**
-
 - **`model_name_or_path`**: The previous mentioned model retrieved from environment variable `EMBEDDING_MODEL`.
 - **`device`**: Automatically detects and uses best available hardware: `CUDA` → `MPS` → `CPU`.
 - **`trust_remote_code`**: Set to `False` by default for security, but might be required for some specialized code models.
 - **`cache_folder`**: Uses default HuggingFace cache location for model storage.
-- **`@lru_cache(maxsize=1)`**: Ensures single model instance per process, preventing memory waste from repeated loading.
 
 ## Encoding Configuration
 
-Our encoding system uses context-aware methods with automatic fallback for maximum compatibility:
-
-```python
-# For documents (during ingestion)
-embeddings = model.encode_document(
-    texts,
-    convert_to_numpy=True,
-    normalize_embeddings=True,
-    batch_size=32,
-    precision="float32",
-    show_progress_bar=False,
-    device=None,
-)
-
-# For queries (during search)
-embeddings = model.encode_query(
-    texts,
-    convert_to_numpy=True,
-    normalize_embeddings=True,
-    batch_size=32,
-    precision="float32",
-    show_progress_bar=False,
-    device=None,
-)
-```
+Our encoding system uses context-aware methods with automatic fallback for maximum compatibility.
 
 **Context-Aware Encoding:**
 

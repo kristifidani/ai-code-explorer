@@ -20,7 +20,7 @@ Traditional databases store exact data (text, numbers, dates), but AI applicatio
    Database finds closest vectors → Returns similar code functions
 ```
 
-### ChromaDB: Our Vector Database Choice
+### Our Choice
 
 **ChromaDB** is an open-source vector database designed for AI applications:
 
@@ -48,12 +48,12 @@ results = query_chunks(query_embedding, number_of_results=3)
 
 ## What Works Well
 
-✅ **Clean separation of concerns** - Each module has a single responsibility.
-✅ **Deduplication** - Prevents storing duplicate code chunks
-✅ **Repository isolation** - Each repo gets its own collection
-✅ **Batch operations** - Efficient handling of multiple chunks
-✅ **Error handling** - Proper exception handling with custom errors
-✅ **NumPy compatibility** - Handles ChromaDB version issues
+**Clean separation of concerns** - Each module has a single responsibility.
+**Deduplication** - Prevents storing duplicate code chunks.
+**Repository isolation** - Each repo gets its own collection.
+**Batch operations** - Efficient handling of multiple chunks.
+**Error handling** - Proper exception handling with custom errors.
+**NumPy compatibility** - Handles ChromaDB version issues.
 
 ## Current Limitations & Future Improvements
 

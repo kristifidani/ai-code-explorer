@@ -4,10 +4,17 @@
 from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
 import logging
+from contextlib import asynccontextmanager
 
 load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+logging.getLogger("chromadb").setLevel(logging.WARNING)
+logging.getLogger("transformers").setLevel(logging.WARNING)
+logging.getLogger("watchfiles").setLevel(logging.WARNING)
+# Suppress the model loading warnings
+logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
+
 from ai_service import (
     errors,
     utils,
@@ -20,7 +27,29 @@ import uvicorn
 
 from .handlers import ingest_router, answer_router
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize services on startup and cleanup on shutdown."""
+
+    # Initialize ChromaDB
+    logger.info("Initializing ChromaDB...")
+    from ai_service.db_setup import initialize_db
+
+    initialize_db()
+
+    # Initialize SentenceTransformer model
+    logger.info("Loading embedding model...")
+    from ai_service.embeddings import initialize_model
+
+    initialize_model()
+
+    yield
+
+    logger.info("Application shutdown")
+
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(ingest_router)
 app.include_router(answer_router)
 

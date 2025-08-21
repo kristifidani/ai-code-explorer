@@ -14,10 +14,11 @@ See README.md for detailed information about the embedding model and architectur
 """
 
 from .encoding import embed_documents, embed_query
-from .transformer import get_model
+from .transformer import get_model, initialize_model
 
 __all__ = [
     "embed_documents",
     "embed_query",
     "get_model",
+    "initialize_model",
 ]

@@ -39,7 +39,9 @@ def setup_test_context_and_clean_db(
     set_repo_context(test_repo_url)
 
     # Patch get_collection to return our test collection
-    monkeypatch.setattr("ai_service.db.get_collection", lambda: db_test_collection)
+    monkeypatch.setattr(
+        "ai_service.db_setup.get_collection", lambda: db_test_collection
+    )
 
     yield
 

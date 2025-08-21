@@ -6,9 +6,6 @@ Embedding generation and validation.
 import pytest
 from ai_service import errors
 from ai_service.embeddings import embed_documents, embed_query
-from dotenv import load_dotenv
-
-load_dotenv()
 
 
 class TestInputValidation:

@@ -10,12 +10,26 @@ if not hasattr(np, "float_"):
 
 import chromadb
 from contextvars import ContextVar
+from typing import Optional, Any
 
-# Set up ChromaDB client and persistent collection
-chroma_path = utils.get_env_var(constants.CHROMA_STORE_PATH)
-client = chromadb.PersistentClient(path=chroma_path)
-
+# Global client variable - initialized once at startup
+_client: Optional[Any] = None
 _current_repo_url: ContextVar[str] = ContextVar("current_repo_url")
+
+
+def initialize_db() -> None:
+    """Initialize the ChromaDB client at application startup."""
+    global _client
+    if _client is None:
+        chroma_path = utils.get_env_var(constants.CHROMA_STORE_PATH)
+        _client = chromadb.PersistentClient(path=chroma_path)
+
+
+def _get_client() -> Any:
+    """Get the initialized ChromaDB client."""
+    if _client is None:
+        raise errors.DatabaseError.missing_db_init()
+    return _client
 
 
 def set_repo_context(canonical_github_url: str) -> None:
@@ -30,6 +44,7 @@ def get_collection() -> chromadb.Collection:
     except LookupError as e:
         raise errors.DatabaseError.no_repo_context(e) from e
 
+    client = _get_client()
     url_hash = hashlib.sha256(canonical_github_url.encode("utf-8")).hexdigest()[:12]
     repo_name = canonical_github_url.split("/")[-1].replace(".git", "")
     collection_name = f"{repo_name}_{url_hash}"

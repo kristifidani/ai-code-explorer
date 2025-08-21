@@ -1,11 +1,14 @@
 import logging
-from functools import lru_cache
+from typing import Optional
 from ai_service import errors, utils, constants
 import torch
 from sentence_transformers import SentenceTransformer
 
 
 logger = logging.getLogger(__name__)
+
+# Global model variable - initialized once at startup
+_model: Optional[SentenceTransformer] = None
 
 
 def _get_device() -> str:
@@ -25,32 +28,36 @@ def _get_device() -> str:
     return "cpu"
 
 
-@lru_cache(maxsize=1)
-def get_model(
-    trust_remote_code: bool = False,  # Might be required for some code models
-) -> SentenceTransformer:
+def initialize_model(trust_remote_code: bool = False) -> None:
+    """Initialize the embedding model at application startup."""
+    global _model
+    if _model is None:
+        model_name = utils.get_env_var(constants.EMBEDDING_MODEL)
+        device = _get_device()
+
+        try:
+            logger.info(f"Device: {device}")
+
+            _model = SentenceTransformer(
+                model_name_or_path=model_name,
+                device=device,
+                trust_remote_code=trust_remote_code,
+                cache_folder=None,  # Use default cache location
+            )
+        except Exception as e:
+            raise errors.EmbeddingError.model_load_failed(model_name, e) from e
+
+
+def get_model() -> SentenceTransformer:
     """
-    Singleton accessor; loads the embedding model on first call only.
-    Implements safe optimizations for code understanding tasks.
+    Get the initialized embedding model.
 
     Returns:
         Loaded SentenceTransformer model optimized for code embeddings.
 
     Raises:
-        EmbeddingError: If model loading fails.
+        EmbeddingError: If model not initialized.
     """
-    model_name = utils.get_env_var(constants.EMBEDDING_MODEL)
-    device = _get_device()
-
-    try:
-        logger.info(f"Loading embedding model: {model_name}")
-        logger.info(f"Device: {device}")
-
-        return SentenceTransformer(
-            model_name_or_path=model_name,
-            device=device,
-            trust_remote_code=trust_remote_code,
-            cache_folder=None,  # Use default cache location
-        )
-    except Exception as e:
-        raise errors.EmbeddingError.model_load_failed(model_name, e) from e
+    if _model is None:
+        raise errors.EmbeddingError.missing_model()
+    return _model

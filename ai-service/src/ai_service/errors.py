@@ -11,6 +11,10 @@ class EmbeddingError(AIServiceError):
     def model_load_failed(cls, model_name: str, error: Exception) -> "EmbeddingError":
         return cls(f"Failed to load embedding model '{model_name}': {error}")
 
+    @classmethod
+    def missing_model(cls) -> "EmbeddingError":
+        return cls("Embedding model not initialized.")
+
 
 class LLMQueryError(AIServiceError):
     @classmethod
@@ -30,6 +34,10 @@ class DatabaseError(AIServiceError):
     @classmethod
     def no_repo_context(cls, error: Exception) -> "DatabaseError":
         return cls(f"No repository context set. Call set_repo_context() first. {error}")
+
+    @classmethod
+    def missing_db_init(cls) -> "DatabaseError":
+        return cls("DB not initialized.")
 
 
 class NotFound(AIServiceError):

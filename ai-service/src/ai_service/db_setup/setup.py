@@ -1,0 +1,51 @@
+import hashlib
+import numpy as np
+from ai_service import constants, utils, errors
+
+# --- Handle ChromaDB NumPy compatibility ---
+# ChromaDB may fail with newer NumPy versions >2.0 that removed np.float_
+# This ensures backward compatibility by aliasing float_ to float64
+if not hasattr(np, "float_"):
+    np.float_ = np.float64  # type: ignore
+
+import chromadb
+from contextvars import ContextVar
+from typing import Optional, Any
+
+# Global client variable - initialized once at startup
+_client: Optional[Any] = None
+_current_repo_url: ContextVar[str] = ContextVar("current_repo_url")
+
+
+def initialize_db() -> None:
+    """Initialize the ChromaDB client at application startup."""
+    global _client
+    if _client is None:
+        chroma_path = utils.get_env_var(constants.CHROMA_STORE_PATH)
+        _client = chromadb.PersistentClient(path=chroma_path)
+
+
+def _get_client() -> Any:
+    """Get the initialized ChromaDB client."""
+    if _client is None:
+        raise errors.DatabaseError.missing_db_init()
+    return _client
+
+
+def set_repo_context(canonical_github_url: str) -> None:
+    """Set the current repository URL context for all DB operations."""
+    _current_repo_url.set(canonical_github_url)
+
+
+def get_collection() -> chromadb.Collection:
+    """Get or create a ChromaDB collection using the current repo context."""
+    try:
+        canonical_github_url = _current_repo_url.get()
+    except LookupError as e:
+        raise errors.DatabaseError.no_repo_context(e) from e
+
+    client = _get_client()
+    url_hash = hashlib.sha256(canonical_github_url.encode("utf-8")).hexdigest()[:12]
+    repo_name = canonical_github_url.split("/")[-1].replace(".git", "")
+    collection_name = f"{repo_name}_{url_hash}"
+    return client.get_or_create_collection(collection_name)

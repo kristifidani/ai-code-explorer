@@ -13,8 +13,6 @@ def _encode_texts(
     texts: list[str],
     *,
     is_query: bool = False,
-    batch_size: int = 32,
-    show_progress_bar: bool = False,
 ) -> list[list[float]]:
     """
     Internal function to create embeddings for a list of texts.
@@ -23,8 +21,6 @@ def _encode_texts(
     Args:
         texts: A list of strings to embed.
         is_query: Whether these are search queries (True) or documents (False).
-        batch_size: Batch size for processing (default: 32).
-        show_progress_bar: Show progress bar. (default: False)
 
     Returns:
         A list of embeddings (each embedding is a list of floats).
@@ -45,10 +41,7 @@ def _encode_texts(
                 texts,
                 convert_to_numpy=True,
                 normalize_embeddings=True,
-                batch_size=batch_size,
-                precision="float32",
-                show_progress_bar=show_progress_bar,
-                device=None,  # Use model's configured device
+                show_progress_bar=False,
             )
         elif not is_query and hasattr(model, "encode_document"):
             logger.debug(f"Encoding {len(texts)} documents using encode_document")
@@ -56,10 +49,7 @@ def _encode_texts(
                 texts,
                 convert_to_numpy=True,
                 normalize_embeddings=True,
-                batch_size=batch_size,
-                precision="float32",
-                show_progress_bar=show_progress_bar,
-                device=None,  # Use model's configured device
+                show_progress_bar=False,
             )
         else:
             logger.debug(f"Encoding {len(texts)} texts using default method")
@@ -67,10 +57,6 @@ def _encode_texts(
                 texts,
                 convert_to_numpy=True,
                 normalize_embeddings=True,
-                batch_size=batch_size,
-                precision="float32",
-                show_progress_bar=show_progress_bar,
-                device=None,  # Use model's configured device
             )
         return cast(list[list[float]], embeddings.tolist())  # type: ignore
 

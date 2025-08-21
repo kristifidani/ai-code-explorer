@@ -29,72 +29,32 @@ Output Vector:
 - Search query "add two numbers" will be close to the function vector.
 - Enables semantic search beyond exact keyword matching.
 
-## Selected Model: `jinaai/jina-embeddings-v2-base-code`
+## Model Selection
 
-**Why this model?**
+### Default Model: `sentence-transformers/all-MiniLM-L6-v2`
 
-- **Code-specialized with wide language coverage & long context**
-It's trained specifically on source code _(via GitHub)_ and supports _30 programming languages_, ideal for exploring diverse, multi-language repositories. It can process up to _8,192_ tokens, allowing you to embed entire files or large code regions in a single pass. Critical for context-aware retrieval in big codebases.
-- **High performance on code-specific benchmarks**
-With just ~161 million parameters (~307 MB), it remains compact and efficient—so embedding large corpora is practical even on moderate hardware.
-- **Plug-and-play integration and ecosystem-friendly**
-Designed to work seamlessly with SentenceTransformers (and frameworks like Haystack, LlamaIndex), it supports mean-pooling and “trust_remote_code” loads for quick implementation in embedding pipelines.
+**Current default choice for resource efficiency:**
 
-More information about this model can be found on [Hugging Face](https://huggingface.co/jinaai/jina-embeddings-v2-base-code).
+- **Lightweight & Fast**: Only ~23MB model size, fits comfortably on GPUs with 2GB+ memory.
+- **Good Performance**: 384-dimensional embeddings that work well for code similarity.
+- **Wide Compatibility**: Works on CPU, GPU, and low-resource environments.
+- **Quick Setup**: Fast download and initialization times.
+
+Depending on the resources, you can choose more optimal models like [jinaai/jina-embeddings-v2-base-code](https://huggingface.co/jinaai/jina-embeddings-v2-base-code) which is specialized in code embeddings and trained on Github repositories.
 
 ## Transformer Configuration
 
-Our transformer setup uses a singleton pattern with automatic device detection for optimal performance:
+Minimalistic configuration for this MVP:
 
-```python
-@lru_cache(maxsize=1)
-def get_model(trust_remote_code: bool = False) -> SentenceTransformer:
-    model_name = utils.get_env_var(constants.EMBEDDING_MODEL)
-    device = _get_device()
-
-    return SentenceTransformer(
-        model_name_or_path=model_name,
-        device=device,
-        trust_remote_code=trust_remote_code,
-        cache_folder=None,
-    )
-```
-
-**Configuration Parameters:**
-
-- **`model_name_or_path`**: The previous mentioned model retrieved from environment variable `EMBEDDING_MODEL`.
-- **`device`**: Automatically detects and uses best available hardware: `CUDA` → `MPS` → `CPU`.
-- **`trust_remote_code`**: Set to `False` by default for security, but might be required for some specialized code models.
+- **`model_name_or_path`**: Model retrieved from environment variable `EMBEDDING_MODEL`.
+- **`trust_remote_code`**: Set to `False` by default for security reasons, but might be required for some specialized code models.
 - **`cache_folder`**: Uses default HuggingFace cache location for model storage.
-- **`@lru_cache(maxsize=1)`**: Ensures single model instance per process, preventing memory waste from repeated loading.
+
+Check the `SentenceTransformer` class implementation for more configuration options.
 
 ## Encoding Configuration
 
-Our encoding system uses context-aware methods with automatic fallback for maximum compatibility:
-
-```python
-# For documents (during ingestion)
-embeddings = model.encode_document(
-    texts,
-    convert_to_numpy=True,
-    normalize_embeddings=True,
-    batch_size=32,
-    precision="float32",
-    show_progress_bar=False,
-    device=None,
-)
-
-# For queries (during search)
-embeddings = model.encode_query(
-    texts,
-    convert_to_numpy=True,
-    normalize_embeddings=True,
-    batch_size=32,
-    precision="float32",
-    show_progress_bar=False,
-    device=None,
-)
-```
+Our encoding system uses context-aware methods with automatic fallback for maximum compatibility.
 
 **Context-Aware Encoding:**
 
@@ -105,29 +65,16 @@ embeddings = model.encode_query(
 **Configuration Parameters:**
 
 - **`convert_to_numpy=True`**: Returns NumPy arrays for ChromaDB compatibility and efficient storage.
-- **`normalize_embeddings=True`**: Converts to unit vectors enabling fast dot-product similarity calculations.
-- **`batch_size=32`**: Fixed batch size that balances memory usage and processing speed.
-- **`precision="float32"`**: Full precision for maximum accuracy in similarity calculations.
-- **`show_progress_bar=False`**: Disabled by default to reduce overhead, automatically enabled for large batches.
-- **`device=None`**: Uses device configured during model loading (inherits from transformer setup).
+- **`normalize_embeddings=True`**: Converts to unit vectors enabling fast similarity calculations.
+- **`batch_size=32`**: Default batch size that balances memory usage and processing speed.
+- **`precision="float32"`**: Default precision for maximum accuracy in similarity calculations.
+- **`show_progress_bar=False`**: Disabled by default to reduce overhead.
 
 ## Possible Future Optimizations
 
-**Code Understanding Improvements:**
-
-- **Intelligent Text Chunking:** Split large files at logical boundaries (functions, classes, modules) rather than arbitrary character limits.
+- **Intelligent Text Chunking:** Split large files at logical boundaries (functions, classes, modules).
 - **Context-Preserving Preprocessing:** Maintain code structure and comments during embedding to improve semantic understanding.
 - **Multi-file Context:** Consider file relationships and imports when embedding for better code comprehension.
-
-**Performance Improvements:**
-
-- **Adaptive Batch Sizing:** Dynamic batch sizes based on available GPU memory and text length.
 - **Dimension Optimization:** Configurable output dimensions (768→512→256) for speed/storage trade-offs based on use case.
-
-**Flow Improvements:**
-
 - **Incremental Embedding:** Only re-embed changed code sections rather than entire files.
 - **Caching Strategy:** Implement file-level embedding cache with content hash validation.
-- **Error Recovery:** Better handling of malformed code and encoding failures with graceful degradation.
-
-**Note:** Our focus is on practical optimizations for code understanding and embedding efficiency. We avoid benchmarking multiple models or training custom models, instead concentrating on optimizing the current pipeline for better performance and accuracy.

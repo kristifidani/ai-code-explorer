@@ -5,10 +5,7 @@ Embedding generation and validation.
 
 import pytest
 from ai_service import errors
-from ai_service.embeddings import encoding
-from dotenv import load_dotenv
-
-load_dotenv()
+from ai_service.embeddings import embed_documents, embed_query
 
 
 class TestInputValidation:
@@ -20,12 +17,12 @@ class TestInputValidation:
             errors.EmbeddingError,
             match="Cannot embed empty or whitespace-only texts",
         ):
-            encoding.embed_query(invalid_input)
-            encoding.embed_documents([invalid_input])
+            embed_query(invalid_input)
+            embed_documents([invalid_input])
 
     def test_embed_documents_rejects_empty_list(self):
         with pytest.raises(errors.EmbeddingError):
-            encoding.embed_documents([])
+            embed_documents([])
 
 
 class TestEmbeddingGeneration:
@@ -33,7 +30,7 @@ class TestEmbeddingGeneration:
 
     def test_embed_query_returns_valid_embedding(self):
         text = "def example_function(): return 42"
-        embedding = encoding.embed_query(text)
+        embedding = embed_query(text)
 
         assert isinstance(embedding, list)
         assert len(embedding) > 0
@@ -41,7 +38,7 @@ class TestEmbeddingGeneration:
 
     def test_embed_documents_returns_valid_embeddings(self):
         texts = ["def func1(): pass", "def func2(): pass"]
-        embeddings = encoding.embed_documents(texts)
+        embeddings = embed_documents(texts)
 
         assert isinstance(embeddings, list)
         assert len(embeddings) == len(texts)
@@ -52,8 +49,8 @@ class TestEmbeddingGeneration:
     def test_query_vs_document_embedding_dimensions_match(self):
         text = "def example_function(): return 42"
 
-        query_embedding = encoding.embed_query(text)
-        document_embeddings = encoding.embed_documents([text])
+        query_embedding = embed_query(text)
+        document_embeddings = embed_documents([text])
 
         assert len(query_embedding) == len(document_embeddings[0])
 
@@ -71,7 +68,7 @@ class TestEmbeddingGeneration:
         ],
     )
     def test_embed_query_handles_unicode_and_special_chars(self, text: str):
-        embedding = encoding.embed_query(text)
+        embedding = embed_query(text)
         assert len(embedding) > 0
         assert all(isinstance(x, float) for x in embedding)
 
@@ -81,7 +78,7 @@ class TestBatchProcessing:
 
     def test_embed_documents_batch_consistency(self):
         texts = [f"def function_{i}(): pass" for i in range(10)]
-        embeddings = encoding.embed_documents(texts)
+        embeddings = embed_documents(texts)
 
         assert len(embeddings) == len(texts)
         # All embeddings should have the same dimension
@@ -91,7 +88,7 @@ class TestBatchProcessing:
     def test_embed_documents_large_batch(self):
         # Test with a larger batch to ensure no memory issues
         texts = [f"def function_{i}(): return {i}" for i in range(50)]
-        embeddings = encoding.embed_documents(texts)
+        embeddings = embed_documents(texts)
 
         assert len(embeddings) == 50
         assert all(len(emb) > 0 for emb in embeddings)
@@ -100,11 +97,11 @@ class TestBatchProcessing:
         text = "def example_function(): return 42"
 
         # Single document embedding
-        single_embedding = encoding.embed_documents([text])[0]
+        single_embedding = embed_documents([text])[0]
 
         # Same text in a batch with others
         batch_texts = ["def other1(): pass", text, "def other2(): pass"]
-        batch_embeddings = encoding.embed_documents(batch_texts)
+        batch_embeddings = embed_documents(batch_texts)
 
         # The embedding for the same text should be very similar
         # (allowing for minor floating point differences)
@@ -114,8 +111,8 @@ class TestBatchProcessing:
         """Test that same input produces same embedding (for consistency)."""
         text = "def test_function(): return 42"
 
-        embedding1 = encoding.embed_query(text)
-        embedding2 = encoding.embed_query(text)
+        embedding1 = embed_query(text)
+        embedding2 = embed_query(text)
 
         # Should be identical (not just similar)
         assert embedding1 == embedding2
@@ -126,5 +123,5 @@ class TestBatchProcessing:
         very_long_text = "def func():\n" + "    # comment line\n" * 1000 + "    pass"
 
         # Should not crash, should handle gracefully
-        embedding = encoding.embed_query(very_long_text)
+        embedding = embed_query(very_long_text)
         assert len(embedding) > 0

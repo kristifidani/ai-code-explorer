@@ -20,7 +20,7 @@ Traditional databases store exact data (text, numbers, dates), but AI applicatio
    Database finds closest vectors → Returns similar code functions
 ```
 
-### Our Choice
+### ChromaDB: our vector database choice
 
 **ChromaDB** is an open-source vector database designed for AI applications:
 

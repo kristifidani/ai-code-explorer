@@ -8,14 +8,17 @@ from ai_service.embeddings import initialize_model
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_services_for_integration_tests():
+def setup_services_for_integration_tests(
+    tmp_path_factory: pytest.TempPathFactory,
+):
     """Initialize both DB and embedding model for integration tests."""
     # Mock environment variables for tests
+    chroma_dir = tmp_path_factory.mktemp("")
     with patch.dict(
         os.environ,
         {
             "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2",  # Small model for tests
-            "CHROMA_STORE_PATH": "/tmp/test_chroma_integration",
+            "CHROMA_STORE_PATH": str(chroma_dir),
         },
     ):
         initialize_db()

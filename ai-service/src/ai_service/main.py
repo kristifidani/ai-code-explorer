@@ -8,12 +8,6 @@ from contextlib import asynccontextmanager
 
 load_dotenv()
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-logging.getLogger("chromadb").setLevel(logging.WARNING)
-logging.getLogger("transformers").setLevel(logging.WARNING)
-logging.getLogger("watchfiles").setLevel(logging.WARNING)
-# Suppress the model loading warnings
-logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
 
 from ai_service import (
     errors,
@@ -31,6 +25,11 @@ from .handlers import ingest_router, answer_router
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     """Initialize services on startup and cleanup on shutdown."""
+    # Set library logger levels to reduce noise
+    logging.getLogger("chromadb").setLevel(logging.WARNING)
+    logging.getLogger("transformers").setLevel(logging.WARNING)
+    logging.getLogger("watchfiles").setLevel(logging.WARNING)
+    logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
 
     # Initialize ChromaDB
     logger.info("Initializing ChromaDB...")

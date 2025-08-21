@@ -48,7 +48,6 @@ def _encode_texts(
                 batch_size=batch_size,
                 precision="float32",
                 show_progress_bar=show_progress_bar,
-                device=None,  # Use model's configured device
             )
         elif not is_query and hasattr(model, "encode_document"):
             logger.debug(f"Encoding {len(texts)} documents using encode_document")
@@ -59,7 +58,6 @@ def _encode_texts(
                 batch_size=batch_size,
                 precision="float32",
                 show_progress_bar=show_progress_bar,
-                device=None,  # Use model's configured device
             )
         else:
             logger.debug(f"Encoding {len(texts)} texts using default method")
@@ -70,7 +68,6 @@ def _encode_texts(
                 batch_size=batch_size,
                 precision="float32",
                 show_progress_bar=show_progress_bar,
-                device=None,  # Use model's configured device
             )
         return cast(list[list[float]], embeddings.tolist())  # type: ignore
 

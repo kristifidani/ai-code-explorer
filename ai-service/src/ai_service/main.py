@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 
 load_dotenv()
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 from ai_service import (
     errors,
@@ -29,7 +30,6 @@ async def lifespan(_app: FastAPI):
     logging.getLogger("chromadb").setLevel(logging.WARNING)
     logging.getLogger("transformers").setLevel(logging.WARNING)
     logging.getLogger("watchfiles").setLevel(logging.WARNING)
-    logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
 
     # Initialize ChromaDB
     logger.info("Initializing ChromaDB...")

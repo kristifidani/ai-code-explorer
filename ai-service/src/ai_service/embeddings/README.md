@@ -29,23 +29,33 @@ Output Vector:
 - Search query "add two numbers" will be close to the function vector.
 - Enables semantic search beyond exact keyword matching.
 
-## Selected Model: `jinaai/jina-embeddings-v2-base-code`
+## Model Selection & Resource Requirements
 
-**Why this model?**
+### Default Model: `sentence-transformers/all-MiniLM-L6-v2`
+
+**Current default choice for resource efficiency:**
+
+- **Lightweight & Fast**: Only ~23MB model size, fits comfortably on GPUs with 2GB+ memory
+- **Good Performance**: 384-dimensional embeddings that work well for code similarity
+- **Wide Compatibility**: Works on CPU, GPU, and low-resource environments
+- **Quick Setup**: Fast download and initialization times
+
+### Recommended Model: `jinaai/jina-embeddings-v2-base-code`
+
+**Optimal choice for production with sufficient resources (8GB+ GPU memory):**
 
 - **Code-specialized with wide language coverage & long context**
-It's trained specifically on source code _(via GitHub)_ and supports _30 programming languages_, ideal for exploring diverse, multi-language repositories. It can process up to _8,192_ tokens, allowing you to embed entire files or large code regions in a single pass. Critical for context-aware retrieval in big codebases.
+  It's trained specifically on source code _(via GitHub)_ and supports _30 programming languages_, ideal for exploring diverse, multi-language repositories. It can process up to _8,192_ tokens, allowing you to embed entire files or large code regions in a single pass. Critical for context-aware retrieval in big codebases.
 - **High performance on code-specific benchmarks**
-With just ~161 million parameters (~307 MB), it remains compact and efficient—so embedding large corpora is practical even on moderate hardware.
+  With ~161 million parameters (~307 MB), it provides superior embedding quality for code understanding tasks.
 - **Plug-and-play integration and ecosystem-friendly**
-Designed to work seamlessly with SentenceTransformers (and frameworks like Haystack, LlamaIndex), it supports mean-pooling and “trust_remote_code” loads for quick implementation in embedding pipelines.
+  Designed to work seamlessly with SentenceTransformers (and frameworks like Haystack, LlamaIndex), it supports mean-pooling and "trust_remote_code" loads for quick implementation in embedding pipelines.
 
 More information about this model can be found on [Hugging Face](https://huggingface.co/jinaai/jina-embeddings-v2-base-code).
 
 ## Transformer Configuration
 
 - **`model_name_or_path`**: The previous mentioned model retrieved from environment variable `EMBEDDING_MODEL`.
-- **`device`**: Automatically detects and uses best available hardware: `CUDA` → `MPS` → `CPU`.
 - **`trust_remote_code`**: Set to `False` by default for security, but might be required for some specialized code models.
 - **`cache_folder`**: Uses default HuggingFace cache location for model storage.
 
@@ -66,7 +76,6 @@ Our encoding system uses context-aware methods with automatic fallback for maxim
 - **`batch_size=32`**: Fixed batch size that balances memory usage and processing speed.
 - **`precision="float32"`**: Full precision for maximum accuracy in similarity calculations.
 - **`show_progress_bar=False`**: Disabled by default to reduce overhead, automatically enabled for large batches.
-- **`device=None`**: Uses device configured during model loading (inherits from transformer setup).
 
 ## Possible Future Optimizations
 

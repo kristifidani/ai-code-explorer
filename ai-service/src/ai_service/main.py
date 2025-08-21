@@ -29,7 +29,7 @@ from .handlers import ingest_router, answer_router
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     """Initialize services on startup and cleanup on shutdown."""
 
     # Initialize ChromaDB

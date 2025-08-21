@@ -18,7 +18,6 @@ def setup_services_for_integration_tests():
             "CHROMA_STORE_PATH": "/tmp/test_chroma_integration",
         },
     ):
-
         initialize_db()
         initialize_model()
         yield

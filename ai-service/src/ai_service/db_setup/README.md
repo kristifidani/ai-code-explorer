@@ -24,11 +24,11 @@ Traditional databases store exact data (text, numbers, dates), but AI applicatio
 
 **ChromaDB** is an open-source vector database designed for AI applications:
 
-- **Simple to deploy** - No complex setup, works locally or in production
-- **Similarity search** - Finds semantically similar content, not just exact matches
-- **Collections** - Organize data by project/repository for isolation
-- **Fast queries** - Optimized for vector similarity operations
-- **Python-native** - Excellent integration with our Python stack
+- **Simple to deploy** - No complex setup, works locally or in production.
+- **Similarity search** - Finds semantically similar content, not just exact matches.
+- **Collections** - Organize data by project/repository for isolation.
+- **Fast queries** - Optimized for vector similarity operations with possible filtering options based on metadata.
+- **Python-native** - Excellent integration with our Python stack.
 
 ## Current Storage Flow
 
@@ -43,24 +43,22 @@ add_chunks(chunks, embeddings)
 
 # 3. Query for similar code
 query_embedding = embed_query("function that returns string")
-results = query_chunks(query_embedding, number_of_results=3)
+results = query_chunks(query_embedding, number_of_results=1)
 ```
 
 ## What Works Well
 
-**Clean separation of concerns** - Each module has a single responsibility.
 **Deduplication** - Prevents storing duplicate code chunks.
 **Repository isolation** - Each repo gets its own collection.
 **Batch operations** - Efficient handling of multiple chunks.
 **Error handling** - Proper exception handling with custom errors.
-**NumPy compatibility** - Handles ChromaDB version issues.
 
 ## Current Limitations & Future Improvements
 
 ### 1. **Limited Metadata**
 
-**Current:** Only stores code content and embeddings
-**Future Enhancement:**
+**Current:** Only stores code content and embeddings. Therefore, limited search only by content-based similarity.
+**Future Enhancement:** Add metadata
 
 ```python
 # Rich metadata structure
@@ -75,20 +73,17 @@ metadata = {
 }
 ```
 
-### 2. **Limited Search Context**
+This enables:
 
-**Current:** Only content-based similarity search
+- Metadata-filtered search (by language, file type, function name).
+- Hybrid search combining content + metadata relevance.
+- Language specific filtering.
+
+### 2. **Basic Hash Strategy**
+
+**Current:** Simple content-based SHA256 hashing of whole files.
 **Future Enhancement:**
 
-- Metadata-filtered search (by language, file type, function name)
-- Hybrid search combining content + metadata relevance
-- Language-specific search optimizations
-
-### 3. **Basic Hash Strategy**
-
-**Current:** Simple content-based SHA256 hashing
-**Future Enhancement:**
-
-- Include metadata in hash for better uniqueness
-- Handle code refactoring (similar content, different locations)
-- Version-aware deduplication
+- Include metadata in hash for better uniqueness.
+- Handle code refactoring (similar content, different locations).
+- Version-aware deduplication.

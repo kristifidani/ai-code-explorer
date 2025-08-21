@@ -12,10 +12,10 @@ def query_chunks(
 
     Args:
         text_embedding: Vector embedding of a user query.
-        number_of_results: Number of results to return (1-100).
+        number_of_results: Number of results to return (1-100). Default is 10.
 
     Returns:
-        Dict containing 'documents', 'distances', 'metadatas', and 'ids'.
+        A QueryResult object containing the results.
 
     Raises:
         DatabaseError: If the query fails.

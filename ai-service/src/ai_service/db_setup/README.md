@@ -24,11 +24,11 @@ Traditional databases store exact data (text, numbers, dates), but AI applicatio
 
 **ChromaDB** is an open-source vector database designed for AI applications:
 
-- **🚀 Simple to deploy** - No complex setup, works locally or in production
-- **🔍 Similarity search** - Finds semantically similar content, not just exact matches
-- **📚 Collections** - Organize data by project/repository for isolation
-- **⚡ Fast queries** - Optimized for vector similarity operations
-- **🐍 Python-native** - Excellent integration with our Python stack
+- **Simple to deploy** - No complex setup, works locally or in production
+- **Similarity search** - Finds semantically similar content, not just exact matches
+- **Collections** - Organize data by project/repository for isolation
+- **Fast queries** - Optimized for vector similarity operations
+- **Python-native** - Excellent integration with our Python stack
 
 ## Current Storage Flow
 
@@ -75,28 +75,7 @@ metadata = {
 }
 ```
 
-### 2. **Basic Chunking Strategy**
-
-**Current:** Stores entire files as single chunks
-**Future Enhancement:**
-
-- Function-level chunking for better granularity
-- Class-level chunking for OOP contexts
-- Semantic code parsing (AST-based for Python, regex for others)
-- Import statement preservation
-
-### 3. **No URI Support**
-
-**Current:** No links back to original sources
-**Future Enhancement:**
-
-```python
-# Direct links to GitHub
-uris = ["https://github.com/user/repo/blob/main/file.py#L1-L50"]
-add_chunks_with_metadata(chunks, embeddings, metadatas, uris)
-```
-
-### 4. **Limited Search Context**
+### 2. **Limited Search Context**
 
 **Current:** Only content-based similarity search
 **Future Enhancement:**
@@ -105,7 +84,7 @@ add_chunks_with_metadata(chunks, embeddings, metadatas, uris)
 - Hybrid search combining content + metadata relevance
 - Language-specific search optimizations
 
-### 5. **Basic Hash Strategy**
+### 3. **Basic Hash Strategy**
 
 **Current:** Simple content-based SHA256 hashing
 **Future Enhancement:**
@@ -113,33 +92,3 @@ add_chunks_with_metadata(chunks, embeddings, metadatas, uris)
 - Include metadata in hash for better uniqueness
 - Handle code refactoring (similar content, different locations)
 - Version-aware deduplication
-
-## ChromaDB Advanced Features (Not Yet Used)
-
-The current implementation uses basic ChromaDB functionality. Available features for future enhancement:
-
-```python
-collection.add(
-    ids=["id1", "id2"],
-    embeddings=[[0.1, 0.2], [0.3, 0.4]],
-    metadatas=[{"lang": "python"}, {"lang": "js"}],  # ← Not used yet
-    documents=["code1", "code2"],
-    uris=["github.com/..."],  # ← Not used yet
-    images=None  # Not applicable for code
-)
-```
-
-## Performance Considerations
-
-**Current Optimizations:**
-
-- Batch operations for multiple chunks
-- Deduplication to avoid redundant storage
-- NumPy float32 arrays for memory efficiency
-
-**Future Optimizations:**
-
-- Chunk size optimization based on embedding model context window
-- Metadata indexing for faster filtered queries
-- Connection pooling for high-traffic scenarios
-- Async operations for better concurrency

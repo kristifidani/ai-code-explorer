@@ -5,7 +5,7 @@ from ai_service.db_setup.setup import get_collection
 
 def query_chunks(
     text_embedding: list[float],
-    number_of_results: int = 3,
+    number_of_results: int = 10,
 ) -> chromadb.QueryResult:
     """
     Query ChromaDB for most similar documents.

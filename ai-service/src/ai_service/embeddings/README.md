@@ -113,21 +113,9 @@ embeddings = model.encode_query(
 
 ## Possible Future Optimizations
 
-**Code Understanding Improvements:**
-
 - **Intelligent Text Chunking:** Split large files at logical boundaries (functions, classes, modules) rather than arbitrary character limits.
 - **Context-Preserving Preprocessing:** Maintain code structure and comments during embedding to improve semantic understanding.
 - **Multi-file Context:** Consider file relationships and imports when embedding for better code comprehension.
-
-**Performance Improvements:**
-
-- **Adaptive Batch Sizing:** Dynamic batch sizes based on available GPU memory and text length.
 - **Dimension Optimization:** Configurable output dimensions (768→512→256) for speed/storage trade-offs based on use case.
-
-**Flow Improvements:**
-
 - **Incremental Embedding:** Only re-embed changed code sections rather than entire files.
 - **Caching Strategy:** Implement file-level embedding cache with content hash validation.
-- **Error Recovery:** Better handling of malformed code and encoding failures with graceful degradation.
-
-**Note:** Our focus is on practical optimizations for code understanding and embedding efficiency. We avoid benchmarking multiple models or training custom models, instead concentrating on optimizing the current pipeline for better performance and accuracy.

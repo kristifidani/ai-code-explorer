@@ -1,3 +1,6 @@
+from ai_service import errors
+
+
 def chunk_code_file(file_path: str, content: str) -> list[str]:
     """
     Code chunking strategy implementation for preprocessing files.
@@ -20,7 +23,7 @@ def chunk_code_file(file_path: str, content: str) -> list[str]:
     overlap = 5  # Lines to overlap between chunks for context continuity
     step = chunk_size - overlap
     if step <= 0:
-        raise ValueError("chunk_size must be greater than overlap")
+        raise errors.ChunkinggError.chunking_config()
 
     # Create overlapping chunks by stepping through the file
     for i in range(0, len(lines), step):

@@ -33,8 +33,18 @@ File (100 lines) → Chunks:
 
 **Edge cases**:
 
-- Files shorter than the target size (including overlap) are emitted as a single “complete-file” chunk.
-- Chunks with fewer than `min_content` non-empty lines are skipped.
+- Whitespace-only files yield no chunks (`[]`).
+- Final-chunk exception: the trailing chunk is included if it has at least 1 non-empty line.
+
+Example:
+
+```text
+# Tiny file (7 lines), chunk_size=30, overlap=5, min_content=3
+→ emits 1 chunk: lines 1–7 (complete-file)
+
+# Filter example:
+Chunk with only 2 non-empty lines → skipped (min_content=3)
+```
 
 ### Configuration
 

@@ -2,6 +2,12 @@ class AIServiceError(Exception):
     """Base exception for all AI service errors."""
 
 
+class ChunkinggError(AIServiceError):
+    @classmethod
+    def chunking_config(cls) -> "ChunkinggError":
+        return cls("chunk_size must be greater than overlap")
+
+
 class EmbeddingError(AIServiceError):
     @classmethod
     def empty_input(cls) -> "EmbeddingError":

@@ -2,6 +2,12 @@ class AIServiceError(Exception):
     """Base exception for all AI service errors."""
 
 
+class ChunkinggError(AIServiceError):
+    @classmethod
+    def chunking_config(cls) -> "ChunkinggError":
+        return cls("chunk_size must be greater than overlap")
+
+
 class EmbeddingError(AIServiceError):
     @classmethod
     def empty_input(cls) -> "EmbeddingError":
@@ -53,7 +59,7 @@ class InvalidParam(AIServiceError):
 
     @classmethod
     def invalid_results_count(cls) -> "InvalidParam":
-        return cls("number_of_results must be an integer between 1 and 100")
+        return cls("number_of_results must be an integer between 1 and 50")
 
     @classmethod
     def embeddings_count_mismatch(cls) -> "InvalidParam":

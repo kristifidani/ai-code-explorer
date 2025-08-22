@@ -1,6 +1,6 @@
 # 🧠 AI Service
 
-The **AI Service** is a core component of AICodeExplorer, designed to enable semantic codebase search and intelligent Q&A over your source code. It bridges the gap between natural language queries and code understanding by leveraging embeddings, a vector database (ChromaDB), and fast search interfaces. The service allows users to ask questions about their codebase and receive context-aware answers powered by large language models (LLMs).
+The **AI Service** is a core component designed to enable semantic codebase search and intelligent Q&A over your source code. It bridges the gap between natural language queries and code understanding by leveraging embeddings, a vector database (ChromaDB), and fast search interfaces. The service allows users to ask questions about their codebase and receive context-aware answers powered by large language models (LLMs).
 
 ## Current Functionalities
 
@@ -38,5 +38,6 @@ flowchart LR
 
 ## Layers
 
+- [Chunking](./src/ai_service/chunking/README.md): is responsible for preprocessing code files into manageable segments before embedding.
 - [Embeddings](./src/ai_service/embeddings/README.md): layer responsible for converting code and natural language queries into high-dimensional vectors that capture semantic meaning.
 - [Vector DB](./src/ai_service/db_setup/README.md): layer responsible for managing ChromaDB operations for storing and querying code embeddings (semantic search).

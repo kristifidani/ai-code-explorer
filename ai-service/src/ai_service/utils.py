@@ -1,5 +1,11 @@
 import os
+from typing import Final
 from ai_service import errors
+
+CHROMA_STORE_PATH: Final[str] = "CHROMA_STORE_PATH"
+LLM_MODEL: Final[str] = "LLM_MODEL"
+EMBEDDING_MODEL: Final[str] = "EMBEDDING_MODEL"
+PORT: Final[str] = "PORT"
 
 
 def get_env_var(name: str) -> str:

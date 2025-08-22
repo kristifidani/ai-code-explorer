@@ -15,7 +15,7 @@ def setup_services_for_integration_tests() -> Generator[None, None, None]:
         os.environ,
         {
             "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2",  # Small model for tests
-            "CHROMA_STORE_PATH": "./test_chroma_store",  # Use a test-specific path
+            "CHROMA_STORE_PATH": "./tests/test_chroma_store",  # Use a test-specific path
         },
     ):
         initialize_db()

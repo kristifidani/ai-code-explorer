@@ -36,14 +36,16 @@ Traditional databases store exact data (text, numbers, dates), but AI applicatio
 # 1. Set repository context
 set_repo_context("https://github.com/user/repo.git")
 
-# 2. Store code chunks
-chunks = ["def hello(): return 'world'", "class MyClass: pass"]
+# 2. Code is chunked into manageable segments (see chunking layer)
+chunks = chunk_code_file(file_path, content)  # From chunking layer
+
+# 3. Store code chunks with their embeddings
 embeddings = embed_documents(chunks)  # From embeddings layer
 add_chunks(chunks, embeddings)
 
-# 3. Query for similar code
+# 4. Query for similar code
 query_embedding = embed_query("function that returns string")
-results = query_chunks(query_embedding, number_of_results=1)
+results = query_chunks(query_embedding, number_of_results=4)
 ```
 
 ## What Works Well
@@ -57,15 +59,15 @@ results = query_chunks(query_embedding, number_of_results=1)
 
 ### 1. **Limited Metadata**
 
-**Current:** Only stores code content and embeddings. Therefore, limited search only by content-based similarity.
-**Future Enhancement:** Add metadata
+**Current:** Only stores code content and embeddings, limiting search to content-based similarity.
+**Future Enhancement:** Add rich metadata for better filtering and search capabilities.
 
 ```python
 # Rich metadata structure
 metadata = {
     "file_path": "src/handlers/ingest.py",
     "language": "python",
-    "chunk_type": "function",  # function, class, file
+    "chunk_type": "function",  # function, class, import_block
     "function_name": "ingest_github_project",
     "line_start": 42,
     "line_end": 89,
@@ -77,7 +79,8 @@ This enables:
 
 - Metadata-filtered search (by language, file type, function name).
 - Hybrid search combining content + metadata relevance.
-- Language specific filtering.
+- Language-specific filtering.
+- Direct links to source code.
 
 ### 2. **Basic Hash Strategy**
 

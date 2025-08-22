@@ -1,6 +1,6 @@
 import hashlib
 import numpy as np
-from ai_service import constants, utils, errors
+from ai_service import utils, errors
 
 # --- Handle ChromaDB NumPy compatibility ---
 # ChromaDB may fail with newer NumPy versions >2.0 that removed np.float_
@@ -21,7 +21,7 @@ def initialize_db() -> None:
     """Initialize the ChromaDB client at application startup."""
     global _client
     if _client is None:
-        chroma_path = utils.get_env_var(constants.CHROMA_STORE_PATH)
+        chroma_path = utils.get_env_var(utils.CHROMA_STORE_PATH)
         _client = chromadb.PersistentClient(path=chroma_path)
 
 

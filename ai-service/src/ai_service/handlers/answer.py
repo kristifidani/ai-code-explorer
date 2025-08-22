@@ -43,15 +43,24 @@ def answer_question(
             unique_snippets = list(dict.fromkeys(documents[0]))
             context = "\n---\n".join(unique_snippets)
             prompt = (
-                "You are an AI assistant helping with a software project.\n\n"
-                "Here is some relevant context from the uploaded project:\n"
-                f"{context}\n\n"
-                "User question:\n"
-                f"{user_question}\n\n"
-                "Answer in detail using the project as context. If context isn't relevant, fall back to general reasoning."
+                "You are an AI assistant analyzing a software project. Your goal is to provide helpful, accurate answers based on the code context.\n\n"
+                "CONTEXT FROM PROJECT:\n"
+                "```\n"
+                f"{context}\n"
+                "```\n\n"
+                f"QUESTION: {user_question}\n\n"
+                "INSTRUCTIONS:\n"
+                "- Analyze the provided code context thoroughly\n"
+                "- Answer based on observable code, configurations, and docs only\n"
+                "- If you find relevant implementation details, explain how they work\n"
+                "- Mention file locations when relevant\n"
+                "- Explicitly state when the context is insufficient; do not speculate\n"
+                "- Keep responses concise but informative\n\n"
+                "ANSWER:"
             )
             logger.info("User question: %s", user_question)
-            logger.info("Most relevant code snippet(s): %s", context)
+            # logger.info("Most relevant code snippet(s): %s", context)
+            logger.info("Context length: %d characters", len(context))
 
         answer = ollama_client.chat_with_ollama(prompt)
         logger.info("LLM answer: %s", answer)

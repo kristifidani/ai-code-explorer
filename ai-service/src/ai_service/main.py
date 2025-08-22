@@ -13,7 +13,6 @@ logging.basicConfig(level=logging.INFO)
 from ai_service import (
     errors,
     utils,
-    constants,
 )
 
 # FastAPI imports
@@ -76,7 +75,11 @@ async def general_exception_handler(_request: Request, exc: Exception) -> JSONRe
 
 
 def main() -> None:
-    app_port = utils.get_env_var(constants.PORT)
+    try:
+        app_port = utils.get_env_var(utils.PORT)
+    except errors.NotFound:
+        app_port = "8000"
+        logger.warning("PORT not set; defaulting to %s", app_port)
     uvicorn.run(
         "ai_service.main:app",
         host="127.0.0.1",

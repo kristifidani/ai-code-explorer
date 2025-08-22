@@ -11,6 +11,33 @@ POST http://localhost:8000/answer
 Content-Type: application/json
 
 {
-  "user_question": "Summarize this project in 3 sentences.",
-  "repo_url": "https://github.com/kristifidani/rust_grpc_poc.git"
+  "user_question": "Explain me the embedding strategy and show me the files where it is.",
+  "canonical_github_url": "https://github.com/kristifidani/ai-code-explorer.git"
+}
+
+### Ask a question about a project
+POST http://localhost:8000/answer
+Content-Type: application/json
+
+{
+  "user_question": "How is the github url validated?",
+  "canonical_github_url": "https://github.com/kristifidani/ai-code-explorer.git"
+}
+
+### Ask a question about a project
+POST http://localhost:8000/answer
+Content-Type: application/json
+
+{
+  "user_question": "What type of validations are happening in the Rust backend service?",
+  "canonical_github_url": "https://github.com/kristifidani/ai-code-explorer.git"
+}
+
+### Ask a question about a project
+POST http://localhost:8000/answer
+Content-Type: application/json
+
+{
+  "user_question": "Explain to me briefly the aim of this project and programming languages used.",
+  "canonical_github_url": "https://github.com/kristifidani/ai-code-explorer.git"
 }

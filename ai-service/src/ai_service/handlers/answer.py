@@ -45,22 +45,22 @@ def answer_question(
             prompt = (
                 "You are an AI assistant analyzing a software project. Your goal is to provide helpful, accurate answers based on the code context.\n\n"
                 "CONTEXT FROM PROJECT:\n"
-                f"{context}\n\n"
+                "```\n"
+                f"{context}\n"
+                "```\n\n"
                 f"QUESTION: {user_question}\n\n"
                 "INSTRUCTIONS:\n"
                 "- Analyze the provided code context thoroughly\n"
-                "- Answer based on what you can observe in the code, configurations, and documentation\n"
-                "- If you find relevant implementation details, explain how things work\n"
-                "- If you see file structures or directories, mention their organization\n"
-                "- When discussing features, explain what exists vs what doesn't exist\n"
-                "- Be specific about file locations when relevant\n"
-                "- If the context doesn't contain enough information, say so clearly\n"
+                "- Answer based on observable code, configurations, and docs only\n"
+                "- If you find relevant implementation details, explain how they work\n"
+                "- Mention file locations when relevant\n"
+                "- Explicitly state when the context is insufficient; do not speculate\n"
                 "- Keep responses concise but informative\n\n"
                 "ANSWER:"
             )
             logger.info("User question: %s", user_question)
-            logger.info("Most relevant code snippet(s): %s", context)
-            logger.info(f"Context length: {len(context)} characters")
+            # logger.info("Most relevant code snippet(s): %s", context)
+            logger.info("Context length: %d characters", len(context))
 
         answer = ollama_client.chat_with_ollama(prompt)
         logger.info("LLM answer: %s", answer)

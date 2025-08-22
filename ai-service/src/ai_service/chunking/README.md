@@ -22,7 +22,7 @@ Our current strategy prioritizes **simplicity and reliability** over complexity:
 
 ### How It Works
 
-```python
+```text
 # Example: 100-line file becomes 4 overlapping chunks
 File (100 lines) → Chunks:
 - Chunk 1: lines 1-30
@@ -30,6 +30,11 @@ File (100 lines) → Chunks:
 - Chunk 3: lines 51-80    # 5-line overlap with previous
 - Chunk 4: lines 76-100   # 5-line overlap with previous
 ```
+
+**Edge cases**:
+
+- Files shorter than the target size (including overlap) are emitted as a single “complete-file” chunk.
+- Chunks with fewer than `min_content` non-empty lines are skipped.
 
 ### Configuration
 
@@ -47,9 +52,9 @@ Each chunk includes helpful context headers:
 # File: handlers/answer.py
 # Chunk: lines 15-44
 
-def answer_question(user_question: str, repo_url: str) -> str:
+def answer_question(user_question: str, canonical_github_url: str) -> str:
     try:
-        set_repo_context(repo_url)
+        set_repo_context(canonical_github_url)
         query_embedding = embed_query(user_question)
         # ... rest of function
 ```

@@ -43,18 +43,23 @@ def answer_question(
             unique_snippets = list(dict.fromkeys(documents[0]))
             context = "\n---\n".join(unique_snippets)
             prompt = (
-                "You are an AI assistant helping with a software project.\n\n"
-                "Here is some relevant context from the uploaded project:\n"
+                "You are an AI assistant analyzing a software project. Your goal is to provide helpful, accurate answers based on the code context.\n\n"
+                "CONTEXT FROM PROJECT:\n"
                 f"{context}\n\n"
-                "User question:\n"
-                f"{user_question}\n\n"
-                "You must ONLY use information from the provided code context."
-                "Do not add any information, or make assumptions not explicitly shown in the project."
-                "You must be accurate, fast and thorough in your responses. Stay within the context and understand exactly what the user is asking for."
-                "Make sure to have analyzed everything from the provided context."
+                f"QUESTION: {user_question}\n\n"
+                "INSTRUCTIONS:\n"
+                "- Analyze the provided code context thoroughly\n"
+                "- Answer based on what you can observe in the code, configurations, and documentation\n"
+                "- If you find relevant implementation details, explain how things work\n"
+                "- If you see file structures or directories, mention their organization\n"
+                "- When discussing features, explain what exists vs what doesn't exist\n"
+                "- Be specific about file locations when relevant\n"
+                "- If the context doesn't contain enough information, say so clearly\n"
+                "- Keep responses concise but informative\n\n"
+                "ANSWER:"
             )
             logger.info("User question: %s", user_question)
-            # logger.info("Most relevant code snippet(s): %s", context)
+            logger.info("Most relevant code snippet(s): %s", context)
             logger.info(f"Context length: {len(context)} characters")
 
         answer = ollama_client.chat_with_ollama(prompt)

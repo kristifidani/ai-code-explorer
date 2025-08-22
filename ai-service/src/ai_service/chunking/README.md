@@ -78,17 +78,7 @@ def answer_question(user_question: str, repo_url: str) -> str:
 
 ## Future Optimization Opportunities
 
-### 1. **Semantic-Aware Chunking**
-
-Instead of line-based, chunk by code structure:
-
-- Functions/methods as individual chunks.
-- Classes with their methods.
-- Import blocks as separate chunks.
-
-**Trade-off:** More complexity vs better semantic boundaries.
-
-### 2. **Language-Specific Optimizations**
+### 1. **Language-Specific Optimizations**
 
 - Python: Chunk by function/class definitions.
 - Rust: Chunk by impl blocks, struct definitions.
@@ -96,7 +86,7 @@ Instead of line-based, chunk by code structure:
 
 **Trade-off:** Maintenance overhead vs specialized optimization.
 
-### 3. **Context-Aware Chunking**
+### 2. **Context-Aware Chunking**
 
 - Include related code (function + its dependencies).
 - Maintain file structure information.
@@ -104,7 +94,7 @@ Instead of line-based, chunk by code structure:
 
 **Trade-off:** Larger chunks vs better context preservation.
 
-### 4. **Adaptive Chunk Sizing**
+### 3. **Adaptive Chunk Sizing**
 
 - Small chunks for dense code (functions).
 - Larger chunks for sparse code (configuration files).

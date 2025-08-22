@@ -1,5 +1,10 @@
 def chunk_code_file(file_path: str, content: str) -> list[str]:
-    """Simple, reliable chunking that works everywhere."""
+    """
+    Code chunking strategy implementation for preprocessing files.
+
+    This is the main chunking strategy that splits large code files
+    into smaller, manageable segments for embedding and retrieval.
+    """
     # Split file content into individual lines for processing
     lines = content.strip().split("\n")
 

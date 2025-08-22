@@ -1,6 +1,11 @@
 import os
 from ai_service import errors
 
+CHROMA_STORE_PATH = "CHROMA_STORE_PATH"
+LLM_MODEL = "LLM_MODEL"
+EMBEDDING_MODEL = "EMBEDDING_MODEL"
+PORT = "PORT"
+
 
 def get_env_var(name: str) -> str:
     """

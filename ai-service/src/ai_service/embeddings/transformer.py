@@ -1,6 +1,6 @@
 import logging
 from typing import Optional
-from ai_service import errors, utils, constants
+from ai_service import errors, utils
 from sentence_transformers import SentenceTransformer
 
 
@@ -14,7 +14,7 @@ def initialize_model(trust_remote_code: bool = False) -> None:
     """Initialize the embedding model at application startup."""
     global _model
     if _model is None:
-        model_name = utils.get_env_var(constants.EMBEDDING_MODEL)
+        model_name = utils.get_env_var(utils.EMBEDDING_MODEL)
 
         try:
             _model = SentenceTransformer(

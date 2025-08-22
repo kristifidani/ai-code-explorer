@@ -9,6 +9,7 @@ from ai_service import (
 )
 from ai_service.embeddings import embed_documents
 from ai_service.db_setup import set_repo_context, add_chunks
+from ai_service.chunking import chunk_code_file
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -35,7 +36,10 @@ def ingest_github_project(canonical_github_url: str) -> None:
                     if not code:
                         logger.warning(f"Skipping empty file: {file_path}")
                         continue
-                    code_snippets.append(code)
+
+                    # NEW: Chunk the file instead of storing whole file
+                    file_chunks = chunk_code_file(file_path, code)
+                    code_snippets.extend(file_chunks)  # Add all chunks from this file
             except FileNotFoundError:
                 err = errors.FileReadError.file_not_found(file_path)
                 logger.error(err)
@@ -58,7 +62,7 @@ def ingest_github_project(canonical_github_url: str) -> None:
             embeddings = embed_documents(code_snippets)
 
             add_chunks(code_snippets, embeddings)
-            logger.info(f"Stored {len(code_snippets)} code snippets in ChromaDB.")
+            logger.info(f"Stored {len(code_snippets)} code chunks in ChromaDB.")
         else:
             logger.warning("No valid code snippets found to store.")
     finally:

@@ -72,9 +72,7 @@ Our encoding system uses context-aware methods with automatic fallback for maxim
 
 ## Possible Future Optimizations
 
-- **Intelligent Text Chunking:** Split large files at logical boundaries (functions, classes, modules).
-- **Context-Preserving Preprocessing:** Maintain code structure and comments during embedding to improve semantic understanding.
-- **Multi-file Context:** Consider file relationships and imports when embedding for better code comprehension.
+- **Enhanced Code Models:** Upgrade to specialized code embedding models like `jinaai/jina-embeddings-v2-base-code` trained specifically on GitHub repositories.
 - **Dimension Optimization:** Configurable output dimensions (768→512→256) for speed/storage trade-offs based on use case.
 - **Incremental Embedding:** Only re-embed changed code sections rather than entire files.
 - **Caching Strategy:** Implement file-level embedding cache with content hash validation.

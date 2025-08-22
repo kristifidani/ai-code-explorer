@@ -5,14 +5,14 @@ from ai_service.db_setup.setup import get_collection
 
 def query_chunks(
     text_embedding: list[float],
-    number_of_results: int = 10,
+    number_of_results: int = 4,
 ) -> chromadb.QueryResult:
     """
     Query ChromaDB for most similar documents.
 
     Args:
         text_embedding: Vector embedding of a user query.
-        number_of_results: Number of results to return (1-100). Default is 10.
+        number_of_results: Number of results to return (1-50). Default is 4.
 
     Returns:
         A QueryResult object containing the results.
@@ -23,7 +23,7 @@ def query_chunks(
     """
     if len(text_embedding) == 0:
         raise errors.InvalidParam.empty_embedding()
-    if number_of_results < 1 or number_of_results > 100:
+    if number_of_results < 1 or number_of_results > 50:
         raise errors.InvalidParam.invalid_results_count()
 
     collection = get_collection()

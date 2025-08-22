@@ -48,10 +48,14 @@ def answer_question(
                 f"{context}\n\n"
                 "User question:\n"
                 f"{user_question}\n\n"
-                "Answer in detail using the project as context. If context isn't relevant, fall back to general reasoning."
+                "You must ONLY use information from the provided code context."
+                "Do not add any information, or make assumptions not explicitly shown in the project."
+                "You must be accurate, fast and thorough in your responses. Stay within the context and understand exactly what the user is asking for."
+                "Make sure to have analyzed everything from the provided context."
             )
             logger.info("User question: %s", user_question)
-            logger.info("Most relevant code snippet(s): %s", context)
+            # logger.info("Most relevant code snippet(s): %s", context)
+            logger.info(f"Context length: {len(context)} characters")
 
         answer = ollama_client.chat_with_ollama(prompt)
         logger.info("LLM answer: %s", answer)

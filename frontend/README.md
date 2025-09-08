@@ -15,25 +15,6 @@ A React frontend for the AI Code Explorer application that allows users to uploa
 - **Vite** - Build tool and dev server
 - **ESLint** - Code linting
 
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Type check
-npm run tsc
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
 ## Project Structure
 
 ```text

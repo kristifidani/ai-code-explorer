@@ -1,12 +1,55 @@
-# React + Vite
+# AI Code Explorer - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React frontend for the AI Code Explorer application that allows users to upload GitHub projects and ask questions about the code using AI-powered RAG (Retrieval-Augmented Generation).
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- GitHub project upload via URL
+- AI-powered Q&A chat interface about uploaded code
+- Clean, minimal UI built with React + Vite
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **React 19** - Frontend framework
+- **TypeScript** - Type-safe JavaScript
+- **Vite** - Build tool and dev server
+- **ESLint** - Code linting
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Type check
+npm run tsc
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## Project Structure
+
+```text
+src/
+├── App.tsx          # Main application component
+├── App.css          # Application styles
+├── index.css        # Global styles
+├── main.tsx         # Application entry point
+└── assets/          # Static assets
+```
+
+## Backend Integration
+
+This frontend connects to:
+
+- **Rust Backend** (port 8080) - Main API server
+- **Python AI Service** (port 8000) - AI/RAG processing
+
+Make sure both backend services are running for full functionality.

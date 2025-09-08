@@ -43,7 +43,6 @@ npm run preview
 ```text
 src/
 ├── App.tsx          # Main application component
-├── App.css          # Application styles
 ├── index.css        # Global styles
 ├── main.tsx         # Application entry point
 └── assets/          # Static assets

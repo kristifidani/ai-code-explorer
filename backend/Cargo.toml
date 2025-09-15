@@ -15,6 +15,7 @@ expect_used = "deny"
 
 [dependencies]
 actix-web = { version = "4", default-features = false, features = ["macros"] }
+actix-cors = { version = "0.7", default-features = false }
 dotenvy = { version = "0.15", default-features = false }
 mongodb = { version = "3.2.4", default-features = false, features = [
     "rustls-tls",

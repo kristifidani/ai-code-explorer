@@ -1,3 +1,4 @@
+use actix_cors::Cors;
 use actix_web::{App, HttpServer};
 use backend::{
     app_config::config_app, clients::db::ProjectRepository, tracing::tracing_setup,
@@ -28,9 +29,21 @@ async fn main() -> std::io::Result<()> {
         backend::clients::ai_service_client::AiServiceClient::new(ai_service_url),
     );
 
+    // Frontend origin config (dev default)
+    let frontend_origin: String = parse_env_expect("FRONTEND_API_URL");
+
     HttpServer::new(move || {
+        // Configure CORS for development
+        // TODO: In production, replace with specific frontend domain
+        let cors = Cors::default()
+            .allowed_origin(&frontend_origin) // Vite dev server default port
+            .allowed_methods(vec!["GET", "POST"]) // Only methods we actually use
+            .allowed_headers(vec!["Content-Type", "Accept"])
+            .max_age(3600);
+
         App::new()
             .configure(config_app)
+            .wrap(cors)
             .wrap(actix_web::middleware::Logger::default())
             .app_data(project_repo.clone())
             .app_data(ai_service_client.clone())

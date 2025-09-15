@@ -5,4 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  envDir: '../', // Load .env files from parent directory
+  // only VITE_* vars are injected into client
+  envPrefix: 'VITE_',
 })

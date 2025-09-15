@@ -29,12 +29,14 @@ async fn main() -> std::io::Result<()> {
         backend::clients::ai_service_client::AiServiceClient::new(ai_service_url),
     );
 
+    // Frontend origin config (dev default)
+    let frontend_origin: String = parse_env_expect("FRONTEND_API_URL");
+
     HttpServer::new(move || {
         // Configure CORS for development
         // TODO: In production, replace with specific frontend domain
         let cors = Cors::default()
-            .allowed_origin("http://localhost:5173") // Vite dev server default port
-            // .allowed_origin("http://localhost:5174") // Vite dev server backup port
+            .allowed_origin(&frontend_origin) // Vite dev server default port
             .allowed_methods(vec!["GET", "POST"]) // Only methods we actually use
             .allowed_headers(vec!["Content-Type", "Accept"])
             .max_age(3600);

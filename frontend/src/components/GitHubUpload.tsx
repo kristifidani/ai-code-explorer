@@ -23,6 +23,13 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
+        if (!BACKEND_API_URL) {
+            const errorMessage = 'Backend URL is not configured (VITE_BACKEND_API_URL).'
+            setState(prev => ({ ...prev, error: errorMessage }))
+            onUploadError?.(errorMessage)
+            return
+        }
+
         // Note: GitHub URL validation is handled by the backend
         // Frontend validation could be added here if needed for better UX
 
@@ -33,7 +40,8 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
                 github_url: githubUrl
             }
 
-            const response = await fetch(`${BACKEND_API_URL}/v1/ingest`, {
+            const endpoint = new URL('/v1/ingest', BACKEND_API_URL).toString()
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -55,11 +63,13 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
             } else {
                 const errorMessage = result.message || 'Upload failed'
                 setState(prev => ({ ...prev, isLoading: false, error: errorMessage }))
+                setGithubUrl('')
                 onUploadError?.(errorMessage)
             }
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Network error occurred'
             setState(prev => ({ ...prev, isLoading: false, error: errorMessage }))
+            setGithubUrl('')
             onUploadError?.(errorMessage)
         }
     }
@@ -97,6 +107,7 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
                         {state.canonicalUrl}
                     </p>
                     <button
+                        type="button"
                         onClick={handleReset}
                         className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                     >
@@ -132,7 +143,7 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
                 </div>
 
                 {state.error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-md" role="alert" aria-live="polite">
                         <p className="text-sm text-red-700">{state.error}</p>
                     </div>
                 )}
@@ -144,11 +155,12 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
                 >
                     {state.isLoading ? (
                         <span className="flex items-center justify-center">
-                            <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" role="img" aria-label="Loading">
+                                <title>Loading</title>
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Uploading...
+                            <span className="sr-only">Uploading...</span>
                         </span>
                     ) : (
                         'Upload Project'

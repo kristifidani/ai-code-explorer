@@ -3,10 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, HttpUrl
 from fastapi import APIRouter
 
-from ai_service import (
-    ollama_client,
-    errors,
-)
+from ai_service import ollama_client, errors, utils
 from ai_service.embeddings import embed_query
 from ai_service.db_setup import set_repo_context, query_chunks
 
@@ -65,10 +62,9 @@ def answer_question(
                 context = "\n---\n".join(unique_snippets)
 
                 # Limit context size to prevent overly long prompts
-                MAX_CONTEXT_LENGTH = 12000  # Reasonable limit for most LLMs
-                if len(context) > MAX_CONTEXT_LENGTH:
+                if len(context) > utils.MAX_CONTEXT_LENGTH:
                     context = (
-                        context[:MAX_CONTEXT_LENGTH]
+                        context[: utils.MAX_CONTEXT_LENGTH]
                         + "\n... [Context truncated due to length]"
                     )
 

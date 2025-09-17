@@ -6,6 +6,7 @@ CHROMA_STORE_PATH: Final[str] = "CHROMA_STORE_PATH"
 LLM_MODEL: Final[str] = "LLM_MODEL"
 EMBEDDING_MODEL: Final[str] = "EMBEDDING_MODEL"
 PORT: Final[str] = "PORT"
+MAX_CONTEXT_LENGTH = 12000  # Reasonable limit for most LLMs
 
 
 def get_env_var(name: str) -> str:

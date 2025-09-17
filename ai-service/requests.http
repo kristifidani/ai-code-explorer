@@ -6,7 +6,7 @@ Content-Type: application/json
   "canonical_github_url": "https://github.com/kristifidani/ai-code-explorer.git"
 }
 
-### Ask a question about a project
+### Ask project-specific questions (with GitHub context)
 POST http://localhost:8000/answer
 Content-Type: application/json
 
@@ -15,16 +15,16 @@ Content-Type: application/json
   "canonical_github_url": "https://github.com/kristifidani/ai-code-explorer.git"
 }
 
-### Ask a question about a project
+### Ask project-specific questions (with GitHub context)
 POST http://localhost:8000/answer
 Content-Type: application/json
 
 {
-  "user_question": "How is the github url validated?",
+  "user_question": "How is the github url validated in this project?",
   "canonical_github_url": "https://github.com/kristifidani/ai-code-explorer.git"
 }
 
-### Ask a question about a project
+### Ask project-specific questions (with GitHub context)
 POST http://localhost:8000/answer
 Content-Type: application/json
 
@@ -33,11 +33,35 @@ Content-Type: application/json
   "canonical_github_url": "https://github.com/kristifidani/ai-code-explorer.git"
 }
 
-### Ask a question about a project
+### Ask project-specific questions (with GitHub context)
 POST http://localhost:8000/answer
 Content-Type: application/json
 
 {
   "user_question": "Explain to me briefly the aim of this project and programming languages used.",
   "canonical_github_url": "https://github.com/kristifidani/ai-code-explorer.git"
+}
+
+### Ask general questions (without GitHub context)
+POST http://localhost:8000/answer
+Content-Type: application/json
+
+{
+  "user_question": "What are the best practices for implementing RAG systems?"
+}
+
+### Ask general questions (without GitHub context)
+POST http://localhost:8000/answer
+Content-Type: application/json
+
+{
+  "user_question": "How do vector databases work and when should I use them?"
+}
+
+### Ask general questions (without GitHub context)
+POST http://localhost:8000/answer
+Content-Type: application/json
+
+{
+  "user_question": "What's the difference between microservices and monolithic architecture?"
 }

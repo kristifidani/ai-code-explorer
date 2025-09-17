@@ -63,6 +63,15 @@ def answer_question(
             else:
                 unique_snippets = list(dict.fromkeys(documents[0]))
                 context = "\n---\n".join(unique_snippets)
+
+                # Limit context size to prevent overly long prompts
+                MAX_CONTEXT_LENGTH = 12000  # Reasonable limit for most LLMs
+                if len(context) > MAX_CONTEXT_LENGTH:
+                    context = (
+                        context[:MAX_CONTEXT_LENGTH]
+                        + "\n... [Context truncated due to length]"
+                    )
+
                 prompt = (
                     f"You are an expert software engineer analyzing the GitHub project on this repository: {repo_url}\n\n"
                     f"USER QUESTION related to this project: {user_question}\n\n"
@@ -79,9 +88,9 @@ def answer_question(
                     "6. **Patterns & Practices**: Identify design patterns used, best practices, or potential improvements\n"
                     "7. **Completeness Check**: If context seems insufficient, clearly state what's missing\n\n"
                     "RESPONSE FORMAT:\n"
-                    "- Start with a direct, friendly, exicting, positive and encouraging answer\n"
+                    "- Start with a direct, friendly, exciting, positive and encouraging answer\n"
                     "- Use clear sections/bullet points for complex explanations\n"
-                    "- Include the most relevant code examples if neccessary\n"
+                    "- Include the most relevant code examples if necessary\n"
                     "- Be thorough but structured\n"
                     "- Keep responses complete - finish all thoughts and code examples\n"
                     "- If you can't answer fully, explain exactly why\n\n"
@@ -104,7 +113,7 @@ def answer_question(
                 "4. **Be thorough yet focused**: Cover the topic well without going off-tangent\n"
                 "5. **Include context**: Explain not just 'what' but 'why' and 'when' it matters\n\n"
                 "ADDITIONAL CONTEXT:\n"
-                "- The user is using an AI Code Explorer tool which allows you to upload a github project through its url and ask questions about it.\n"
+                "- The user is using an AI Code Explorer tool which allows uploading a GitHub project via its URL and asking questions about it.\n"
                 "- If relevant, mention they can upload GitHub projects for code-specific analysis\n"
                 "- Focus on being genuinely helpful and educational\n\n"
                 "Provide your response in a clear, professional manner."

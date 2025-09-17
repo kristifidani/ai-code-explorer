@@ -23,7 +23,7 @@ pub async fn answer_question(
     let validated_req = AnswerRequest::new(req.canonical_github_url, req.question)?;
 
     let project_url = if let Some(ref canonical_url) = validated_req.canonical_github_url {
-        // check is the project exists in db
+        // check if the project exists in db
         match project_repo
             .find_by_canonical_github_url(canonical_url)
             .await?
@@ -46,12 +46,6 @@ pub async fn answer_question(
     let resp = ai_client
         .answer(project_url.as_ref(), &validated_req.question)
         .await?;
-
-    if let Some(url) = &project_url {
-        tracing::info!("Question answered for project: {}", url);
-    } else {
-        tracing::info!("General question answered: {}", validated_req.question);
-    }
 
     Ok(ApiResponse::new(
         StatusCode::OK,

@@ -88,7 +88,7 @@ impl MockAiService {
     #[allow(dead_code)]
     pub fn create_successful_answer_mock(
         server: &mut ServerGuard,
-        expected_repo_url: &str,
+        expected_repo_url: Option<&str>,
         expected_question: &str,
         answer_response: &str,
     ) -> mockito::Mock {

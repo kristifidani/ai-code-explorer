@@ -22,29 +22,36 @@ pub async fn answer_question(
     let req = req.into_inner();
     let validated_req = AnswerRequest::new(req.canonical_github_url, req.question)?;
 
-    // Check if the project exists in our database
-    let Some(stored_project) = project_repo
-        .find_by_canonical_github_url(&validated_req.canonical_github_url)
-        .await?
-    else {
-        tracing::warn!(
-            "Project not found in database: {}",
-            validated_req.canonical_github_url
-        );
-        return Ok(ApiResponse::<()>::new(
-            StatusCode::NOT_FOUND,
-            None,
-            "Project not found. Please ingest a project first.",
-        )
-        .into_response());
+    let project_url = if let Some(ref canonical_url) = validated_req.canonical_github_url {
+        // check is the project exists in db
+        match project_repo
+            .find_by_canonical_github_url(canonical_url)
+            .await?
+        {
+            Some(stored_project) => Some(stored_project.canonical_github_url),
+            None => {
+                tracing::warn!("Project not found in database: {}", canonical_url);
+                return Ok(ApiResponse::<()>::new(
+                    StatusCode::NOT_FOUND,
+                    None,
+                    "Project not found. Please ingest a project first.",
+                )
+                .into_response());
+            }
+        }
+    } else {
+        None
     };
 
-    let stored_project_url = stored_project.canonical_github_url;
     let resp = ai_client
-        .answer(&stored_project_url, &validated_req.question)
+        .answer(project_url.as_ref(), &validated_req.question)
         .await?;
 
-    tracing::info!("Question answered for project: {}", stored_project_url);
+    if let Some(url) = &project_url {
+        tracing::info!("Question answered for project: {}", url);
+    } else {
+        tracing::info!("General question answered: {}", validated_req.question);
+    }
 
     Ok(ApiResponse::new(
         StatusCode::OK,

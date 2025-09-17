@@ -15,7 +15,7 @@ use url::Url;
 use utils::{MockAiService, init_db};
 
 #[actix_web::test]
-async fn test_answer_question_success() {
+async fn test_answer_question_with_project_context_success() {
     // Init db
     let project_repo = init_db().await;
 
@@ -37,7 +37,7 @@ async fn test_answer_question_success() {
     let mut mock_server = MockAiService::new().await;
     let mock = MockAiService::create_successful_answer_mock(
         &mut mock_server,
-        "https://github.com/testowner/testrepo.git",
+        Some("https://github.com/testowner/testrepo.git"),
         question,
         expected_answer,
     );
@@ -57,7 +57,57 @@ async fn test_answer_question_success() {
     let req = test::TestRequest::post()
         .uri("/v1/answer")
         .set_json(&AnswerRequest {
-            canonical_github_url: preexisting.canonical_github_url,
+            canonical_github_url: Some(preexisting.canonical_github_url),
+            question: question.to_string(),
+        })
+        .to_request();
+
+    let response = test::call_service(&app, req).await;
+
+    // Assert
+    assert_eq!(response.status(), StatusCode::OK);
+    let msg: ApiResponse<AnswerResponse> = test::read_body_json(response).await;
+    assert_eq!(msg.code, 200);
+    assert_eq!(msg.message, "Question answered successfully");
+    assert_eq!(msg.data.unwrap().answer, expected_answer);
+
+    mock.assert();
+}
+
+#[actix_web::test]
+async fn test_answer_general_question_success() {
+    // Init db
+    let project_repo = init_db().await;
+
+    // QA
+    let question = "How do vector databases work and when should I use them?";
+    let expected_answer = "Traditional databases store exact data (text, numbers, dates), but AI applications need to work with **semantic similarity**. Vector databases solve this by storing and searching high-dimensional vectors that represent meaning.";
+
+    // Mock AI service
+    let mut mock_server = MockAiService::new().await;
+    let mock = MockAiService::create_successful_answer_mock(
+        &mut mock_server,
+        None,
+        question,
+        expected_answer,
+    );
+    let server_url = Url::parse(&mock_server.url()).unwrap();
+    let ai_service_client = web::Data::new(AiServiceClient::new(server_url));
+
+    // Init test app
+    let app = test::init_service(
+        App::new()
+            .app_data(project_repo)
+            .app_data(ai_service_client)
+            .configure(config_app),
+    )
+    .await;
+
+    // Make call
+    let req = test::TestRequest::post()
+        .uri("/v1/answer")
+        .set_json(&AnswerRequest {
+            canonical_github_url: None,
             question: question.to_string(),
         })
         .to_request();
@@ -101,7 +151,7 @@ async fn test_answer_question_project_not_found() {
     let req = test::TestRequest::post()
         .uri("/v1/answer")
         .set_json(&AnswerRequest {
-            canonical_github_url: github_url,
+            canonical_github_url: Some(github_url),
             question: question.to_string(),
         })
         .to_request();
@@ -155,7 +205,7 @@ async fn test_answer_question_invalid_input(
     let req = test::TestRequest::post()
         .uri("/v1/answer")
         .set_json(&AnswerRequest {
-            canonical_github_url: github_url,
+            canonical_github_url: Some(github_url),
             question: question.to_string(),
         })
         .to_request();
@@ -216,7 +266,7 @@ async fn test_answer_question_ai_service_errors(
     let req = test::TestRequest::post()
         .uri("/v1/answer")
         .set_json(&AnswerRequest {
-            canonical_github_url: github_url,
+            canonical_github_url: Some(github_url),
             question: question.to_string(),
         })
         .to_request();
@@ -264,7 +314,7 @@ async fn test_answer_question_ai_service_unavailable() {
     let req = test::TestRequest::post()
         .uri("/v1/answer")
         .set_json(&AnswerRequest {
-            canonical_github_url: github_url,
+            canonical_github_url: Some(github_url),
             question: question.to_string(),
         })
         .to_request();

@@ -22,7 +22,7 @@ Accept: application/json
 
 ### Answer Questions #####
 
-### Ask a question about the project
+### Ask a project-specific question (with GitHub context)
 # Note: Use the canonical_url returned from the ingest response
 POST {{host}}/v1/answer
 Content-Type: application/json
@@ -31,6 +31,33 @@ Accept: application/json
 {
   "canonical_github_url": "{{canonical_repo}}",
   "question": "What is this project about? Explain the main purpose in 3 sentences."
+}
+
+### Ask a general question (no GitHub context)
+POST {{host}}/v1/answer
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "What are the best practices for implementing RAG systems?"
+}
+
+### Ask another general question (no GitHub context)
+POST {{host}}/v1/answer
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "How do vector databases work and when should I use them?"
+}
+
+### Ask a general programming question (no GitHub context)
+POST {{host}}/v1/answer
+Content-Type: application/json
+Accept: application/json
+
+{
+  "question": "What's the difference between microservices and monolithic architecture?"
 }
 
 ### Project not found (expect 404)

@@ -61,8 +61,10 @@ def answer_question(
                 logger.info("Found context length: %d characters", len(context))
 
                 # Limit context size to prevent overly long prompts
-                context_max_length = utils.get_env_var(utils.MAX_CONTEXT_LENGTH)
-                if len(context) > int(context_max_length):
+                context_max_length: int = int(
+                    utils.get_env_var(utils.MAX_CONTEXT_LENGTH)
+                )
+                if len(context) > context_max_length:
                     context = (
                         context[:context_max_length]
                         + "\n... [Context truncated due to length]"
@@ -95,7 +97,7 @@ def answer_question(
 
         # Handle general questions without project context
         else:
-            logger.info("Answerin general user question")
+            logger.info("Answering general user question")
             prompt = (
                 f"You are a helpful AI assistant. Respond naturally and appropriately to the user's question.\n\n"
                 f"USER QUESTION: {user_question}\n\n"

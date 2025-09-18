@@ -248,14 +248,18 @@ export function ChatBox({
                                     <span className="text-sm text-gray-600">Thinking...</span>
                                 </div>
                             ) : (
-                                <div
-                                    className="whitespace-pre-wrap break-words leading-relaxed chat-message"
-                                    dangerouslySetInnerHTML={{
-                                        __html: message.sender === 'ai'
-                                            ? DOMPurify.sanitize(md.render(message.content))
-                                            : DOMPurify.sanitize(message.content)
-                                    }}
-                                />
+                                message.sender === 'ai' ? (
+                                    <div
+                                        className="whitespace-pre-wrap break-words leading-relaxed chat-message"
+                                        dangerouslySetInnerHTML={{
+                                            __html: DOMPurify.sanitize(md.render(message.content))
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="whitespace-pre-wrap break-words leading-relaxed">
+                                        {message.content}
+                                    </div>
+                                )
                             )}
                             <div className={`text-xs mt-3 ${message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
                                 }`}>

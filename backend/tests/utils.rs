@@ -48,10 +48,10 @@ impl MockAiService {
     pub async fn new() -> ServerGuard {
         // Get or initialize the mutex to serialize mock server creation
         let mutex = MOCK_MUTEX.get_or_init(|| Mutex::new(()));
-        
+
         // Acquire the lock to ensure sequential mock server access
         let _guard = mutex.lock().await;
-        
+
         mockito::Server::new_async().await
     }
 

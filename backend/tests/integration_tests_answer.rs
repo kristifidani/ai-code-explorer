@@ -273,14 +273,19 @@ async fn test_answer_question_ai_service_errors(
 
     let response = test::call_service(&app, req).await;
 
-    // Assert
+    // Assert response first
     assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
     let msg: ApiResponse<()> = test::read_body_json(response).await;
     assert_eq!(msg.code, 500);
     assert_eq!(msg.message, "Internal server error");
     assert!(msg.data.is_none());
 
+    // Ensure mock server request completed before asserting
+    tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
     mock.assert();
+
+    // Keep mock_server alive until the end
+    drop(mock_server);
 }
 
 #[actix_web::test]

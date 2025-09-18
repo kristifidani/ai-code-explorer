@@ -12,9 +12,6 @@ const TEST_DB_NAME: &str = "integration_tests_db";
 // Global async mutex to ensure only one test accesses the database at a time
 static DB_MUTEX: OnceLock<Mutex<()>> = OnceLock::new();
 
-// Global async mutex to ensure only one test creates mock servers at a time
-static MOCK_MUTEX: OnceLock<Mutex<()>> = OnceLock::new();
-
 pub async fn init_db() -> web::Data<ProjectRepository> {
     // Get or initialize the mutex
     let mutex = DB_MUTEX.get_or_init(|| Mutex::new(()));
@@ -46,12 +43,6 @@ pub struct MockAiService;
 impl MockAiService {
     #[allow(clippy::new_ret_no_self)]
     pub async fn new() -> ServerGuard {
-        // Get or initialize the mutex to serialize mock server creation
-        let mutex = MOCK_MUTEX.get_or_init(|| Mutex::new(()));
-
-        // Acquire the lock to ensure sequential mock server access
-        let _guard = mutex.lock().await;
-
         mockito::Server::new_async().await
     }
 

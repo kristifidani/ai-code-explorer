@@ -7,7 +7,11 @@ use reqwest::{Client, StatusCode};
 #[async_trait::async_trait]
 pub(crate) trait AiServiceClientImpl: Send + Sync + 'static {
     async fn ingest(&self, url: &url::Url) -> Result<()>;
-    async fn answer(&self, url: &url::Url, question: &str) -> Result<AiServiceAnswerResponse>;
+    async fn answer(
+        &self,
+        url: Option<&url::Url>,
+        question: &str,
+    ) -> Result<AiServiceAnswerResponse>;
 }
 
 #[derive(Clone)]
@@ -49,10 +53,14 @@ impl AiServiceClientImpl for AiServiceClient {
         }
     }
 
-    async fn answer(&self, url: &url::Url, question: &str) -> Result<AiServiceAnswerResponse> {
+    async fn answer(
+        &self,
+        url: Option<&url::Url>,
+        question: &str,
+    ) -> Result<AiServiceAnswerResponse> {
         let request_url = self.base_url.join("answer")?;
         let payload = AiServiceAnswerRequest {
-            canonical_github_url: url.clone(),
+            canonical_github_url: url.cloned(),
             user_question: question.to_string(),
         };
         let response = self.client.post(request_url).json(&payload).send().await?;

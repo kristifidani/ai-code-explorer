@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import MarkdownIt from 'markdown-it'
+import DOMPurify from 'dompurify'
 import type {
     AnswerRequest,
     AnswerApiResponse,
@@ -22,11 +23,11 @@ const md = new MarkdownIt({
 })
 
 // Custom renderer for consistent spacing
-md.renderer.rules.paragraph_open = () => '<p style="margin: 0 0 0.5rem 0;">'
+md.renderer.rules.paragraph_open = () => '<p class="chat-p">'
 md.renderer.rules.paragraph_close = () => '</p>'
-md.renderer.rules.bullet_list_open = () => '<ul style="margin: 0.5rem 0; padding-left: 1.2rem; list-style-type: disc;">'
+md.renderer.rules.bullet_list_open = () => '<ul class="chat-ul">'
 md.renderer.rules.bullet_list_close = () => '</ul>'
-md.renderer.rules.list_item_open = () => '<li style="margin: 0.1rem 0;">'
+md.renderer.rules.list_item_open = () => '<li class="chat-li">'
 md.renderer.rules.list_item_close = () => '</li>'
 
 export function ChatBox({
@@ -123,7 +124,7 @@ export function ChatBox({
                 ...(projectUrl && { canonical_github_url: projectUrl })
             }
 
-            const endpoint = new URL('/v1/answer', BACKEND_API_URL).toString()
+            const endpoint = new URL('v1/answer', BACKEND_API_URL).toString()
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
@@ -178,6 +179,7 @@ export function ChatBox({
                                     Project Mode
                                 </div>
                                 <button
+                                    type="button"
                                     onClick={onRemoveProject}
                                     className="px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full hover:bg-red-200 transition-colors"
                                     title="Remove project context"
@@ -187,6 +189,7 @@ export function ChatBox({
                             </>
                         ) : (
                             <button
+                                type="button"
                                 onClick={onAddProject}
                                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                             >
@@ -248,7 +251,9 @@ export function ChatBox({
                                 <div
                                     className="whitespace-pre-wrap break-words leading-relaxed chat-message"
                                     dangerouslySetInnerHTML={{
-                                        __html: message.sender === 'ai' ? md.render(message.content) : message.content
+                                        __html: message.sender === 'ai'
+                                            ? DOMPurify.sanitize(md.render(message.content))
+                                            : DOMPurify.sanitize(message.content)
                                     }}
                                 />
                             )}

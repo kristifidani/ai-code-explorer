@@ -35,11 +35,13 @@ def answer_question(
         # Handle project-specific questions with RAG context
         if repo_url:
             set_repo_context(repo_url)
+            logger.info("Context set to %s", repo_url)
             query_embedding = embed_query(user_question)
             results = query_chunks(query_embedding)
             documents = results.get("documents", [[]])
 
             if not documents or not documents[0]:
+                logger.info("No relevant code snippets found for project.")
                 prompt = (
                     f"I'm analyzing the GitHub project on this repository: {repo_url}\n\n"
                     f"USER QUESTION related to the current project: {user_question}\n\n"
@@ -53,18 +55,16 @@ def answer_question(
                     "   - Being more specific about file names, functions, or features\n\n"
                     "Keep your response helpful and encouraging."
                 )
-                logger.info(
-                    "User question about project %s: %s", repo_url, user_question
-                )
-                logger.info("No relevant code snippets found for project.")
             else:
                 unique_snippets = list(dict.fromkeys(documents[0]))
                 context = "\n---\n".join(unique_snippets)
+                logger.info("Found context length: %d characters", len(context))
 
                 # Limit context size to prevent overly long prompts
-                if len(context) > utils.MAX_CONTEXT_LENGTH:
+                context_max_length = utils.get_env_var(utils.MAX_CONTEXT_LENGTH)
+                if len(context) > int(context_max_length):
                     context = (
-                        context[: utils.MAX_CONTEXT_LENGTH]
+                        context[:context_max_length]
                         + "\n... [Context truncated due to length]"
                     )
 
@@ -92,13 +92,10 @@ def answer_question(
                     "- If you can't answer fully, explain exactly why\n\n"
                     "Remember: Base your analysis ONLY on the observable code and documentation provided above. Do not speculate beyond what you can see."
                 )
-                logger.info(
-                    "User question about project %s: %s", repo_url, user_question
-                )
-                logger.info("Context length: %d characters", len(context))
 
         # Handle general questions without project context
         else:
+            logger.info("Answerin general user question")
             prompt = (
                 f"You are a helpful AI assistant. Respond naturally and appropriately to the user's question.\n\n"
                 f"USER QUESTION: {user_question}\n\n"
@@ -115,7 +112,6 @@ def answer_question(
                 "- Keep responses proportional to the question - simple questions get simple answers\n\n"
                 "Respond in a helpful, natural way."
             )
-            logger.info("General user question: %s", user_question)
 
         answer = ollama_client.chat_with_ollama(prompt)
         logger.info("LLM answer: %s", answer)

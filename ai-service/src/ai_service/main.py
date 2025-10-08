@@ -52,6 +52,13 @@ app.include_router(ingest_router)
 app.include_router(answer_router)
 
 
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Docker and load balancers."""
+    return {"status": "healthy", "service": "ai-service"}
+
+
 # FastAPI exception handlers
 @app.exception_handler(errors.AIServiceError)
 async def ai_service_error_handler(

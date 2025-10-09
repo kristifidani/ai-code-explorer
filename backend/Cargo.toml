@@ -3,7 +3,7 @@ name = "backend"
 authors = ["Kristi Fidani 🦞"]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.89"
+rust-version = "1.90"
 
 [lints.clippy]
 # With these two, we avoid panicking behavior in our code.

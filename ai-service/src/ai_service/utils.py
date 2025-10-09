@@ -5,7 +5,7 @@ from ai_service import errors
 CHROMA_STORE_PATH: Final[str] = "CHROMA_STORE_PATH"
 LLM_MODEL: Final[str] = "LLM_MODEL"
 EMBEDDING_MODEL: Final[str] = "EMBEDDING_MODEL"
-PORT: Final[str] = "PORT"
+AI_SERVICE_PORT: Final[str] = "AI_SERVICE_PORT"
 MAX_CONTEXT_LENGTH: Final[str] = "MAX_CONTEXT_LENGTH"
 
 
@@ -26,3 +26,8 @@ def get_env_var(name: str) -> str:
     if value is None:
         raise errors.NotFound.env_variable(name)
     return value
+
+
+def is_development() -> bool:
+    """Check if running in development environment."""
+    return os.getenv("ENVIRONMENT", "production").lower() == "development"

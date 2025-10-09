@@ -1,34 +1,27 @@
 # Makefile
 
 # Combined
-.PHONY: all start check lint format format-check unit-tests integration-tests test-all clean
+.PHONY: start check lint format unit-tests integration-tests test
 
 start:
-	poetry run start
+	ENVIRONMENT=development pdm run start
+
+# Code quality
 
 lint:
-	poetry run ruff check
+	pdm run ruff check
 
 format:
-	poetry run ruff format
+	pdm run ruff format
 
-format-check:
-	poetry run ruff format --check --diff
+check: lint format
 
-check: lint format-check
+# Tests
 
-# Unit tests
 unit-tests:
-	poetry run pytest src/ai_service/ -v
+	pdm run pytest src/ai_service/ -v
 
-# Integration tests (main tests directory)
 integration-tests:
-	poetry run pytest tests/ -v
+	pdm run pytest tests/ -v
 
-# Run all tests
-test-all: unit-tests integration-tests
-
-all: format-check test-all
-
-clean:
-	poetry env remove --all
+test: unit-tests integration-tests

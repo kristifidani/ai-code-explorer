@@ -41,3 +41,48 @@ flowchart LR
 - [Chunking](./src/ai_service/chunking/README.md): is responsible for preprocessing code files into manageable segments before embedding.
 - [Embeddings](./src/ai_service/embeddings/README.md): layer responsible for converting code and natural language queries into high-dimensional vectors that capture semantic meaning.
 - [Vector DB](./src/ai_service/db_setup/README.md): layer responsible for managing ChromaDB operations for storing and querying code embeddings (semantic search).
+
+## Examples
+
+- For local development you need to start the application: `make start`.
+- For testing the container you have to build and start it:
+
+ ```bash
+ docker compose build ai-service 
+ docker compose up -d --wait ai-service 
+ ```
+
+### HTTP
+
+You can check the [HTTP Requests](requests.http) for http examples.
+
+### CURL
+
+- Ingestion endpoint
+
+```curl
+curl -X POST http://localhost:8000/ingest \
+  -H "Content-Type: application/json" \
+  -d '{
+    "canonical_github_url": "https://github.com/octocat/Hello-World.git"
+}'
+```
+
+- Answer endpoint
+
+```curl
+curl -X POST http://localhost:8000/answer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_question": "How does authentication work in this codebase?",
+    "canonical_github_url": "https://github.com/octocat/Hello-World.git"
+}'
+```
+
+```curl
+curl -X POST http://localhost:8000/answer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_question": "Hello, how are you?"
+}'
+```

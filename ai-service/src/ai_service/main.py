@@ -25,10 +25,17 @@ from .handlers import ingest_router, answer_router
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     """Initialize services on startup and cleanup on shutdown."""
-    # Set library logger levels to reduce noise
-    logging.getLogger("chromadb").setLevel(logging.WARNING)
-    logging.getLogger("transformers").setLevel(logging.WARNING)
-    logging.getLogger("watchfiles").setLevel(logging.WARNING)
+    is_dev = utils.is_development()
+
+    # Configure ALL logging in one place based on environment
+    if not is_dev:  # Production: quiet everything noisy
+        logging.getLogger("watchfiles").setLevel(logging.WARNING)
+        logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+        logging.getLogger("chromadb").setLevel(logging.WARNING)
+        logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
+        logging.getLogger("transformers").setLevel(logging.WARNING)
+        logging.getLogger("torch").setLevel(logging.WARNING)
+    # Development: keep all logs verbose for debugging
 
     # Initialize ChromaDB
     logger.info("Initializing ChromaDB...")
@@ -50,6 +57,13 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(ingest_router)
 app.include_router(answer_router)
+
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Docker and load balancers."""
+    return {"status": "healthy", "service": "ai-service"}
 
 
 # FastAPI exception handlers
@@ -75,16 +89,22 @@ async def general_exception_handler(_request: Request, exc: Exception) -> JSONRe
 
 
 def main() -> None:
+    # Check if we're in development or production
+    is_dev = utils.is_development()
+
     try:
-        app_port = utils.get_env_var(utils.PORT)
+        app_port = utils.get_env_var(utils.AI_SERVICE_PORT)
     except errors.NotFound:
         app_port = "8000"
-        logger.warning("PORT not set; defaulting to %s", app_port)
+        logger.warning("AI_SERVICE_PORT not set; defaulting to %s", app_port)
+
     uvicorn.run(
         "ai_service.main:app",
-        host="127.0.0.1",
+        host="0.0.0.0",
         port=int(app_port),
-        reload=True,
+        reload=is_dev,  # Only reload in development
+        log_level="info",  # Keep uvicorn startup logs visible
+        access_log=is_dev,  # Show HTTP request logs only in development
     )
 
 

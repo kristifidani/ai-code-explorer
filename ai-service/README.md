@@ -44,6 +44,14 @@ flowchart LR
 
 ## Examples
 
+- For local development you need to start the applicatio: `make start`.
+- For testing the container you have to build and start it:
+
+ ```bash
+ docker compose build ai-service 
+ docker compose up -d --wait ai-service 
+ ```
+
 ### HTTP
 
 You can check the [HTTP Requests](requests.http) for http examples.
@@ -75,6 +83,6 @@ curl -X POST http://localhost:8000/answer \
 curl -X POST http://localhost:8000/answer \
   -H "Content-Type: application/json" \
   -d '{
-    "user_question": "Hello, how are you?",
+    "user_question": "Hello, how are you?"
 }'
 ```

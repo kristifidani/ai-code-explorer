@@ -45,7 +45,7 @@ jobs:
         uses: ./.github/actions
 
       - name: Run formatter check
-        run: make check
+        run: pdm run ruff format --check
 
   python_unit_tests:
     runs-on: ubuntu-latest

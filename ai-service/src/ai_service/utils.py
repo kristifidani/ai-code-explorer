@@ -30,6 +30,4 @@ def get_env_var(name: str) -> str:
 
 def is_development() -> bool:
     """Check if running in development environment."""
-    import os
-
     return os.getenv("ENVIRONMENT", "production").lower() == "development"

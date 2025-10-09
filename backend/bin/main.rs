@@ -13,7 +13,7 @@ async fn main() -> std::io::Result<()> {
     tracing_setup();
 
     // get port from environment variable
-    let port: u16 = parse_env_expect("APP_PORT");
+    let port: u16 = parse_env_expect("RUST_BACKEND_PORT");
 
     // Initialize mongodb
     let mongo_uri: String = parse_env_expect("MONGO_URI");

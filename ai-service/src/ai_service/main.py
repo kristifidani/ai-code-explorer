@@ -93,10 +93,10 @@ def main() -> None:
     is_dev = utils.is_development()
 
     try:
-        app_port = utils.get_env_var(utils.PORT)
+        app_port = utils.get_env_var(utils.AI_SERVICE_PORT)
     except errors.NotFound:
         app_port = "8000"
-        logger.warning("PORT not set; defaulting to %s", app_port)
+        logger.warning("AI_SERVICE_PORT not set; defaulting to %s", app_port)
 
     uvicorn.run(
         "ai_service.main:app",

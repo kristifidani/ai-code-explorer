@@ -20,6 +20,8 @@ class IngestRequest(BaseModel):
 
 
 def ingest_github_project(canonical_github_url: str) -> None:
+    logger.info(f"Ingesting project: {canonical_github_url}")
+
     set_repo_context(canonical_github_url)  # Set context once at the start
     project_dir = project_ingestor.clone_github_repo(canonical_github_url)
     try:

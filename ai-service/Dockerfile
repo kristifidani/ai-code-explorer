@@ -51,9 +51,11 @@ FROM python:$PYTHON_BASE
 
 # Install only runtime dependencies (no build tools)
 # git: needed for GitPython package
+# curl: needed for healthcheck
 RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     git=1:2.47.3-0+deb13u1 \
+    curl=8.14.1-2 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -93,6 +95,11 @@ USER app
 
 # Expose port 8000 (this is just documentation, doesn't actually open the port)
 EXPOSE 8000
+
+# Add healthcheck instruction for self-documenting image
+# This provides a default healthcheck when running outside docker-compose
+HEALTHCHECK --interval=30s --timeout=15s --retries=3 --start-period=60s \
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # Set command/entrypoint, adapt to fit your needs
 CMD ["python", "-m", "ai_service.main"]

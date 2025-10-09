@@ -44,7 +44,7 @@ flowchart LR
 
 ## Examples
 
-- For local development you need to start the applicatio: `make start`.
+- For local development you need to start the application: `make start`.
 - For testing the container you have to build and start it:
 
  ```bash
@@ -75,7 +75,7 @@ curl -X POST http://localhost:8000/answer \
   -H "Content-Type: application/json" \
   -d '{
     "user_question": "How does authentication work in this codebase?",
-    "canonical_github_url": "https://github.com/octocat/hello-world.git"
+    "canonical_github_url": "https://github.com/octocat/Hello-World.git"
 }'
 ```
 

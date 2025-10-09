@@ -21,4 +21,8 @@
     "python.analysis.diagnosticSeverityOverrides": {
         "reportMissingTypeStubs": "none"
     },
+    "[markdown]": {
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true
+    },
 }

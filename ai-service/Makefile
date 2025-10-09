@@ -7,7 +7,7 @@ install:
 	pdm sync --dev
 
 start:
-	pdm run start
+	ENVIRONMENT=development pdm run start
 
 lint:
 	pdm run ruff check

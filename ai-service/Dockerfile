@@ -1,43 +1,104 @@
-# Use Python 3.10 (matches your pyproject.toml)
-FROM python:3.10-slim
+# =============================================================================
+# MULTI-STAGE PRODUCTION DOCKERFILE
+# =============================================================================
+# Stage 1: Build dependencies and install packages
+# Stage 2: Runtime image with only necessary files
 
-# Set Python path so modules can be found
-ENV PYTHONPATH=/app/src
+ARG PYTHON_BASE=3.10-slim
+
+# =============================================================================
+# STAGE 1: BUILDER
+#
+# This stage contains all the tools needed to build/compile dependencies
+# but won't be included in the final production image.
+# =============================================================================
+
+FROM python:$PYTHON_BASE AS builder
+
+# Install build dependencies (compilers, git, etc.)
+# These are needed to compile Python packages with C extensions (like numpy, torch)
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PDM (Python Dependency Manager)
+RUN pip install pdm==2.25.9
+# Disable update check for faster build
+ENV PDM_CHECK_UPDATE=false
+
+# Set working directory for the build process
+WORKDIR /app
+
+# Copy only dependency files first (for better Docker layer caching)
+COPY pyproject.toml pdm.lock README.md ./
+
+# Install dependencies using PDM defaults (creates .venv automatically)
+RUN pdm install --check --prod --no-editable
+
+# Copy source code (needed for the final stage)
+COPY src/ ./src/
+
+# =============================================================================
+# STAGE 2: PRODUCTION STAGE
+#
+# Start fresh with a clean Python image.
+# =============================================================================
+
+FROM python:$PYTHON_BASE
+
+# Install only runtime dependencies (no build tools)
+# curl: needed for health checks
+# git: needed for GitPython package
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# =============================================================================
+# SECURITY: CREATE NON-ROOT USER
+# =============================================================================
+# Running as root is a security risk. If the app gets compromised,
+# the attacker won't have full system access
+RUN useradd --create-home --shell /bin/bash app
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies including git
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    curl \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+# Retrieve packages from build stage  
+COPY --from=builder /app/.venv/ /app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Install PDM
-RUN pip install pdm==2.25.9
+# Copy application source code from builder
+COPY --from=builder /app/src/ ./src/
+COPY --from=builder /app/README.md ./
 
-# Copy dependency files and source code
-COPY pyproject.toml pdm.lock README.md ./
-COPY src/ ./src/
+# Set Python path so Python can find our modules
+ENV PYTHONPATH=/app/src
 
-# Configure PDM - keep venv but make it global
-RUN pdm config venv.with_pip true && \
-    pdm config python.use_venv false
+# Production environment variables
+# Tells app to run in production mode (no reload, quiet logs)
+ENV ENVIRONMENT=production
+# Force real-time stdout/stderr (essential for Docker logs)
+ENV PYTHONUNBUFFERED=1
+# Skip .pyc files (saves space, faster startup)
+ENV PYTHONDONTWRITEBYTECODE=1
 
-# Install the dependencies and packages
-RUN pdm install --prod
+# Set ownership for source code
+RUN chown app:app /app/src
 
-# Create directory for ChromaDB data
-RUN mkdir -p /app/chroma_store
+# SWITCH TO NON-ROOT USER
+USER app
 
-# Expose the port your app runs on
+# Expose port 8000 (this is just documentation, doesn't actually open the port)
 EXPOSE 8000
 
-# Add a proper health check
+# HEALTH CHECK
+# This allows container orchestrators (like Kubernetes) to check if the app is healthy
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run application using PDM
-CMD ["pdm", "run", "start"]
+# Set command/entrypoint, adapt to fit your needs
+CMD ["python", "-m", "ai_service.main"]

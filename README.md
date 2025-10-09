@@ -6,3 +6,4 @@
 
 - [AI Service (Python)](ai-service/README.md): Semantic codebase search and intelligent Q&A.
 - [Backend Service (Rust)](backend/README.md): API gateway for validation, authentication, and request routing between frontend and AI Service.
+- [Frontend (React/TypeScript)](frontend/README.md): Modern web interface for uploading GitHub repositories and interactive code exploration.

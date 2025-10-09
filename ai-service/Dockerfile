@@ -18,13 +18,14 @@ FROM python:$PYTHON_BASE AS builder
 # Install build dependencies (compilers, git, etc.)
 # These are needed to compile Python packages with C extensions (like numpy, torch)
 RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    git \
+    --no-install-recommends \
+    gcc=4:14.2.0-1 \
+    g++=4:14.2.0-1 \
+    git=1:2.47.3-0+deb13u1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PDM (Python Dependency Manager)
-RUN pip install pdm==2.25.9
+RUN pip install --no-cache-dir pdm==2.25.9
 # Disable update check for faster build
 ENV PDM_CHECK_UPDATE=false
 
@@ -52,8 +53,9 @@ FROM python:$PYTHON_BASE
 # curl: needed for health checks
 # git: needed for GitPython package
 RUN apt-get update && apt-get install -y \
-    curl \
-    git \
+    --no-install-recommends \
+    curl=8.14.1-2 \
+    git=1:2.47.3-0+deb13u1 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 

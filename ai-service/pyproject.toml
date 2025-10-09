@@ -25,7 +25,11 @@ dev = [
 start = "ai_service.main:main"
 
 [tool.pdm]
-includes = ["src"]
+distribution = true
+
+[tool.pdm.build]
+package-dir = "src"
+includes = ["ai_service"]
 
 [[tool.pdm.source]]
 name = "pytorch-cpu"

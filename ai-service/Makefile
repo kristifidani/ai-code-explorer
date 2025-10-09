@@ -1,13 +1,12 @@
 # Makefile
 
 # Combined
-.PHONY: all start check lint format format-check unit-tests integration-tests test-all clean install
-
-install:
-	pdm sync --dev
+.PHONY: start check lint format unit-tests integration-tests test
 
 start:
 	ENVIRONMENT=development pdm run start
+
+# Code quality
 
 lint:
 	pdm run ruff check
@@ -15,23 +14,14 @@ lint:
 format:
 	pdm run ruff format
 
-format-check:
-	pdm run ruff format --check --diff
+check: lint format
 
-check: lint format-check
+# Tests
 
-# Unit tests
 unit-tests:
 	pdm run pytest src/ai_service/ -v
 
-# Integration tests (main tests directory)
 integration-tests:
 	pdm run pytest tests/ -v
 
-# Run all tests
-test-all: unit-tests integration-tests
-
-all: format-check test-all
-
-clean:
-	pdm env remove --all
+test: unit-tests integration-tests

@@ -25,9 +25,7 @@ from .handlers import ingest_router, answer_router
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     """Initialize services on startup and cleanup on shutdown."""
-    import os
-
-    is_dev = os.getenv("ENVIRONMENT", "production").lower() == "development"
+    is_dev = utils.is_development()
 
     # Configure ALL logging in one place based on environment
     if not is_dev:  # Production: quiet everything noisy
@@ -92,9 +90,7 @@ async def general_exception_handler(_request: Request, exc: Exception) -> JSONRe
 
 def main() -> None:
     # Check if we're in development or production
-    import os
-
-    is_dev = os.getenv("ENVIRONMENT", "production").lower() == "development"
+    is_dev = utils.is_development()
 
     try:
         app_port = utils.get_env_var(utils.PORT)

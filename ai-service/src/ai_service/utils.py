@@ -26,3 +26,10 @@ def get_env_var(name: str) -> str:
     if value is None:
         raise errors.NotFound.env_variable(name)
     return value
+
+
+def is_development() -> bool:
+    """Check if running in development environment."""
+    import os
+
+    return os.getenv("ENVIRONMENT", "production").lower() == "development"

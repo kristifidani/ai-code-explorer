@@ -35,7 +35,7 @@ Output Vector:
 
 **Current default choice for resource efficiency:**
 
-- **Lightweight & Fast**: Only ~23MB model size, fits comfortably on GPUs with 2GB+ memory.
+- **Lightweight & Fast**: Only ~23MB model size, fits comfortably on low spec basic hardware.
 - **Good Performance**: 384-dimensional embeddings that work well for code similarity.
 - **Wide Compatibility**: Works on CPU, GPU, and low-resource environments.
 - **Quick Setup**: Fast download and initialization times.

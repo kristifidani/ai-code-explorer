@@ -37,10 +37,10 @@ Traditional databases store exact data (text, numbers, dates), but AI applicatio
 set_repo_context("https://github.com/user/repo.git")
 
 # 2. Code is chunked into manageable segments (see chunking layer)
-chunks = chunk_code_file(file_path, content)  # From chunking layer
+chunks = chunk_code_file(file_path, content)
 
-# 3. Store code chunks with their embeddings
-embeddings = embed_documents(chunks)  # From embeddings layer
+# 3. Store code chunks with their embeddings (see embeddings layer)
+embeddings = embed_documents(chunks)
 add_chunks(chunks, embeddings)
 
 # 4. Query for similar code
@@ -53,7 +53,6 @@ results = query_chunks(query_embedding, number_of_results=4)
 **Deduplication** - Prevents storing duplicate code chunks.
 **Repository isolation** - Each repo gets its own collection.
 **Batch operations** - Efficient handling of multiple chunks.
-**Error handling** - Proper exception handling with custom errors.
 
 ## Current Limitations & Future Improvements
 

@@ -39,7 +39,7 @@ src/
 ├── App.tsx          # Main application component
 ├── index.css        # Global styles
 ├── main.tsx         # Application entry point
-└── types/           # Internal and external types.
+├── types/           # Internal and external types.
 └── components/      # UI components.
 ```
 

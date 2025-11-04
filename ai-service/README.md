@@ -1,6 +1,6 @@
 # 🧠 AI Service
 
-The AI service is a core component designed to enable semantic codebase search over source code. It allows github project ingenstion and Q&A over it through LLM integration. The LLM can also be used for general purpose communication.
+The AI service is a core component designed to enable semantic codebase search over source code. It allows github project ingestion and Q&A over it through LLM integration. The LLM can also be used for general purpose communication.
 
 ## Core flow
 

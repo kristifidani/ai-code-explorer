@@ -72,7 +72,7 @@ Step-by-step explanation:
 
 3. Prompt Building: assemble a compact prompt for the LLM using the highest-quality retrieved snippets, metadata (for citations), and a task-specific instruction. The service applies dynamic prompting to control token budgets and reduce hallucinations.
 
-4. LLM Answering: send the constructed prompt to the configured [LLM](./src/ai_service/ollama_client.py) and get an asnwer back based on the instructions given.
+4. LLM Answering: send the constructed prompt to the configured [LLM](./src/ai_service/ollama_client.py) and get an answer back based on the instructions given.
 
 ## Layers
 

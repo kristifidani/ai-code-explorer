@@ -27,7 +27,7 @@
     },
     "github.copilot.chat.commitMessageGeneration.instructions": [
         {
-            "text": "Use conventional commit message format. Don't be overly detailed by explaining what each change means. Just provide a concise summary of the changes made. Don't leave out any change / addition.",
+            "text": "Use conventional commit message format. Don't be overly detailed by explaining what each change means. Just provide a concise summary of the changes made. Don't leave out any change / addition."
         }
     ]
 }

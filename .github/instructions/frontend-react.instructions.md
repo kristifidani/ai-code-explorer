@@ -7,27 +7,27 @@ applyTo: "frontend/**/*.{ts,tsx}"
 ## Critical Conventions
 
 **Type Safety:**
-- Strict TypeScript — no `any` types
-- Properly type all component props, state, and event handlers
-- Import backend API types from `src/types/external.ts`
+- Strict TypeScript, no `any` types
+- Backend API types from `types/external.ts`, UI types from `types/internal.ts`
+
+**API Communication:**
+- Backend URL from `import.meta.env.VITE_BACKEND_API_URL`
+- Responses use `ApiResponse<T>` structure (check `types/external.ts`)
 
 **Security:**
-- Always use `DOMPurify.sanitize()` before rendering user-generated HTML content
-- See `ChatBox.tsx` for example of sanitizing markdown before rendering
+- ALWAYS sanitize with `DOMPurify` before rendering user HTML
+- See `ChatBox.tsx` for markdown sanitization pattern
 
-**Tech Stack:**
-- React 19 with functional components and hooks
-- Tailwind CSS 4 for styling
-- Vite 7 for build tooling
-- markdown-it for markdown parsing + DOMPurify for sanitization
+**Component Pattern:**
+- Functional components with hooks only
 
 ## Key Files
 
-- `src/App.tsx` — Main component orchestrating UI
-- `src/components/GitHubUpload.tsx` — Upload interface
-- `src/components/ChatBox.tsx` — Q&A interface with markdown rendering
-- `src/types/external.ts` — Backend API type definitions
-- `src/types/internal.ts` — Frontend-only types
-- `package.json` — Scripts and dependencies
+- `App.tsx` — Root component managing application state
+- `components/GitHubUpload.tsx` — Upload form with API integration
+- `components/ChatBox.tsx` — Chat UI with markdown rendering and sanitization
+- `types/external.ts` — Backend API type contracts
+- `types/internal.ts` — UI-only types
+- `package.json` — Check for scripts and tech stack versions
 
-**For implementation details:** Read existing code to understand file relationships and development patterns. Keep it consistent.
+For more details and complete overview read the `frontend/README.md` and scan the tree structure.

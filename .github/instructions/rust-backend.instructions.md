@@ -7,23 +7,30 @@ applyTo: "backend/**/*.rs"
 ## Critical Conventions
 
 **Error Handling:**
-- Never `unwrap()` or `expect()` in production code (enforced by clippy lints). Allowed in tests.
-- All handlers return `Result<impl Responder>` using `ApiError` enum from `src/error.rs`
-- Use `?` operator for error propagation
+- No `unwrap()`/`expect()` in production code (clippy enforced)
+- Handlers return `Result<impl Responder>` with custom error types
+- Errors convert to `ApiResponse<T>` wrapper with HTTP status
+
+**Response Pattern:**
+- All responses use `ApiResponse<T>` wrapper
+- Check `types/response.rs` for implementation details
+
+**Dependency Injection:**
+- External clients use trait abstractions for testability
+- See `clients/` for implementation details
 
 **Testing:**
-- Use `rstest` for parameterized tests
-- Use `mockito` for HTTP mocking in integration tests
-- Tests in `tests/` directory can use unwrap/expect (allowed via `clippy.toml`)
+- `rstest` for parameterized tests, `mockito` for HTTP mocks
+- Tests can use unwrap/expect (check `clippy.toml`)
 
 ## Key Files
 
 - `bin/main.rs` — Server entry point
-- `src/error.rs` — Error types
-- `src/app_config.rs` — Route configuration
+- `src/app_config.rs` — Route definitions
+- `src/error.rs` — Error types with HTTP status mapping
 - `src/handlers/` — Request handlers
-- `src/clients/` — External clients with trait abstractions
-- `src/types/` - Type definitions
-- `Cargo.toml` — Configuration and dependencies
+- `src/types/external.rs` — Frontend API contracts
+- `src/types/internal.rs` — AI Service API contracts
+- `Cargo.toml` — Check for binary name, edition, Rust version
 
-**For implementation details:** Read existing code to understand file relationships and development patterns. Keep it consistent.
+For more details and complete overview read the `backend/README.md` and scan the tree structure.

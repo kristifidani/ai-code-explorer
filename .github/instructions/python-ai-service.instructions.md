@@ -7,31 +7,39 @@ applyTo: "ai-service/**/*.py"
 ## Critical Conventions
 
 **Type Safety:**
-- Type hints required on all function parameters and returns
-- Use Pydantic `BaseModel` for all FastAPI request/response models
+- Type hints required on all functions. Working on strict mode
+- Pydantic models for FastAPI request/response
+
+**ChromaDB Context:**
+- ALWAYS call `set_repo_context(url)` before DB operations
+- Enables multi-tenant collection isolation
+- See `db_setup/setup.py` for implementation details
+
+**Error Handling:**
+- Custom exceptions inherit from `AIServiceError`
+- Use classmethod factories
+- See `errors.py` for implementation details
 
 **Testing:**
-- Integration tests require ChromaDB and Ollama running locally
-- Use pytest fixtures from `conftest.py`
-- Tests in `tests/` directory
-
-**Commands:**
-- See `ai-service/Makefile` for all available targets.
+- Session fixtures initialize ChromaDB + embedding model
+- Check `conftest.py` for setup patterns
 
 ## Architecture Context
 
-Read `ai-service/README.md` first — it explains the RAG flow:
-**Ingestion** → **Chunking** → **Embedding** → **Storage** (ChromaDB) → **Query** → **LLM Answer**
+**RAG Flow:** Ingest (clone → chunk → embed → store) → Query (embed → search → LLM)
 
-There are also Readmes in key subdirectories explaining their roles. Read those to understand how different modules interact.
+Read `ai-service/README.md` for detailed architecture and flow diagrams. Read the module READMEs for implementation details.
+
+**Commands:** Use `make` for all tasks (check `Makefile` for available targets)
 
 ## Key Files
 
-- `src/ai_service/main.py` — Server entry point
-- `src/ai_service/handlers/` — Request handlers
-- `src/ai_service/embeddings/` — Embeddings strategy
-- `src/ai_service/chunking/` — Chunking strategy
-- `src/ai_service/db_setup/` — ChromaDB operations
-- `src/ai_service/ollama_client.py` — LLM client wrapper
+- `main.py` — FastAPI app with lifespan for service initialization
+- `handlers/` — Request handlers for ingest and Q&A flows
+- `db_setup/setup.py` — ChromaDB context management
+- `errors.py` — Exception hierarchy with classmethod factories
+- `embeddings/` — Model initialization and encoding
+- `chunking/` — Code chunking strategies
+- `pyproject.toml` — Check for Python version and dependencies
 
-**For implementation details:** Read existing code to understand file relationships and development patterns. Keep it consistent.
+For more details and complete overview scan the tree structure.

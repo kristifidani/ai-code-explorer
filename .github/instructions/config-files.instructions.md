@@ -7,35 +7,48 @@ applyTo: "**/{Cargo.toml,pyproject.toml,package.json,.editorconfig,.gitignore,.e
 ## Adding Dependencies
 
 **Rust (backend):**
-- Edit `backend/Cargo.toml`
-- Prefer `default-features = false` to minimize bloat
-- Test with `cargo build` and `cargo test`
+1. Edit `backend/Cargo.toml` in `[dependencies]` section
+2. Prefer `default-features = false` to minimize binary size
+3. Add specific features needed: `features = ["json", "rustls-tls"]`
+4. Test: `cargo build`
 
 **Python (ai-service):**
-- Use `pdm add <package>` in `ai-service/`
-- For dev dependencies: `pdm add -d <package>`
-- Test with `make test`
+1. Add runtime deps: `cd ai-service && pdm add <package>`
+2. Add dev deps: `pdm add -d <package>` (linters, test tools)
+3. PDM updates `pyproject.toml` and `pdm.lock` automatically
+4. Test: `make test`
 
 **Frontend:**
-- Use `npm install <package>` in `frontend/`
-- For dev dependencies: `npm install -D <package>`
-- Test with `npm run build`
+1. Add runtime deps: `cd frontend && npm install <package>`
+2. Add dev deps: `npm install -D <package>` (build tools, types)
+3. npm updates `package.json` and `package-lock.json` automatically
+4. Test: `npm run build`
 
 ## Environment Variables
 
 When adding new environment variables:
-1. Document in `.env.example` with description (never commit `.env`)
-2. Update `docker-compose.yml` if needed for containerized deployment
-3. Update service config loaders (usually the main files of each service)
-4. Update CI workflows if build-related (`.github/workflows/`)
+
+1. Document in `.env.example` with description
+2. Update `docker-compose.yml` if needed for containers
+3. Update service loaders (check main entry points for each service)
+4. Update CI workflows if build/test-related
+
+**Variable patterns:**
+- Frontend requires `VITE_*` prefix for Vite access
+- Check `.env.example` for current naming conventions
 
 ## Key Configuration Files
 
-- `.env.example` — All environment variables with descriptions
-- `backend/Cargo.toml` — Rust config
-- `ai-service/pyproject.toml` — Python config
-- `frontend/package.json` — npm config
-- `clippy.toml` — Allows unwrap/expect in tests only
-- `.editorconfig` — Editor formatting (4-space Rust, 100 char limit, LF endings)
+- `.env.example` — Environment variable reference (copy to `.env` locally)
+- `backend/Cargo.toml` — Check for binary name, edition, lints
+- `ai-service/pyproject.toml` — Check for Python version and PDM setup
+- `frontend/package.json` — Check for scripts and tech stack versions
+- `clippy.toml` — Rust linter config for test exceptions
+- `.editorconfig` — Editor formatting settings
 
-**After config changes:** Always test the build and ensure tests still pass and the bevavior is unchanged.
+After changes, run service tests and verify `.env.example` is updated.
+
+**After config changes:** 
+- Run service-specific tests: `cargo test`, `make test`, `npm run build`
+- Verify no behavior changes unless intended
+- Check that `.env.example` is updated if env vars changed

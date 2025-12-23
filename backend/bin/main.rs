@@ -48,7 +48,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(project_repo.clone())
             .app_data(ai_service_client.clone())
     })
-    .bind(("127.0.0.1", port))?
+    .bind(("0.0.0.0", port))?
     .run()
     .await
 }

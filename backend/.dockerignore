@@ -1,0 +1,36 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+*.pdb
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Documentation (except README needed by some tools)
+*.md
+!README.md
+
+# Test files
+tests/
+
+# Git files
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Request files
+*.http
+
+# macOS
+.DS_Store

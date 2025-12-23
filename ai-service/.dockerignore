@@ -1,0 +1,49 @@
+# Python build artifacts and cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.ruff_cache/
+.pdm-build/
+.pdm-python
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Documentation (except README needed by PDM)
+*.md
+!README.md
+
+# Test files
+tests/
+
+# Git files
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# ChromaDB store (mounted as volume)
+chroma_store/
+
+# Request files
+*.http
+
+# macOS
+.DS_Store

@@ -4,7 +4,7 @@
 # Stage 1: Build the binary with full Rust toolchain
 # Stage 2: Runtime image with only necessary files
 
-ARG RUST_BASE=1.90-slim
+ARG RUST_BASE=1.90.0-slim
 
 # =============================================================================
 # STAGE 1: BUILDER
@@ -30,11 +30,18 @@ WORKDIR /app
 # Copy only dependency files first (for better Docker layer caching)
 COPY Cargo.toml Cargo.lock ./
 
+# Create a dummy main.rs to build dependencies
+RUN mkdir -p bin && echo "fn main() {}" > bin/main.rs
+
+# Build dependencies only (they'll be cached)
+RUN cargo build --release && rm -rf bin/
+
+
 # Copy source code
 COPY bin/ ./bin/
 COPY src/ ./src/
 
-# Build the application in release mode
+# Build the application in release mode (dependencies are already cached)
 RUN cargo build --release
 
 # =============================================================================

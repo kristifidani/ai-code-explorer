@@ -43,7 +43,22 @@ src/
 └── components/      # UI components.
 ```
 
-## Backend Integration
+## Examples
+
+- Using npm (local development):
+
+```bash
+npm run dev
+```
+
+- Using Docker Compose:
+
+```bash
+docker compose build frontend
+docker compose up -d --wait frontend
+```
+
+### Backend Integration
 
 This frontend connects to:
 

@@ -5,8 +5,6 @@
 # Stage 2: Run Vite dev server with minimal Node.js
 # =============================================================================
 
-ARG NODE_BASE=22.12-alpine
-
 # =============================================================================
 # STAGE 1: BUILDER
 #
@@ -14,7 +12,7 @@ ARG NODE_BASE=22.12-alpine
 # but won't be included in the final production image.
 # =============================================================================
 
-FROM node:${NODE_BASE} AS builder
+FROM node:22.12-alpine AS builder
 
 # Set working directory for the build process
 WORKDIR /app
@@ -32,7 +30,7 @@ RUN npm ci --silent
 # to run the Vite dev server.
 # =============================================================================
 
-FROM node:${NODE_BASE}
+FROM node:22.12-alpine
 
 # Install curl for healthcheck
 RUN apk add --no-cache curl

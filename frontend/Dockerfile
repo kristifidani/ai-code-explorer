@@ -42,6 +42,7 @@ RUN apk add --no-cache curl
 # =============================================================================
 # Running as root is a security risk. If the app gets compromised,
 # the attacker won't have full system access
+# Note: Alpine uses 'adduser' instead of 'useradd' (used in Debian-based images)
 RUN adduser -D -h /home/app -s /bin/sh app
 
 # Set working directory

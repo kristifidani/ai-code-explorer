@@ -37,6 +37,13 @@ FROM node:${NODE_BASE}
 # Install curl for healthcheck
 RUN apk add --no-cache curl
 
+# =============================================================================
+# SECURITY: CREATE NON-ROOT USER
+# =============================================================================
+# Running as root is a security risk. If the app gets compromised,
+# the attacker won't have full system access
+RUN adduser -D -h /home/app -s /bin/sh app
+
 # Set working directory
 WORKDIR /app
 
@@ -48,6 +55,12 @@ COPY package.json package-lock.json ./
 
 # Copy source code
 COPY . .
+
+# Set ownership for application files
+RUN chown -R app:app /app
+
+# SWITCH TO NON-ROOT USER
+USER app
 
 # Expose Vite dev server port
 EXPOSE 5173

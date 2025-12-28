@@ -28,7 +28,7 @@ RUN npm ci --silent
 # =============================================================================
 # STAGE 2: DEVELOPMENT RUNTIME
 #
-# Start fresh with minimal Node.js image and only copy what's needed
+# Start fresh with a clean Node.js image and only copy what's needed
 # to run the Vite dev server.
 # =============================================================================
 

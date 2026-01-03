@@ -29,7 +29,8 @@ async fn main() -> std::io::Result<()> {
         backend::clients::ai_service_client::AiServiceClient::new(ai_service_url),
     );
 
-    // Frontend origin config (dev default)
+    // Frontend origin config (used for CORS allowlist).
+    // This must match the browser origin where the frontend is served.
     let frontend_origin: String = parse_env_expect("FRONTEND_API_URL");
 
     HttpServer::new(move || {

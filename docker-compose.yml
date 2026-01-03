@@ -63,6 +63,8 @@ services:
       - MONGO_URI=mongodb://root:example@mongo:27017
       - MONGO_DB_NAME=ai_code_explorer
       - AI_SERVICE_URL=http://ai-service:8000
+      # CORS allowlist: must match the browser origin serving the frontend.
+      # For this compose setup, the frontend is published at http://localhost:5173.
       - FRONTEND_API_URL=http://localhost:5173
       - RUST_LOG=info
     depends_on: 
@@ -75,6 +77,25 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 15s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_API_URL: /api
+    ports:
+      - "5173:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
       retries: 3
       start_period: 40s
 

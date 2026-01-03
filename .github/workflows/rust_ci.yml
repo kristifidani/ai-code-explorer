@@ -91,7 +91,7 @@ jobs:
     needs: [rust_unit_tests]
     env:
       MONGO_URI: "mongodb://root:example@localhost:27017/"
-      MONGO_DB_NAME: "aicodeexplorer"
+      MONGO_DB_NAME: "ai_code_explorer"
 
     services:
       mongodb:

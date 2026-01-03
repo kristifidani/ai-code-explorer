@@ -43,7 +43,32 @@ src/
 └── components/      # UI components.
 ```
 
-## Backend Integration
+## Running the Frontend
+
+- Using npm (local development):
+
+```bash
+npm run dev
+```
+
+- Using Docker Compose:
+
+```bash
+docker compose build frontend
+docker compose up -d --wait frontend
+```
+
+### NGINX (`nginx.conf`)
+
+The production container serves the built frontend using NGINX, configured in [frontend/nginx.conf](nginx.conf):
+
+- `location /` serves static files and falls back to `index.html` so client-side routes work.
+- `location /api/` proxies requests to the backend container (`http://backend:8080/`).
+
+This means the browser only talks to a single origin (the frontend origin), and API calls go through `/api/*`.  
+For local development (running `npm run dev` outside Docker), set `VITE_BACKEND_API_URL` in your local `.env` (for example `http://localhost:8080`)
+
+### Backend Integration
 
 This frontend connects to:
 

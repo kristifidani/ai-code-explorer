@@ -6,6 +6,7 @@ import type {
 import type {
     GitHubUploadProps
 } from '../types/internal'
+import { buildApiUrl } from '../utils/api'
 
 // Backend API endpoint from environment
 const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL as string
@@ -37,7 +38,7 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
                 github_url: githubUrl
             }
 
-            const endpoint = new URL('/v1/ingest', BACKEND_API_URL).toString()
+            const endpoint = buildApiUrl(BACKEND_API_URL, '/v1/ingest')
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {

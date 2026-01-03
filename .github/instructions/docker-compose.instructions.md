@@ -11,24 +11,24 @@ applyTo: "docker-compose.yml,**/Dockerfile"
 - `mongo` — Backend storage
 
 **Application:**
-- `ai-service` — Python RAG engine (waits for Ollama health)
-- `backend` — Rust API gateway (check if Docker image exists)
-- `frontend` — React dev server (check if Docker image exists)
+- `ai-service` — Python RAG engine
+- `backend` — Rust backend API gateway
+- `frontend` — React frontend server
 
-Check `docker-compose.yml` for current ports and service dependencies.
+Check `docker-compose.yml` for current ports, service dependencies and more details.
 
 ## Best Practices
 
-- Use multi-stage builds to minimize image size
-- Pin base image versions, avoid `:latest`
-- Add healthchecks for critical services with `depends_on: service_healthy`
-- Mount volumes for persistent data
+- Use multi-stage builds to minimize image size.
+- Pin base image versions to the current version we are using locally, avoid `:latest`.
+- Add healthchecks for critical services with `depends_on: service_healthy` or `depends_on: service_started` accordingly.
+- Mount volumes for persistent data if necessary.
 
-Check `ai-service/Dockerfile` for multi-stage build pattern.
+Check existing Dockerfiles for multi-stage build pattern.
 
 ## Key Files
 
-- `docker-compose.yml` — Service definitions, check for ports, volumes, and health checks
-- `ai-service/Dockerfile` — Multi-stage Python build reference
-- `backend/Dockerfile` — Check if implemented
-- `frontend/Dockerfile` — Check if implemented
+- `docker-compose.yml` — Service definitions, check for ports, volumes, and health checks.
+- `ai-service/Dockerfile` — Multi-stage Python build reference for the ai service.
+- `backend/Dockerfile` — Multi-stage Rust build reference for the backend service.
+- `frontend/Dockerfile` — Multi-stage React / TypeScript build reference for the frontend service.

@@ -43,7 +43,7 @@ src/
 └── components/      # UI components.
 ```
 
-## Examples
+## Running the Frontend
 
 - Using npm (local development):
 

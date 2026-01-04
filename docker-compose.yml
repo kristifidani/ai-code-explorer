@@ -27,6 +27,7 @@ services:
 
   # Application services
   ai-service:
+    image: ai-code-explorer-ai-service:latest
     build: 
       context: ./ai-service
       dockerfile: Dockerfile
@@ -53,6 +54,7 @@ services:
       start_period: 60s
 
   backend:
+    image: ai-code-explorer-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -81,6 +83,7 @@ services:
       start_period: 40s
 
   frontend:
+    image: ai-code-explorer-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile

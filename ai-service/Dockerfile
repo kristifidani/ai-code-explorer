@@ -54,8 +54,8 @@ FROM python:$PYTHON_BASE
 # curl: needed for healthcheck
 RUN apt-get update && apt-get install -y \
     --no-install-recommends \
-    git=1:2.47.3-0+deb13u1 \
-    curl=8.14.1-2 \
+    git \
+    curl \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 

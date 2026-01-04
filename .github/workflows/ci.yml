@@ -1,9 +1,7 @@
 name: CI
 
-# CI runs on PRs and on main.
-# Docker publish is:
-# - manual on PR branches (workflow_dispatch)
-# - automatic on main pushes
+# On main: build + push triggers automatically
+# On PR: build + push triggers manually (workflow_dispatch)
 
 on:
   push:
@@ -216,9 +214,10 @@ jobs:
   # ============================================================================
 
   build_and_push_images:
-    name: Containerize and Publish Docker Images to GHCR
+    name: Containerize Docker Images
     needs: [python_integration_tests, rust_integration_tests]
-    if: github.event_name != 'pull_request'
+    # On main: automatic. On PR: manual only (workflow_dispatch).
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -237,9 +236,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -262,7 +258,7 @@ jobs:
             type=sha,format=short
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Containerize services
+      - name: Push images to GHCR
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
@@ -274,3 +270,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: true
+          build-args: |
+            ${{ matrix.image_name == 'ai-code-explorer-frontend' && 'VITE_BACKEND_API_URL=/api' || '' }}

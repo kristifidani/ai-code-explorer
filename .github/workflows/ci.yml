@@ -267,8 +267,6 @@ jobs:
 
       - name: Show image sizes
         run: |
-          docker images \
-            ghcr.io/kristifidani/ai-code-explorer-frontend \
-            ghcr.io/kristifidani/ai-code-explorer-backend \
-            ghcr.io/kristifidani/ai-code-explorer-ai-service \
-            --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+          echo "Built Docker images:"
+          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" | \
+            grep -E "(REPOSITORY|ghcr.io/${{ github.repository_owner }}/ai-code-explorer-)"

@@ -208,8 +208,7 @@ jobs:
   # Containerize Services (BUILD + PUSH)
   # ============================================================================
 
-  build_and_push_images:
-    name: Containerize Docker Image (${{ matrix.image_name }})
+  containerize_services:
     needs: [python_integration_tests, rust_integration_tests]
     runs-on: ubuntu-latest
     strategy:
@@ -232,6 +231,14 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Show image sizes
+        run: |
+          docker images \
+            ghcr.io/kristifidani/ai-code-explorer-frontend \
+            ghcr.io/kristifidani/ai-code-explorer-backend \
+            ghcr.io/kristifidani/ai-code-explorer-ai-service \
+            --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
 
       - name: Log in to GHCR
         # Only required when pushing images (main branch)

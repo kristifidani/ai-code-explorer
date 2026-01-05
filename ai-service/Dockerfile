@@ -15,17 +15,19 @@ ARG PYTHON_BASE=3.10-slim
 
 FROM python:$PYTHON_BASE AS builder
 
-# Install build dependencies (compilers, git, etc.)
+# Install build dependencies (compilers, git, curl for PDM installer)
 # These are needed to compile Python packages with C extensions (like numpy, torch)
 RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     gcc=4:14.2.0-1 \
     g++=4:14.2.0-1 \
     git=1:2.47.3-0+deb13u1 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PDM (Python Dependency Manager)
-RUN pip install --no-cache-dir pdm==2.25.9
+# Install PDM using the official installer
+RUN curl -sSL https://pdm-project.org/install-pdm.py | python3 - --version 2.25.9
+ENV PATH="/root/.local/bin:$PATH"
 # Disable update check for faster build
 ENV PDM_CHECK_UPDATE=false
 
@@ -35,8 +37,8 @@ WORKDIR /app
 # Copy only dependency files first (for better Docker layer caching)
 COPY pyproject.toml pdm.lock README.md ./
 
-# Install dependencies using PDM defaults (creates .venv automatically)
-RUN pdm install --check --prod --no-editable
+# Install dependencies using PDM (creates .venv automatically)
+RUN pdm install --prod --no-editable
 
 # Copy source code (needed for the final stage)
 COPY src/ ./src/
@@ -79,21 +81,13 @@ COPY --from=builder /app/src/ ./src/
 # Set Python path so Python can find our modules
 ENV PYTHONPATH=/app/src
 
-# Production environment variables
-# Tells app to run in production mode (no reload, quiet logs)
-ENV ENVIRONMENT=production
-# Force real-time stdout/stderr (essential for Docker logs)
-ENV PYTHONUNBUFFERED=1
-# Skip .pyc files (saves space, faster startup)
-ENV PYTHONDONTWRITEBYTECODE=1
-
-# Set ownership for source code
+# Set ownership for app directory
 RUN chown app:app /app/src
 
 # SWITCH TO NON-ROOT USER
 USER app
 
-# Expose port 8000 (this is just documentation, doesn't actually open the port)
+# Expose port (this is just documentation, doesn't actually open the port)
 EXPOSE 8000
 
 # Add healthcheck instruction for self-documenting image
@@ -101,5 +95,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=15s --retries=3 --start-period=60s \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Set command/entrypoint, adapt to fit your needs
+# Run the application
 CMD ["python", "-m", "ai_service.main"]

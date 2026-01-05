@@ -54,7 +54,7 @@ npm run dev
 - Using Docker Compose:
 
 ```bash
-docker compose build frontend
+docker compose --profile local build frontend 
 docker compose up -d --wait frontend
 ```
 

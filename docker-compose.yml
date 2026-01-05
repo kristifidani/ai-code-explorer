@@ -1,9 +1,7 @@
 services:
   # Infrastructure services
   ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
+    image: ollama/ollama:0.13.5
     restart: unless-stopped
     volumes:
       - ollama_data:/root/.ollama
@@ -15,10 +13,8 @@ services:
       start_period: 20s
 
   mongo:
-    image: mongo:latest
+    image: mongo:8
     restart: unless-stopped
-    ports:
-      - 27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
@@ -28,11 +24,10 @@ services:
   # Application services
   ai-service:
     image: ghcr.io/kristifidani/ai-code-explorer-ai-service:latest
+    profiles: ["local"]
     build: 
       context: ./ai-service
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
     environment:
       - AI_SERVICE_PORT=8000
       - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
@@ -55,11 +50,10 @@ services:
 
   backend:
     image: ghcr.io/kristifidani/ai-code-explorer-backend:latest
+    profiles: ["local"]
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
     environment:
       - RUST_BACKEND_PORT=8080
       - MONGO_URI=mongodb://root:example@mongo:27017
@@ -84,6 +78,7 @@ services:
 
   frontend:
     image: ghcr.io/kristifidani/ai-code-explorer-frontend:latest
+    profiles: ["local"]
     build:
       context: ./frontend
       dockerfile: Dockerfile

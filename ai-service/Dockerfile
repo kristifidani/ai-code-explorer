@@ -80,6 +80,10 @@ COPY --from=builder /app/src/ ./src/
 
 # Set Python path so Python can find our modules
 ENV PYTHONPATH=/app/src
+# Ensures real-time logging output
+ENV PYTHONUNBUFFERED=1 
+# Prevents .pyc file generation
+ENV PYTHONDONTWRITEBYTECODE=1
 
 # Set ownership for app directory
 RUN chown app:app /app/src

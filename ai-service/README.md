@@ -92,8 +92,8 @@ make start
 - Using Docker Compose:
 
 ```bash
-docker compose --profile local build ai-service
-docker compose --profile local up -d --wait ai-service
+docker compose build ai-service
+docker compose up -d --wait ai-service
 ```
 
 ### HTTP

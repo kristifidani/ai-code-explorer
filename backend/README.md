@@ -26,8 +26,8 @@ You need to make sure the `ai-service` is also up and running.
 - Using Docker Compose:
 
 ```bash
-docker compose --profile local build backend
-docker compose --profile local up -d --wait backend
+docker compose build backend
+docker compose up -d --wait backend
 ```
 
 ### HTTP

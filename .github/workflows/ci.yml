@@ -262,11 +262,6 @@ jobs:
           push: ${{ github.ref == 'refs/heads/main' }} # push only on main
           tags: ${{ steps.meta.outputs.tags }} # set only on main (meta step skipped on PRs)
           labels: ${{ steps.meta.outputs.labels }} # set only on main
+          outputs: type=registry,push=${{ github.ref == 'refs/heads/main' }} # enables detailed build summary with sizes
           provenance: true # publish build provenance/attestation
           build-args: ${{ matrix.image_name == 'ai-code-explorer-frontend' && 'VITE_BACKEND_API_URL=/api' || '' }} # frontend build-time arg
-
-      - name: Show image sizes
-        run: |
-          echo "Built Docker images:"
-          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" | \
-            grep -E "(REPOSITORY|ghcr.io/${{ github.repository_owner }}/ai-code-explorer-)"

@@ -93,7 +93,7 @@ make start
 
 ```bash
 docker compose --profile local build ai-service
-docker compose up -d --wait ai-service
+docker compose --profile local up -d --wait ai-service
 ```
 
 ### HTTP

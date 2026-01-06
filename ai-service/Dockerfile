@@ -38,7 +38,7 @@ WORKDIR /app
 COPY pyproject.toml pdm.lock README.md ./
 
 # Install dependencies using PDM (creates .venv automatically)
-RUN pdm install --prod --no-editable
+RUN pdm install --check --prod --no-editable
 
 # Copy source code (needed for the final stage)
 COPY src/ ./src/

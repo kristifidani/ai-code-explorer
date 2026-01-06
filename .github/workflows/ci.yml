@@ -265,3 +265,9 @@ jobs:
           outputs: type=registry,push=${{ github.ref == 'refs/heads/main' }} # enables detailed build summary with sizes
           provenance: true # publish build provenance/attestation
           build-args: ${{ matrix.image_name == 'ai-code-explorer-frontend' && 'VITE_BACKEND_API_URL=/api' || '' }} # frontend build-time arg
+
+      - name: Show built image size
+        if: always() # run even if build failed
+        run: |
+          echo "Image size for ${{ matrix.image_name }}:"
+          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" | head -5

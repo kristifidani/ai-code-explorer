@@ -260,7 +260,7 @@ jobs:
           context: ${{ matrix.context }} # build context directory
           file: ${{ matrix.dockerfile }} # Dockerfile path
           push: ${{ github.ref == 'refs/heads/main' }} # push only on main
-          tags: ${{ github.ref == 'refs/heads/main' && steps.meta.outputs.tags || format('{0}/{1}/{2}:pr-{3}', env.REGISTRY, github.repository_owner, matrix.image_name, github.event.number) }} # tag locally on PRs, use meta tags on main
+          tags: ${{ github.ref == 'refs/heads/main' && steps.meta.outputs.tags || format('{0}/{1}/{2}:build-{3}', env.REGISTRY, github.repository_owner, matrix.image_name, github.sha) }} # tag locally on PRs with SHA, use meta tags on main
           labels: ${{ steps.meta.outputs.labels }} # set only on main
           provenance: true # publish build provenance/attestation
           build-args: ${{ matrix.image_name == 'ai-code-explorer-frontend' && 'VITE_BACKEND_API_URL=/api' || '' }} # frontend build-time arg

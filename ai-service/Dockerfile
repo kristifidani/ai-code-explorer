@@ -25,8 +25,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PDM using the official installer
-RUN curl -sSL https://pdm-project.org/install-pdm.py | python3 - --version 2.25.9
+# Install PDM using the official installer (with pipefail for safety)
+RUN set -o pipefail && \
+    curl -sSL https://pdm-project.org/install-pdm.py | python3 - --version 2.25.9
 ENV PATH="/root/.local/bin:$PATH"
 # Disable update check for faster build
 ENV PDM_CHECK_UPDATE=false

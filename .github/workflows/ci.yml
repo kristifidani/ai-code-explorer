@@ -181,7 +181,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:8
+        image: mongo:8.0.4
         ports:
           - 27017:27017
         env:
@@ -260,13 +260,9 @@ jobs:
           context: ${{ matrix.context }} # build context directory
           file: ${{ matrix.dockerfile }} # Dockerfile path
           push: ${{ github.ref == 'refs/heads/main' }} # push only on main
-          tags: ${{ github.ref == 'refs/heads/main' && steps.meta.outputs.tags || format('{0}/{1}/{2}:build-{3}', env.REGISTRY, github.repository_owner, matrix.image_name, github.sha) }} # tag locally on PRs with SHA, use meta tags on main
+          tags: ${{ steps.meta.outputs.tags }} # set only on main
           labels: ${{ steps.meta.outputs.labels }} # set only on main
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           provenance: true # publish build provenance/attestation
           build-args: ${{ matrix.image_name == 'ai-code-explorer-frontend' && 'VITE_BACKEND_API_URL=/api' || '' }} # frontend build-time arg
-
-      - name: Show built image size
-        if: always() # run even if build failed
-        run: |
-          echo "Image size for ${{ matrix.image_name }}:"
-          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" | head -5

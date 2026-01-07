@@ -1,8 +1,18 @@
 ---
-applyTo: "**/{Cargo.toml,pyproject.toml,package.json,.editorconfig,.gitignore,.env.example,clippy.toml}"
+applyTo: "**/{Cargo.toml,pyproject.toml,package.json,.editorconfig,.gitignore,.env.example,.env.docker.example,clippy.toml}"
 ---
 
 # Configuration Files Instructions
+
+## Key Configuration Files
+
+- `.env.example` — Local development environment variables (copy to `.env`).
+- `.env.docker.example` — Docker Compose environment variables (copy to `.env.docker`).
+- `backend/Cargo.toml` — Check for binary name, edition, lints.
+- `ai-service/pyproject.toml` — Check for Python version and PDM setup.
+- `frontend/package.json` — Check for scripts and tech stack versions.
+- `clippy.toml` — Rust linter config for test exceptions.
+- `.editorconfig` — Editor formatting settings.
 
 ## Adding Dependencies
 
@@ -26,29 +36,30 @@ applyTo: "**/{Cargo.toml,pyproject.toml,package.json,.editorconfig,.gitignore,.e
 
 ## Environment Variables
 
-When adding new environment variables:
+This project uses two separate environment files:
 
-1. Document in `.env.example` with description
-2. Update `docker-compose.yml` if needed for containers
-3. Update service loaders (check main entry points for each service)
-4. Update CI workflows if build/test-related
+- **`.env.example`** — Template for **local development** (copy to `.env`).
+  - Used when running services directly on the host machine.
+  - Default configuration for running outside Docker.
+
+- **`.env.docker.example`** — Template for **Docker Compose** (copy to `.env.docker`).
+  - Used by `docker-compose.yml` for containerized environments.
+  - Contains Docker internal networking for inter-container communication.
+
+**When adding new environment variables:**
+
+1. Identify the scope: local-only, Docker-only, or both.
+2. Add to appropriate file(s) with clear description:
+   - Local development → `.env.example`
+   - Docker Compose → `.env.docker.example`
+   - Used in both → add to both files with appropriate values
+3. Update service loaders (check main entry points for each service).
+4. Update CI workflows if build/test-related.
 
 **Variable patterns:**
-- Frontend requires `VITE_*` prefix for Vite access
-- Check `.env.example` for current naming conventions
 
-## Key Configuration Files
+- Frontend requires `VITE_*` prefix for Vite access in browser.
+- Docker services use internal DNS names (e.g., `mongo`, `ai-service`, `backend`, `ollama`).
+- Local development uses `localhost` with specific ports.
 
-- `.env.example` — Environment variable reference (copy to `.env` locally)
-- `backend/Cargo.toml` — Check for binary name, edition, lints
-- `ai-service/pyproject.toml` — Check for Python version and PDM setup
-- `frontend/package.json` — Check for scripts and tech stack versions
-- `clippy.toml` — Rust linter config for test exceptions
-- `.editorconfig` — Editor formatting settings
-
-After changes, run service tests and verify `.env.example` is updated.
-
-**After config changes:** 
-- Run service-specific tests: `cargo test`, `make test`, `npm run build`
-- Verify no behavior changes unless intended
-- Check that `.env.example` is updated if env vars changed
+After changes, run service tests and verify both `.env.example` and `.env.docker.example` are updated if env vars changed.

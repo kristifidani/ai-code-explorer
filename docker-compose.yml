@@ -1,7 +1,7 @@
 services:
   # Infrastructure services
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.13.5
     ports:
       - "11434:11434"
     restart: unless-stopped
@@ -15,13 +15,12 @@ services:
       start_period: 20s
 
   mongo:
-    image: mongo:latest
+    image: mongo:8.0.4
     restart: unless-stopped
     ports:
       - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+    env_file:
+      - .env.docker
     volumes:
       - mongo_data:/data/db
 
@@ -33,13 +32,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    environment:
-      - AI_SERVICE_PORT=8000
-      - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
-      - CHROMA_STORE_PATH=./chroma_store
-      - LLM_MODEL=tinyllama
-      - MAX_CONTEXT_LENGTH=12000
-      - OLLAMA_HOST=http://ollama:11434 # Internal usage for Docker network
+    env_file:
+      - .env.docker
     volumes:
       - ./ai-service/chroma_store:/app/chroma_store
     depends_on:
@@ -60,15 +54,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    environment:
-      - RUST_BACKEND_PORT=8080
-      - MONGO_URI=mongodb://root:example@mongo:27017
-      - MONGO_DB_NAME=ai_code_explorer
-      - AI_SERVICE_URL=http://ai-service:8000
-      # CORS allowlist: must match the browser origin serving the frontend.
-      # For this compose setup, the frontend is published at http://localhost:5173.
-      - FRONTEND_API_URL=http://localhost:5173
-      - RUST_LOG=info
+    env_file:
+      - .env.docker
     depends_on: 
       mongo:
         condition: service_started

@@ -1,8 +1,6 @@
 name: CI
 
-# On main: build + push triggers automatically
-# On PR: build + push triggers manually (workflow_dispatch)
-
+# Trigger CI once for each PR update (on merge diff) and again when PR is merged to main (in push)
 on:
   push:
     branches:
@@ -10,7 +8,6 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch: {}
 
 permissions:
   contents: read # allows reading repo contents (needed for basic CI)
@@ -184,7 +181,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:latest
+        image: mongo:8.0.4
         ports:
           - 27017:27017
         env:
@@ -208,16 +205,11 @@ jobs:
         run: cargo test --test integration_tests_* --color always -- --nocapture
 
   # ============================================================================
-  # DOCKER BUILD + PUSH
-  # - Runs only after CI is green.
-  # - Runs on main pushes (automatic) and workflow_dispatch (manual).
+  # Containerize Services (BUILD + PUSH)
   # ============================================================================
 
-  build_and_push_images:
-    name: Containerize Docker Images
+  containerize_services:
     needs: [python_integration_tests, rust_integration_tests]
-    # On main: automatic. On PR: manual only (workflow_dispatch).
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -241,6 +233,8 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
+        # Only required when pushing images (main branch)
+        if: github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -249,6 +243,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract Docker metadata
+        # Only required when pushing images (main branch)
+        if: github.ref == 'refs/heads/main'
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -261,14 +257,12 @@ jobs:
       - name: Push images to GHCR
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.dockerfile }}
-          # Always pushes here because this job is gated away from pull_request.
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          context: ${{ matrix.context }} # build context directory
+          file: ${{ matrix.dockerfile }} # Dockerfile path
+          push: ${{ github.ref == 'refs/heads/main' }} # push only on main
+          tags: ${{ steps.meta.outputs.tags }} # set only on main
+          labels: ${{ steps.meta.outputs.labels }} # set only on main
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          provenance: true
-          build-args: |
-            ${{ matrix.image_name == 'ai-code-explorer-frontend' && 'VITE_BACKEND_API_URL=/api' || '' }}
+          provenance: true # publish build provenance/attestation
+          build-args: ${{ matrix.image_name == 'ai-code-explorer-frontend' && 'VITE_BACKEND_API_URL=/api' || '' }} # frontend build-time arg

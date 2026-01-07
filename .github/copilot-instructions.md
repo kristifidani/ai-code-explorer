@@ -29,8 +29,9 @@ Read `README.md` files in root and service directories for architecture details.
 
 ## Configuration & Environment
 
-- Single root `.env` for local setup
-- Environment variables referenced across: `.env`, CI/CD workflows, Dockerfiles, service configs, test setups
+- `.env.example` for **local development** (copy to `.env`).
+- `.env.docker.example` for **Docker Compose** (copy to `.env.docker`).
+- Environment variables referenced across: CI/CD workflows, Dockerfiles, service configs, test setups.
 
 When adding or changing env vars, update **all** references consistently.
 

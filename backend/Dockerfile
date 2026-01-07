@@ -52,6 +52,9 @@ RUN cargo build --release
 
 FROM debian:bookworm-slim
 
+# Add image metadata
+LABEL org.opencontainers.image.description="AI Code Explorer - Rust backend API gateway built with Actix-web for high-performance request routing and validation"
+
 # Install only runtime dependencies (no build tools)
 # ca-certificates: For HTTPS connections
 # curl: needed for healthcheck

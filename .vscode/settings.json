@@ -27,7 +27,7 @@
     },
     "github.copilot.chat.commitMessageGeneration.instructions": [
         {
-            "text": "Use conventional commit message format. Don't be overly detailed by explaining what each change means. Just provide a concise summary of the changes made. Don't leave out any change / addition. If there are file changes related to a specific service mention the service name e.g. for ai-service, backend, or frontend. If the change is for all service mention 'all services'."
+            "text": "Provide a concise summary of the changes made. Focus on key modifications, added features, or bug fixes. Avoid generic phrases like 'Updated code' or 'Minor changes'."
         }
     ]
 }

@@ -52,6 +52,9 @@ COPY src/ ./src/
 
 FROM python:$PYTHON_BASE
 
+# Add image metadata
+LABEL org.opencontainers.image.description="AI Code Explorer - Python RAG engine with FastAPI, ChromaDB, and Ollama for semantic code search and intelligent Q&A"
+
 # Install only runtime dependencies (no build tools)
 # git: needed for GitPython package
 # curl: needed for healthcheck

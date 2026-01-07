@@ -33,6 +33,9 @@ RUN npm run build
 # =============================================================================
 FROM nginxinc/nginx-unprivileged:1.29.3-alpine3.22
 
+# Add image metadata
+LABEL org.opencontainers.image.description="AI Code Explorer - React/TypeScript frontend served by NGINX for GitHub repository upload and interactive code Q&A"
+
 # Replace default server config
 COPY --chown=101:101 nginx.conf /etc/nginx/conf.d/default.conf
 

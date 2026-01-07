@@ -264,5 +264,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }} # set only on main
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          provenance: true # publish build provenance/attestation
+          # Disable provenance/SBOM to avoid untagged digest clutter
+          provenance: false # build provenance/attestation
+          sbom: false # build software bill of materials
           build-args: ${{ matrix.image_name == 'ai-code-explorer-frontend' && 'VITE_BACKEND_API_URL=/api' || '' }} # frontend build-time arg

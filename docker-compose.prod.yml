@@ -1,0 +1,19 @@
+services:
+  # Infrastructure - override env files
+  mongo:
+    env_file:
+      - .env.docker
+
+  # Application services - override env files
+  ai-service:
+    env_file:
+      - .env.docker
+
+  backend:
+    env_file:
+      - .env.docker
+
+  # Frontend - production port mapping
+  frontend:
+    ports:
+      - "80:8080"

@@ -43,7 +43,7 @@ This project uses two separate environment files:
   - Default configuration for running outside Docker.
 
 - **`.env.docker.example`** — Template for **Docker Compose** (copy to `.env.docker`).
-  - Used by `docker-compose.yml` for containerized environments.
+  - Used by both `docker-compose.local.yml` and `docker-compose.prod.yml` for containerized environments.
   - Contains Docker internal networking for inter-container communication.
 
 **When adding new environment variables:**

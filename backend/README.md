@@ -26,8 +26,11 @@ You need to make sure the `ai-service` is also up and running.
 - Using Docker Compose:
 
 ```bash
-docker compose build backend
-docker compose up -d --wait backend
+# Local development (builds from source)
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build backend
+
+# Production (uses pre-built images)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d backend
 ```
 
 ### HTTP

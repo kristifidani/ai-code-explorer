@@ -15,9 +15,19 @@ applyTo: "docker-compose.yml,**/Dockerfile"
 - `backend` — Rust backend API gateway connecting frontend and ai-service.
 - `frontend` — React / TS frontend server.
 
+## Docker Compose Structure
+
+Project uses **3-tier compose configuration**:
+
+- **`docker-compose.yml`** — Base config with GHCR images, health checks, dependencies, restart policies, volumes. No `env_file` or port mappings.
+- **`docker-compose.local.yml`** — Local dev override. Builds from source, exposes all ports, uses `.env.docker`, mounts host volumes.
+- **`docker-compose.prod.yml`** — Production override. Uses `.env.docker` for all services, exposes only frontend port 80.
+
 ## Key Files
 
-- `docker-compose.yml` — Service definitions, check for ports, volumes, and health checks.
+- `docker-compose.yml` — Base: GHCR images, health checks, dependencies.
+- `docker-compose.local.yml` — Overrides: build contexts, all ports, `.env.docker`.
+- `docker-compose.prod.yml` — Overrides: `.env.docker` for all services, frontend port 80.
 - `ai-service/Dockerfile` — Multi-stage Python build reference for the ai service.
 - `backend/Dockerfile` — Multi-stage Rust build reference for the backend service.
 - `frontend/Dockerfile` — Multi-stage React / TypeScript build reference for the frontend service.

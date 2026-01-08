@@ -92,8 +92,11 @@ make start
 - Using Docker Compose:
 
 ```bash
-docker compose build ai-service
-docker compose up -d --wait ai-service
+# Local development (builds from source)
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build ai-service
+
+# Production (uses pre-built images)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d ai-service
 ```
 
 ### HTTP

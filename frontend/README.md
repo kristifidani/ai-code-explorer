@@ -54,8 +54,11 @@ npm run dev
 - Using Docker Compose:
 
 ```bash
-docker compose build frontend
-docker compose up -d --wait frontend
+# Local development (builds from source)
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build frontend
+
+# Production (uses pre-built images)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d frontend
 ```
 
 ### NGINX (`nginx.conf`)

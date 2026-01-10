@@ -78,6 +78,8 @@ services:
         VITE_BACKEND_API_URL: /api
     ports:
       - "5173:8080"
+    env_file:
+      - .env.docker
     depends_on:
       backend:
         condition: service_healthy

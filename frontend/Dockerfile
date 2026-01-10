@@ -36,8 +36,16 @@ FROM nginxinc/nginx-unprivileged:1.29.3-alpine3.22
 # Add image metadata
 LABEL org.opencontainers.image.description="AI Code Explorer - React/TypeScript frontend served by NGINX for GitHub repository upload and interactive code Q&A"
 
-# Replace default server config
-COPY --chown=101:101 nginx.conf /etc/nginx/conf.d/default.conf
+# Install envsubst for runtime config templating
+USER root
+RUN apk add --no-cache gettext-envsubst
+
+# Use nginxinc's built-in entrypoint envsubst hook.
+# Any /etc/nginx/templates/*.template file is rendered to /etc/nginx/conf.d/*
+# at container start. BACKEND_URL is injected at runtime (e.g. by Railway).
+RUN rm -f /etc/nginx/conf.d/default.conf
+COPY --chown=101:101 nginx.conf /etc/nginx/templates/default.conf.template
+USER 101
 
 # Copy the built assets
 COPY --from=builder /app/dist /usr/share/nginx/html

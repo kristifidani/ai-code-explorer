@@ -63,15 +63,22 @@ docker compose up -d --wait frontend
 The production container serves the built frontend using NGINX, configured in [frontend/nginx.conf](nginx.conf):
 
 - `location /` serves static files and falls back to `index.html` so client-side routes work.
-- `location /api/` proxies requests to the backend container (`http://backend:8080/`).
+- `location /api/` proxies requests to the backend service URL configured at runtime via `BACKEND_URL`.
 
-This means the browser only talks to a single origin (the frontend origin), and API calls go through `/api/*`.  
-For local development (running `npm run dev` outside Docker), set `VITE_BACKEND_API_URL` in your local `.env` (for example `http://localhost:8080`)
+This means the browser only talks to a single origin (the frontend origin), and API calls go through `/api/*`.
 
-### Backend Integration
+The frontend uses *two* backend-related variables on purpose:
 
-This frontend connects to:
+- `VITE_BACKEND_API_URL` (**build-time, browser-side**) — used by the React app to build `fetch()` URLs.
+- Because it is a `VITE_*` variable, it is baked into the JS bundle when you run `npm run build`.
+- In the production Docker image we set it to `/api` so the browser calls the same origin (no CORS).
 
-- **Rust Backend** (port 8080) - Main API server.
+- `BACKEND_URL` (**runtime, container-side**) — used by NGINX to proxy `/api/*` to the real backend.
+- This is injected at container runtime (Docker Compose / Railway env vars).
+- Example (Docker Compose): `BACKEND_URL=http://backend:8080`
+- Example (Railway): `BACKEND_URL=https://<your-backend>.up.railway.app`
 
-Make sure both backend services are running for full functionality.
+Rule of thumb:
+
+- Browser talks to `/api/...` (controlled by `VITE_BACKEND_API_URL=/api`).
+- NGINX decides where `/api/...` goes (controlled by `BACKEND_URL=...`).

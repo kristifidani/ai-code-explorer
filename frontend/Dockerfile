@@ -40,6 +40,12 @@ LABEL org.opencontainers.image.description="AI Code Explorer - React/TypeScript 
 USER root
 RUN apk add --no-cache gettext-envsubst
 
+# Runtime defaults (Railway provides PORT; BACKEND_URL should be set in the service env).
+# Also, restrict envsubst to only these variables so $host/$scheme etc. remain intact.
+ENV PORT=8080
+ENV BACKEND_URL=http://127.0.0.1:8080
+ENV NGINX_ENVSUBST_FILTER=^(BACKEND_URL|PORT)$
+
 # Use nginxinc's built-in entrypoint envsubst hook.
 # Any /etc/nginx/templates/*.template file is rendered to /etc/nginx/conf.d/*
 # at container start. BACKEND_URL is injected at runtime (e.g. by Railway).
@@ -56,4 +62,4 @@ EXPOSE 8080
 # Add healthcheck instruction for self-documenting image
 # This provides a default healthcheck when running outside docker-compose
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
-    CMD wget -q -O - http://localhost:8080/ >/dev/null 2>&1 || exit 1
+    CMD wget -q -O - "http://localhost:${PORT}/" >/dev/null 2>&1 || exit 1

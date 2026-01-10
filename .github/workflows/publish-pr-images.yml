@@ -4,7 +4,7 @@ on:
     pull_request:
         branches:
             - main
-        types: [labeled]
+        types: [labeled, synchronize]
 
 permissions:
     contents: read
@@ -13,7 +13,6 @@ permissions:
 env:
     REGISTRY: ghcr.io
 
-# One publish at a time per PR; re-label to retrigger.
 concurrency:
     group: publish-pr-images-pr-${{ github.event.pull_request.number }}
     cancel-in-progress: true

@@ -56,10 +56,11 @@ USER 101
 # Copy the built assets
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expose port 5173 (this is just documentation, doesn't actually open the port)
+# Expose the default PORT (5173). This is documentation only; the actual
+# listening port is controlled by the PORT env var and may be overridden.
 EXPOSE 5173
 
 # Add healthcheck instruction for self-documenting image
 # This provides a default healthcheck when running outside docker-compose
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
-    CMD wget -q -O - "http://localhost:${PORT}/" >/dev/null 2>&1 || exit 1
+    CMD wget -q -O - "http://localhost:${PORT}/health" >/dev/null 2>&1 || exit 1

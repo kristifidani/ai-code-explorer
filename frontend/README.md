@@ -82,3 +82,5 @@ Rule of thumb:
 
 - Browser talks to `/api/...` (controlled by `VITE_BACKEND_API_URL=/api`).
 - NGINX decides where `/api/...` goes (controlled by `BACKEND_URL=...`).
+
+The frontend container listens on the port given by `PORT` (default `5173`), which is especially important on PaaS platforms like Railway that inject `PORT` at runtime.

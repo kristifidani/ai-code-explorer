@@ -42,7 +42,7 @@ RUN apk add --no-cache gettext-envsubst
 
 # Runtime defaults (Railway provides PORT; BACKEND_URL should be set in the service env).
 # Also, restrict envsubst to only these variables so $host/$scheme etc. remain intact.
-ENV PORT=8080
+ENV PORT=5173
 ENV BACKEND_URL=http://127.0.0.1:8080
 ENV NGINX_ENVSUBST_FILTER=^(BACKEND_URL|PORT)$
 
@@ -56,8 +56,8 @@ USER 101
 # Copy the built assets
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expose port 8080 (this is just documentation, doesn't actually open the port)
-EXPOSE 8080
+# Expose port 5173 (this is just documentation, doesn't actually open the port)
+EXPOSE 5173
 
 # Add healthcheck instruction for self-documenting image
 # This provides a default healthcheck when running outside docker-compose

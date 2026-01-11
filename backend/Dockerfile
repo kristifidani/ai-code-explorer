@@ -90,7 +90,7 @@ EXPOSE 8080
 # Add healthcheck instruction for self-documenting image
 # This provides a default healthcheck when running outside docker-compose
 HEALTHCHECK --interval=30s --timeout=15s --retries=3 --start-period=40s \
-    CMD curl -f http://localhost:${}/health || exit 1
+    CMD curl -f http://localhost:8080/health || exit 1
 
 # Run the backend service
 CMD ["/app/rest-api"]

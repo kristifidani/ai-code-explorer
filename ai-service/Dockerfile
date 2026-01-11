@@ -101,7 +101,7 @@ EXPOSE 8000
 # Add healthcheck instruction for self-documenting image
 # This provides a default healthcheck when running outside docker-compose
 HEALTHCHECK --interval=30s --timeout=15s --retries=3 --start-period=60s \
-    CMD curl -f http://localhost:${AI_SERVICE_PORT}/health || exit 1
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # Run the application
 CMD ["python", "-m", "ai_service.main"]

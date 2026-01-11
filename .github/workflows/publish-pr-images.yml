@@ -4,7 +4,7 @@ on:
     pull_request:
         branches:
             - main
-        types: [labeled]
+        types: [labeled, synchronize]
 
 permissions:
     contents: read
@@ -23,10 +23,13 @@ jobs:
         runs-on: ubuntu-latest
         # Manual trigger: apply label "publish-images".
         # Safe by default: only same-repo PRs can publish (never forks).
+        # Run if: labeled with publish-images OR (synchronize AND label exists)
         if: >
-            github.event.action == 'labeled' &&
-            github.event.label.name == 'publish-images' &&
-            github.event.pull_request.head.repo.full_name == github.repository
+            github.event.pull_request.head.repo.full_name == github.repository &&
+            (
+                (github.event.action == 'labeled' && github.event.label.name == 'publish-images') ||
+                (github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'publish-images'))
+            )
 
         strategy:
             fail-fast: false

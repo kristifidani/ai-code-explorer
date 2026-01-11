@@ -31,14 +31,14 @@ RUN npm run build
 # =============================================================================
 # STAGE 2 (runtime) - BEGIN
 # =============================================================================
-FROM nginx:1.27-alpine3.20
+FROM nginxinc/nginx-unprivileged:1.29.3-alpine3.22
 
 # Add image metadata
 LABEL org.opencontainers.image.description="AI Code Explorer - React/TypeScript frontend served by NGINX for GitHub repository upload and interactive code Q&A"
 
 # Runtime defaults (Railway injects PORT; BACKEND_URL should be set per environment)
 ENV PORT=5173
-ENV BACKEND_URL=http://127.0.0.1:8080
+ENV BACKEND_URL=http://localhost:8080
 
 # Copy NGINX configuration template for runtime variable substitution
 COPY nginx.conf /etc/nginx/templates/default.conf.template

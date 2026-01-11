@@ -221,12 +221,16 @@ jobs:
           - image_name: ai-code-explorer-ai-service
             context: ai-service
             dockerfile: ai-service/Dockerfile
+            build_args: ""
           - image_name: ai-code-explorer-backend
             context: backend
             dockerfile: backend/Dockerfile
+            build_args: ""
           - image_name: ai-code-explorer-frontend
             context: frontend
             dockerfile: frontend/Dockerfile
+            build_args: |
+              VITE_BACKEND_API_URL=/api
 
     steps:
       - name: Checkout
@@ -266,4 +270,4 @@ jobs:
           # Disable provenance/SBOM to avoid untagged digest clutter
           provenance: false # build provenance/attestation
           sbom: false # build software bill of materials
-          build-args: ${{ matrix.image_name == 'ai-code-explorer-frontend' && 'VITE_BACKEND_API_URL=/api' || '' }} # frontend build-time arg
+          build-args: ${{ matrix.build_args }}

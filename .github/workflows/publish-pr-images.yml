@@ -38,12 +38,16 @@ jobs:
                     - image_name: ai-code-explorer-ai-service
                       context: ai-service
                       dockerfile: ai-service/Dockerfile
+                      build_args: ""
                     - image_name: ai-code-explorer-backend
                       context: backend
                       dockerfile: backend/Dockerfile
+                      build_args: ""
                     - image_name: ai-code-explorer-frontend
                       context: frontend
                       dockerfile: frontend/Dockerfile
+                      build_args: |
+                          VITE_BACKEND_API_URL=/api
 
         steps:
             - name: Checkout PR HEAD
@@ -81,4 +85,4 @@ jobs:
                   cache-to: type=gha,mode=max
                   provenance: false
                   sbom: false
-                  build-args: ${{ matrix.image_name == 'ai-code-explorer-frontend' && 'VITE_BACKEND_API_URL=/api' || '' }}
+                  build-args: ${{ matrix.build_args }}

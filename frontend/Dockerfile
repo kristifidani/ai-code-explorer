@@ -46,6 +46,9 @@ COPY nginx.conf /etc/nginx/templates/default.conf.template
 # Copy the built assets
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expose the default PORT (5173). This is documentation only; the actual
-# listening port is controlled by the PORT env var and may be overridden.
-EXPOSE 5173
+# Expose the default PORT (5173)
+EXPOSE ${PORT}
+
+# Healthcheck: Request index.html directly (static file, no React initialization)
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
+    CMD wget -q -O - "http://localhost:${PORT}/index.html" >/dev/null 2>&1 || exit 1

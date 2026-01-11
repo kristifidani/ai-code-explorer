@@ -84,8 +84,13 @@ RUN chown app:app /app/rest-api
 # SWITCH TO NON-ROOT USER
 USER app
 
-# Expose port 8080 (this is just documentation, doesn't actually open the port)
+# Expose port 8080
 EXPOSE 8080
+
+# Add healthcheck instruction for self-documenting image
+# This provides a default healthcheck when running outside docker-compose
+HEALTHCHECK --interval=30s --timeout=15s --retries=3 --start-period=40s \
+    CMD curl -f http://localhost:8080/health || exit 1
 
 # Run the backend service
 CMD ["/app/rest-api"]

@@ -22,6 +22,10 @@ pub async fn ingest(
     // Create and validate project with canonical URL
     let project = ProjectEntity::new_validated(&req.github_url)?;
     let canonical_github_url = &project.canonical_github_url;
+    tracing::info!(
+        "Processing ingest request for project: {}",
+        canonical_github_url
+    );
 
     // Check if project already exists
     if project_repo
@@ -42,11 +46,15 @@ pub async fn ingest(
     }
 
     // Ingest into the ai service
+    tracing::info!(
+        "Forwarding ingest request to AI service for: {}",
+        canonical_github_url
+    );
     ai_client.ingest(canonical_github_url).await?;
 
     // Store in DB
     project_repo.create(&project).await?;
-    tracing::info!("Ingested: {}", canonical_github_url);
+    tracing::info!("Successfully ingested project: {}", canonical_github_url);
 
     Ok(ApiResponse::new(
         StatusCode::CREATED,

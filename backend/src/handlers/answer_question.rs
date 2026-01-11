@@ -20,6 +20,11 @@ pub async fn answer_question(
 ) -> Result<impl Responder> {
     // Validate the request (trim whitespace and check for empty question)
     let req = req.into_inner();
+    tracing::info!(
+        "Processing answer request for project: {:?}, question length: {} chars",
+        req.canonical_github_url,
+        req.question.len()
+    );
     let validated_req = AnswerRequest::new(req.canonical_github_url, req.question)?;
 
     let project_url = if let Some(ref canonical_url) = validated_req.canonical_github_url {
@@ -28,7 +33,10 @@ pub async fn answer_question(
             .find_by_canonical_github_url(canonical_url)
             .await?
         {
-            Some(stored_project) => Some(stored_project.canonical_github_url),
+            Some(stored_project) => {
+                tracing::info!("Found project in database: {}", canonical_url);
+                Some(stored_project.canonical_github_url)
+            }
             None => {
                 tracing::warn!("Project not found in database: {}", canonical_url);
                 return Ok(ApiResponse::<()>::new(
@@ -40,12 +48,15 @@ pub async fn answer_question(
             }
         }
     } else {
+        tracing::info!("Processing general question without specific project context");
         None
     };
 
+    tracing::info!("Forwarding question to AI service");
     let resp = ai_client
         .answer(project_url.as_ref(), &validated_req.question)
         .await?;
+    tracing::info!("Received response from AI service");
 
     Ok(ApiResponse::new(
         StatusCode::OK,

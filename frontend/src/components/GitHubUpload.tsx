@@ -31,6 +31,11 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
         // Note: GitHub URL validation is handled by the backend
         // Frontend validation could be added here if needed for better UX
 
+        console.info('Starting project ingestion', {
+            githubUrl,
+            urlLength: githubUrl.length
+        })
+
         setState(prev => ({ ...prev, isLoading: true, error: null }))
 
         try {
@@ -39,6 +44,11 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
             }
 
             const endpoint = buildApiUrl(BACKEND_API_URL, '/v1/ingest')
+            console.info('[Frontend] Sending ingest request to backend:', {
+                endpoint,
+                githubUrl
+            })
+
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
@@ -50,16 +60,38 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
 
             const result = await response.json() as IngestApiResponse
 
+            console.info('[Frontend] Received ingest response from backend:', {
+                status: response.status,
+                ok: response.ok,
+                hasData: !!result.data,
+                canonicalUrl: result.data?.canonical_github_url
+            })
+
             if (response.ok && result.data) {
+                console.info('[Frontend] Project ingestion completed successfully:', {
+                    originalUrl: githubUrl,
+                    canonicalUrl: result.data.canonical_github_url
+                })
                 setState(prev => ({ ...prev, isLoading: false }))
                 onUploadSuccess?.(result.data.canonical_github_url)
             } else {
                 const errorMessage = result.message || 'Upload failed'
+                console.error('[Frontend] Ingest request failed:', {
+                    status: response.status,
+                    message: result.message,
+                    error: errorMessage,
+                    githubUrl
+                })
                 setState(prev => ({ ...prev, isLoading: false, error: errorMessage }))
                 onUploadError?.(errorMessage)
             }
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Network error occurred'
+            console.error('[Frontend] Ingest request error occurred:', {
+                error: error instanceof Error ? error.message : 'Unknown error',
+                name: error instanceof Error ? error.name : 'UnknownError',
+                githubUrl
+            })
             setState(prev => ({ ...prev, isLoading: false, error: errorMessage }))
             onUploadError?.(errorMessage)
         }

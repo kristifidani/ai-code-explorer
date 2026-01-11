@@ -36,16 +36,19 @@ FROM nginxinc/nginx-unprivileged:1.29.3-alpine3.22
 # Add image metadata
 LABEL org.opencontainers.image.description="AI Code Explorer - React/TypeScript frontend served by NGINX for GitHub repository upload and interactive code Q&A"
 
-# Replace default server config
-COPY --chown=101:101 nginx.conf /etc/nginx/conf.d/default.conf
+# Runtime defaults (Railway injects PORT; BACKEND_URL should be set per environment)
+ENV PORT=5173
+ENV BACKEND_URL=http://localhost:8080
+
+# Copy NGINX configuration template for runtime variable substitution
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Copy the built assets
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expose port 8080 (this is just documentation, doesn't actually open the port)
-EXPOSE 8080
+# Expose the default PORT (5173)
+EXPOSE 5173
 
-# Add healthcheck instruction for self-documenting image
-# This provides a default healthcheck when running outside docker-compose
+# Healthcheck: Request index.html directly (static file, no React initialization)
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
-    CMD wget -q -O - http://localhost:8080/ >/dev/null 2>&1 || exit 1
+    CMD wget -q -O - "http://localhost:${PORT}/index.html" >/dev/null 2>&1 || exit 1

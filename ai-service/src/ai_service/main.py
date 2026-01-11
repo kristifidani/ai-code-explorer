@@ -7,8 +7,10 @@ import logging
 from contextlib import asynccontextmanager
 
 load_dotenv()
-logger = logging.getLogger(__name__)
+
+# Configure basic logging
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from ai_service import (
     errors,
@@ -25,17 +27,10 @@ from .handlers import ingest_router, answer_router
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     """Initialize services on startup and cleanup on shutdown."""
-    is_dev = utils.is_development()
-
-    # Configure ALL logging in one place based on environment
-    if not is_dev:  # Production: quiet everything noisy
-        logging.getLogger("watchfiles").setLevel(logging.WARNING)
-        logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
-        logging.getLogger("chromadb").setLevel(logging.WARNING)
-        logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
-        logging.getLogger("transformers").setLevel(logging.WARNING)
-        logging.getLogger("torch").setLevel(logging.WARNING)
-    # Development: keep all logs verbose for debugging
+    # Set reasonable log levels for noisy libraries
+    logging.getLogger("chromadb").setLevel(logging.WARNING)
+    logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
+    logging.getLogger("transformers").setLevel(logging.WARNING)
 
     # Initialize ChromaDB
     logger.info("Initializing ChromaDB...")
@@ -89,22 +84,15 @@ async def general_exception_handler(_request: Request, exc: Exception) -> JSONRe
 
 
 def main() -> None:
-    # Check if we're in development or production
-    is_dev = utils.is_development()
-
     try:
         app_port = utils.get_env_var(utils.AI_SERVICE_PORT)
     except errors.NotFound:
         app_port = "8000"
-        logger.warning("AI_SERVICE_PORT not set; defaulting to %s", app_port)
 
     uvicorn.run(
         "ai_service.main:app",
         host="0.0.0.0",
         port=int(app_port),
-        reload=is_dev,  # Only reload in development
-        log_level="info",  # Keep uvicorn startup logs visible
-        access_log=is_dev,  # Show HTTP request logs only in development
     )
 
 

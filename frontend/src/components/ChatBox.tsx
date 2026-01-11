@@ -109,6 +109,13 @@ export function ChatBox({
         }
 
         const userMessage = input.trim()
+
+        console.info('[Frontend] Processing user question:', {
+            questionLength: userMessage.length,
+            hasProject: !!projectUrl,
+            projectUrl: projectUrl || 'none'
+        })
+
         setInput('')
 
         // Add user message
@@ -126,6 +133,12 @@ export function ChatBox({
             }
 
             const endpoint = buildApiUrl(BACKEND_API_URL, '/v1/answer')
+            console.info('[Frontend] Sending request to backend:', {
+                endpoint,
+                hasProject: !!requestBody.canonical_github_url,
+                projectUrl: requestBody.canonical_github_url || 'none'
+            })
+
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
@@ -137,13 +150,29 @@ export function ChatBox({
 
             const result = await response.json() as AnswerApiResponse
 
+            console.info('[Frontend] Received response from backend:', {
+                status: response.status,
+                ok: response.ok,
+                hasData: !!result.data,
+                answerLength: result.data?.answer?.length || 0
+            })
+
             if (response.ok && result.data) {
                 updateMessage(aiMessageId, result.data.answer)
             } else {
                 const errorMessage = result.message || 'Failed to get answer'
+                console.error('[Frontend] Backend request failed:', {
+                    status: response.status,
+                    message: result.message,
+                    error: errorMessage
+                })
                 handleError(new Error(errorMessage), aiMessageId)
             }
         } catch (error) {
+            console.error('[Frontend] Request error occurred:', {
+                error: error instanceof Error ? error.message : 'Unknown error',
+                name: error instanceof Error ? error.name : 'UnknownError'
+            })
             handleError(error, aiMessageId)
         } finally {
             setState(prev => ({ ...prev, isLoading: false }))

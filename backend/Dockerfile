@@ -84,7 +84,7 @@ RUN chown app:app /app/rest-api
 # SWITCH TO NON-ROOT USER
 USER app
 
-# Expose port 8080 (this is just documentation, doesn't actually open the port)
+# Expose port 8080
 EXPOSE 8080
 
 # Add healthcheck instruction for self-documenting image

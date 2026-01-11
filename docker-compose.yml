@@ -26,7 +26,7 @@ services:
 
   # Application services
   ai-service:
-    image: ghcr.io/kristifidani/ai-code-explorer-ai-service:latest
+    image: ghcr.io/kristifidani/ai-code-explorer-ai-service:local
     build: 
       context: ./ai-service
       dockerfile: Dockerfile
@@ -48,7 +48,7 @@ services:
       start_period: 60s
 
   backend:
-    image: ghcr.io/kristifidani/ai-code-explorer-backend:latest
+    image: ghcr.io/kristifidani/ai-code-explorer-backend:local
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -70,20 +70,22 @@ services:
       start_period: 40s
 
   frontend:
-    image: ghcr.io/kristifidani/ai-code-explorer-frontend:latest
+    image: ghcr.io/kristifidani/ai-code-explorer-frontend:local
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
         VITE_BACKEND_API_URL: /api
     ports:
-      - "5173:8080"
+      - "5173:5173"
+    env_file:
+      - .env.docker
     depends_on:
       backend:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/"]
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:5173/index.html"]
       interval: 30s
       timeout: 10s
       retries: 3

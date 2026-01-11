@@ -1,5 +1,8 @@
 name: Publish PR Images
 
+# This workflow publishes Docker images for PRs with the "publish-images" label.
+# Images are automatically cleaned up when PRs are closed via cleanup-pr-images.yml
+
 on:
     pull_request:
         branches:

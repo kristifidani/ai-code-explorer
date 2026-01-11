@@ -49,16 +49,3 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Expose the default PORT (5173). This is documentation only; the actual
 # listening port is controlled by the PORT env var and may be overridden.
 EXPOSE 5173
-
-# Debug: Show environment variables and rendered config at startup
-RUN echo '#!/bin/sh' > /docker-entrypoint.d/99-debug.sh && \
-    echo 'echo "=== DEBUG: Environment Variables ==="' >> /docker-entrypoint.d/99-debug.sh && \
-    echo 'echo "PORT=${PORT}"' >> /docker-entrypoint.d/99-debug.sh && \
-    echo 'echo "BACKEND_URL=${BACKEND_URL}"' >> /docker-entrypoint.d/99-debug.sh && \
-    echo 'echo "=== DEBUG: Rendered NGINX Config ==="' >> /docker-entrypoint.d/99-debug.sh && \
-    echo 'cat /etc/nginx/conf.d/default.conf 2>/dev/null || echo "Config not yet rendered"' >> /docker-entrypoint.d/99-debug.sh && \
-    chmod +x /docker-entrypoint.d/99-debug.sh
-
-# Healthcheck: Request index.html directly (static file, no React initialization)
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
-    CMD wget -q -O - "http://localhost:${PORT}/index.html" >/dev/null 2>&1 || exit 1

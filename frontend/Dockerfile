@@ -47,7 +47,7 @@ COPY nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Expose the default PORT (5173)
-EXPOSE ${PORT}
+EXPOSE 5173
 
 # Healthcheck: Request index.html directly (static file, no React initialization)
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \

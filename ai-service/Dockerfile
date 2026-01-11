@@ -103,5 +103,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=15s --retries=3 --start-period=60s \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the application
-CMD ["python", "-m", "ai_service.main"]
+# Run the application using uvicorn directly with access logging
+CMD ["uvicorn", "ai_service.main:app", "--host", "0.0.0.0", "--port", "8000", "--access-log"]

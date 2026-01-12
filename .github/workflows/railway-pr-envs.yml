@@ -8,22 +8,22 @@ on:
     types: [opened, synchronize, closed]
 
 env:
-  # Railway docs refer to this as RAILWAY_API_TOKEN
   RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
   LINK_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
-  # DUPLICATE_FROM_ID: ${{ vars.RAILWAY_DEV_ENVIRONMENT_ID }}
+  DUPLICATE_FROM_ID: ${{ vars.RAILWAY_PREVIEW_ENVIRONMENT_ID }}
 
 jobs:
-  pr_opened:
+  pr_opened_or_updated:
     # Don't run with secrets on PRs from forks.
     if: (github.event.action == 'opened' || github.event.action == 'synchronize') && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     container: ghcr.io/railwayapp/cli:latest
     steps:
       - name: Link to project
-        run: railway link --project ${{ env.LINK_PROJECT_ID }}
+        run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
+
       - name: Create Railway Environment for PR
-        run: railway environment new pr-${{ github.event.pull_request.number }}
+        run: railway environment new pr-${{ github.event.pull_request.number }} || true
 
   pr_closed:
     # Don't run with secrets on PRs from forks.
@@ -32,6 +32,6 @@ jobs:
     container: ghcr.io/railwayapp/cli:latest
     steps:
       - name: Link to project
-        run: railway link --project ${{ env.LINK_PROJECT_ID }}
+        run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
       - name: Delete Railway Environment for PR
-        run: railway environment delete pr-${{ github.event.pull_request.number }}
+        run: railway environment delete pr-${{ github.event.pull_request.number }} || true

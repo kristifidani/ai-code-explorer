@@ -5,7 +5,7 @@ name: Manage PR Environments (Railway)
 
 on:
   pull_request:
-    types: [opened, closed]
+    types: [opened, synchronize, closed]
 
 env:
   # Railway docs refer to this as RAILWAY_API_TOKEN
@@ -16,7 +16,7 @@ env:
 jobs:
   pr_opened:
     # Don't run with secrets on PRs from forks.
-    if: github.event.action == 'opened' && github.event.pull_request.head.repo.full_name == github.repository
+    if: (github.event.action == 'opened' || github.event.action == 'synchronize') && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     container: ghcr.io/railwayapp/cli:latest
     steps:
@@ -34,4 +34,4 @@ jobs:
       - name: Link to project
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
       - name: Delete Railway Environment for PR
-        run: railway environment delete pr-${{ github.event.pull_request.number }} || true
+        run: railway environment delete pr-${{ github.event.pull_request.number }}

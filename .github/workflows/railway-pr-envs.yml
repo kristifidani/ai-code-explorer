@@ -1,7 +1,7 @@
 # NOTE
 # if you have 2fa on your account, the pr close part of the action will hang (due to 2fa not being supported non-interactively)
 
-name: Manage PR Environments (Railway)
+name: Deploy Railway PR Environment
 
 on:
   pull_request:
@@ -25,39 +25,60 @@ env:
   PREVIEW_FRONTEND_SVC_ID: ${{ vars.PREVIEW_FRONTEND_SERVICE_ID }}
 
 jobs:
-  pr_opened_or_updated:
+  setup_pr_environment:
     # Don't run with secrets on PRs from forks.
     if: (github.event.action == 'opened' || github.event.action == 'synchronize') && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     container: ghcr.io/railwayapp/cli:4.23.2
     steps:
-      - uses: actions/checkout@v4
-
       - name: Link Railway CLI to preview environment (for initial context)
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
 
       - name: Create PR environment (copy service structure from preview)
-        run: railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }} || true
+        run: |
+          railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }} || {
+            # Check if environment already exists (expected on synchronize events)
+            railway environment list | grep -q "pr-${{ github.event.pull_request.number }}" || exit 1
+          }
 
-      - name: Switch Railway CLI context to the new PR environment
+  deploy_services:
+    needs: setup_pr_environment
+    if: (github.event.action == 'opened' || github.event.action == 'synchronize') && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:4.23.2
+    strategy:
+      matrix:
+        include:
+          - service_id: ${{ vars.PREVIEW_AI_SERVICE_ID }}
+            working_dir: ai-service
+            service_name: AI Service
+          - service_id: ${{ vars.PREVIEW_BACKEND_SERVICE_ID }}
+            working_dir: backend
+            service_name: Backend
+          - service_id: ${{ vars.PREVIEW_FRONTEND_SERVICE_ID }}
+            working_dir: frontend
+            service_name: Frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Switch Railway CLI context to PR environment
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
-      - name: Deploy AI Service to PR environment
-        working-directory: ai-service
-        run: railway up --service=${{ env.PREVIEW_AI_SVC_ID }} --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
+      - name: Deploy ${{ matrix.service_name }} to PR environment
+        working-directory: ${{ matrix.working_dir }}
+        run: railway up --service=${{ matrix.service_id }} --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
-      - name: Deploy Backend to PR environment
-        working-directory: backend
-        run: railway up --service=${{ env.PREVIEW_BACKEND_SVC_ID }} --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
-
-      - name: Deploy Frontend to PR environment
-        working-directory: frontend
-        run: railway up --service=${{ env.PREVIEW_FRONTEND_SVC_ID }} --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
+      - name: Verify ${{ matrix.service_name }} deployment status
+        run: |
+          echo "Waiting for ${{ matrix.service_name }} deployment to complete..."
+          sleep 30
+          railway status --service=${{ matrix.service_id }} --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
   pr_closed:
     # Don't run with secrets on PRs from forks.
     if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     container: ghcr.io/railwayapp/cli:4.23.2
     steps:
       - name: Link Railway CLI to project (for cleanup context)

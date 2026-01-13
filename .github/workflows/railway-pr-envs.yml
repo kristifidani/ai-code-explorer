@@ -35,17 +35,7 @@ jobs:
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
 
       - name: Create or Recreate PR environment (copy service structure from preview)
-        run: |
-          railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }} || {
-            echo "Environment already exists. Deleting and recreating..."
-            railway environment delete pr-${{ github.event.pull_request.number }} --yes
-            for i in {1..6}; do
-              echo "Waiting for environment deletion to propagate... ($i)"
-              sleep 10
-              railway environment list
-              railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }} && break
-            done
-          }
+        run: railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }} || true
 
   deploy_services:
     needs: setup_pr_environment

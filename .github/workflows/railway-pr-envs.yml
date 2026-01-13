@@ -38,8 +38,8 @@ jobs:
         run: |
           # Try to create the PR environment. If it already exists, delete and recreate it.
           railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }} || {
-            echo "Environment already exists. Deleting and recreating..."
-            railway environment delete pr-${{ github.event.pull_request.number }}
+            echo "Deleting and recreating..."
+            railway environment delete pr-${{ github.event.pull_request.number }} --yes
             railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }}
           }
 

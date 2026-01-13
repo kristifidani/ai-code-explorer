@@ -67,14 +67,17 @@ jobs:
       - name: Verify ${{ matrix.service_name }} deployment status
         run: |
          railway link \
-         --project $LINK_PROJECT_ID \
-         --environment pr-${{ github.event.pull_request.number }}
+           --project $LINK_PROJECT_ID \
+           --environment pr-${{ github.event.pull_request.number }}
 
          for i in {1..10}; do
-          railway service ${{ matrix.service_id }} status && exit 0
-          echo "Attempt $i: Waiting for deployment..."
-          sleep 15
+           railway service status ${{ matrix.service_id }} && exit 0
+           echo "Attempt $i: Waiting for deployment..."
+           sleep 15
          done
+
+         echo "Deployment did not become ready in time"
+         exit 1
   pr_closed:
     # Don't run with secrets on PRs from forks.
     if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository

@@ -44,15 +44,15 @@ jobs:
 
       - name: Deploy AI service (code)
         working-directory: ai-service
-        run: railway up --service=${{ env.AI_SERVICE_ID }}
+        run: railway up --service=${{ env.AI_SERVICE_ID }} --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
       - name: Deploy Backend service (code)
         working-directory: backend
-        run: railway up --service=${{ env.BACKEND_SERVICE_ID }}
+        run: railway up --service=${{ env.BACKEND_SERVICE_ID }} --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
       - name: Deploy Frontend service (code)
         working-directory: frontend
-        run: railway up --service=${{ env.FRONTEND_SERVICE_ID }}
+        run: railway up --service=${{ env.FRONTEND_SERVICE_ID }} --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
   pr_closed:
     # Don't run with secrets on PRs from forks.

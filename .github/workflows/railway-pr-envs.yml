@@ -35,11 +35,7 @@ jobs:
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
 
       - name: Create PR environment (copy service structure from preview)
-        run: |
-          railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }} || {
-            # Check if environment already exists (expected on synchronize events)
-            railway environment list | grep -q "pr-${{ github.event.pull_request.number }}" || exit 1
-          }
+        run: railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }}
 
   deploy_services:
     needs: setup_pr_environment
@@ -85,4 +81,4 @@ jobs:
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
 
       - name: Delete PR environment
-        run: railway environment delete pr-${{ github.event.pull_request.number }} || true
+        run: railway environment delete pr-${{ github.event.pull_request.number }}

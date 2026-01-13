@@ -40,7 +40,7 @@ jobs:
           # Railway's API is eventually consistent: the environment may appear in the list before it's fully ready for linking/deploying.
           # The wait below is a defensive measure to avoid race conditions and CI flakiness.
           railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }} || {
-            railway environment list --project ${{ env.LINK_PROJECT_ID }} | grep -i "pr-${{ github.event.pull_request.number }}" || exit 1
+            railway environment list | grep -i -w "pr-${{ github.event.pull_request.number }}" || exit 1
             echo "Environment already exists, waiting for consistency..."
             sleep 10
           }

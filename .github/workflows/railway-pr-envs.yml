@@ -34,7 +34,7 @@ jobs:
       - name: Link Railway CLI to preview environment (for initial context)
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
 
-      - name: Create or Recreate PR environment (copy service structure from preview)
+      - name: Create PR environment (copy from preview)
         run: railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }} || true
 
   deploy_services:

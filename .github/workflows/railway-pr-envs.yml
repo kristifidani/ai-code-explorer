@@ -66,9 +66,11 @@ jobs:
 
       - name: Verify ${{ matrix.service_name }} deployment status
         run: |
-          sleep 30
-          railway service ${{ matrix.service_id }} status
-
+          for i in {1..10}; do
+           railway status --service ${{ matrix.service_id }} && break
+           echo "Attempt $i: Waiting for deployment..."
+           sleep 15
+          done
   pr_closed:
     # Don't run with secrets on PRs from forks.
     if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository

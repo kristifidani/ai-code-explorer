@@ -45,13 +45,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - service_id: ${{ vars.PREVIEW_AI_SVC_ID }}
+          - service_id: ${{ vars.PREVIEW_AI_SERVICE_ID }}
             working_dir: ai-service
             service_name: AI Service
-          - service_id: ${{ vars.PREVIEW_BACKEND_SVC_ID }}
+          - service_id: ${{ vars.PREVIEW_BACKEND_SERVICE_ID }}
             working_dir: backend
             service_name: Backend
-          - service_id: ${{ vars.PREVIEW_FRONTEND_SVC_ID }}
+          - service_id: ${{ vars.PREVIEW_FRONTEND_SERVICE_ID }}
             working_dir: frontend
             service_name: Frontend
     steps:

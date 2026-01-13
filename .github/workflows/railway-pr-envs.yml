@@ -7,10 +7,22 @@ on:
   pull_request:
     types: [opened, synchronize, closed]
 
+concurrency:
+  group: railway-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 env:
+  # Account token
   RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+  # This should be the ID of your Railway project
   LINK_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+  # This should be the ID of your 'preview' environment, which acts as a template
   DUPLICATE_FROM_ID: ${{ vars.RAILWAY_PREVIEW_ENVIRONMENT_ID }}
+
+  # These must be the Service IDs for your CODE-BASED preview services
+  AI_SERVICE_ID: "520ab283-5d69-4f5e-bafc-530a5085bce8"
+  BACKEND_SERVICE_ID: "f796f09e-a750-4a3e-9f1a-62d34ae460f3"
+  FRONTEND_SERVICE_ID: "28c8fa02-329e-4574-8d65-790075546c81"
 
 jobs:
   pr_opened_or_updated:
@@ -19,11 +31,28 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/railwayapp/cli:latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Link to project
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
 
-      - name: Create Railway Environment for PR
-        run: railway environment new pr-${{ github.event.pull_request.number }} || true
+      - name: Ensure PR environment exists (copy from preview)
+        run: railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }} || true
+
+      - name: Link to PR environment
+        run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
+
+      - name: Deploy AI service (code)
+        working-directory: ai-service
+        run: railway up --service=${{ env.AI_SERVICE_ID }}
+
+      - name: Deploy Backend service (code)
+        working-directory: backend
+        run: railway up --service=${{ env.BACKEND_SERVICE_ID }}
+
+      - name: Deploy Frontend service (code)
+        working-directory: frontend
+        run: railway up --service=${{ env.FRONTEND_SERVICE_ID }}
 
   pr_closed:
     # Don't run with secrets on PRs from forks.
@@ -33,5 +62,6 @@ jobs:
     steps:
       - name: Link to project
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
+
       - name: Delete Railway Environment for PR
         run: railway environment delete pr-${{ github.event.pull_request.number }} || true

@@ -68,7 +68,7 @@ jobs:
         run: |
           echo "Waiting for ${{ matrix.service_name }} deployment to complete..."
           sleep 30
-          railway status --service=${{ matrix.service_id }} --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
+          railway service=${{ matrix.service_id }} status
 
   pr_closed:
     # Don't run with secrets on PRs from forks.

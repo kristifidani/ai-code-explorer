@@ -20,11 +20,6 @@ pub async fn answer_question(
 ) -> Result<impl Responder> {
     // Validate the request (trim whitespace and check for empty question)
     let req = req.into_inner();
-    tracing::info!(
-        "Processing answer request for project: {:?}, question length: {} chars",
-        req.canonical_github_url,
-        req.question.len()
-    );
     let validated_req = AnswerRequest::new(req.canonical_github_url, req.question)?;
 
     let project_url = if let Some(ref canonical_url) = validated_req.canonical_github_url {

@@ -110,12 +110,6 @@ export function ChatBox({
 
         const userMessage = input.trim()
 
-        console.info('[Frontend] Processing user question:', {
-            questionLength: userMessage.length,
-            hasProject: !!projectUrl,
-            projectUrl: projectUrl || 'none'
-        })
-
         setInput('')
 
         // Add user message

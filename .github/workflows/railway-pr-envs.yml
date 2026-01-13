@@ -35,7 +35,24 @@ jobs:
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
 
       - name: Create PR environment (copy service structure from preview)
-        run: railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }}
+        run: |
+          # Try to create the PR environment. If it already exists (e.g. on synchronize), check for its presence.
+          # Railway's API is eventually consistent: the environment may appear in the list before it's fully ready for linking/deploying.
+          # The wait below is a defensive measure to avoid race conditions and CI flakiness.
+          railway environment new pr-${{ github.event.pull_request.number }} --copy ${{ env.DUPLICATE_FROM_ID }} || {
+            railway environment list | grep -q "pr-${{ github.event.pull_request.number }}" || exit 1
+            echo "Environment already exists, waiting for consistency..."
+            sleep 10
+          }
+
+      - name: Wait for PR environment to be ready (retry link)
+        run: |
+          # Retry linking to the environment in case it's not immediately available after creation/listing.
+          for i in {1..5}; do
+            railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }} && break
+            echo "Retrying link... ($i)"
+            sleep 5
+          done
 
   deploy_services:
     needs: setup_pr_environment

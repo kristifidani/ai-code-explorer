@@ -29,7 +29,7 @@ from . import handlers
 __version__ = "1.0.0"
 
 
-def __getattr__(name: str) -> Any:
+def __getattr__(name: str):
     """Lazy attribute access to avoid import side-effects.
 
     Importing `ai_service.main` at package import time breaks `python -m ai_service.main`

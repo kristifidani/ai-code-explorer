@@ -68,15 +68,15 @@ jobs:
 
           for i in {1..10}; do
             if railway service status --service ${{ matrix.service_id }} | grep -q "Status: SUCCESS"; then
-              echo "Deployment is ready"
+              echo "---------------- Deployment is ready ----------------"
               exit 0
             fi
 
-            echo "Attempt $i/10: Waiting for deployment..."
-            sleep 15
+            echo "---------------- Attempt $i/10: Waiting for deployment... ----------------"
+            sleep 30
           done
 
-          echo "Deployment did not become ready in time. Triggering redeploy..."
+          echo "---------------- Deployment did not become ready in time. Triggering redeploy ... ----------------"
 
           railway redeploy --service ${{ matrix.service_id }} --yes
 
@@ -92,12 +92,12 @@ jobs:
             echo "$status"
 
             if echo "$status" | grep -q "Status: SUCCESS"; then
-              echo "Deployment is ready after redeploy"
+              echo "---------------- Deployment is ready after redeploy ----------------"
               exit 0
             fi
 
             if echo "$status" | grep -q "Status: FAILED"; then
-              echo "Redeploy failed"
+              echo "---------------- Redeploy failed ----------------"
               exit 1
             fi
 
@@ -105,11 +105,11 @@ jobs:
             elapsed=$((now - start_time))
 
             if [ "$elapsed" -ge "$MAX_WAIT_SECONDS" ]; then
-              echo "Timed out waiting for redeploy"
+              echo "---------------- Timed out waiting for redeploy ----------------"
               exit 1
             fi
 
-            echo "Redeploy in progress. Waiting ${POLL_INTERVAL}s..."
+            echo "---------------- Redeploy in progress. Waiting ${POLL_INTERVAL}s ... ----------------"
             sleep $POLL_INTERVAL
           done
 

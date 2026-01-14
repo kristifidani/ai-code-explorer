@@ -81,4 +81,4 @@ jobs:
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
       - name: Delete PR environment
-        run: railway environment delete pr-${{ github.event.pull_request.number }} || true
+        run: railway environment delete pr-${{ github.event.pull_request.number }} --yes || true

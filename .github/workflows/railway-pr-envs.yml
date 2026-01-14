@@ -54,7 +54,7 @@ jobs:
 
       - name: Deploy ${{ matrix.service_name }} to PR environment
         continue-on-error: true
-        timeout-minutes: 2
+        timeout-minutes: 1
         working-directory: ${{ matrix.working_dir }}
         run: |
           railway up \
@@ -80,18 +80,38 @@ jobs:
 
           railway redeploy --service ${{ matrix.service_id }} --yes
 
-          for i in {1..10}; do
-            if railway service status --service ${{ matrix.service_id }} | grep -q "Status: SUCCESS"; then
+          # Long polling ONLY for redeploy
+
+          POLL_INTERVAL=60
+          MAX_WAIT_SECONDS=600
+
+          start_time=$(date +%s)
+
+          while true; do
+            status=$(railway service status --service ${{ matrix.service_id }})
+            echo "$status"
+
+            if echo "$status" | grep -q "Status: SUCCESS"; then
               echo "Deployment is ready after redeploy"
               exit 0
             fi
-            
-            echo "Redeploy attempt $i/10: Waiting..."
-            sleep 15
-          done
 
-          echo "Deployment failed even after redeploy"
-          exit 1
+            if echo "$status" | grep -q "Status: FAILED"; then
+              echo "Redeploy failed"
+              exit 1
+            fi
+
+            now=$(date +%s)
+            elapsed=$((now - start_time))
+
+            if [ "$elapsed" -ge "$MAX_WAIT_SECONDS" ]; then
+              echo "Timed out waiting for redeploy"
+              exit 1
+            fi
+
+            echo "Redeploy in progress. Waiting ${POLL_INTERVAL}s..."
+            sleep $POLL_INTERVAL
+          done
 
   # NOTE
   # if you have 2fa on your account, the pr close part of the action will hang (due to 2fa not being supported non-interactively)

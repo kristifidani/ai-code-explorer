@@ -53,8 +53,14 @@ jobs:
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
       - name: Deploy ${{ matrix.service_name }} to PR environment
+        continue-on-error: true
+        timeout-minutes: 2
         working-directory: ${{ matrix.working_dir }}
-        run: railway up --service=${{ matrix.service_id }} --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
+        run: |
+          railway up \
+            --service=${{ matrix.service_id }} \
+            --project ${{ env.LINK_PROJECT_ID }} \
+            --environment pr-${{ github.event.pull_request.number }}
 
       - name: Verify ${{ matrix.service_name }} deployment status
         run: |

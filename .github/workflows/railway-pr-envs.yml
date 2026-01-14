@@ -67,7 +67,7 @@ jobs:
           set -e
 
           for i in {1..10}; do
-            if railway service status --service ${{ matrix.service_id }}; then
+            if railway service status --service ${{ matrix.service_id }} | grep -q "Status: SUCCESS"; then
               echo "Deployment is ready"
               exit 0
             fi
@@ -81,7 +81,7 @@ jobs:
           railway redeploy --service ${{ matrix.service_id }} --yes
 
           for i in {1..10}; do
-            if railway service status --service ${{ matrix.service_id }}; then
+            if railway service status --service ${{ matrix.service_id }} | grep -q "Status: SUCCESS"; then
               echo "Deployment is ready after redeploy"
               exit 0
             fi

@@ -62,10 +62,10 @@ jobs:
             railway service status --service ${{ matrix.service_id }} && exit 0
             echo "Attempt $i: Waiting for deployment..."
             sleep 15
-           done
+          done
 
-           echo "Deployment did not become ready in time"
-           exit 1
+          echo "Deployment did not become ready in time"
+          exit 1
 
   # NOTE
   # if you have 2fa on your account, the pr close part of the action will hang (due to 2fa not being supported non-interactively)

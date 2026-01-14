@@ -1,6 +1,3 @@
-# NOTE
-# if you have 2fa on your account, the pr close part of the action will hang (due to 2fa not being supported non-interactively)
-
 name: Deploy Railway PR Environment
 
 on:
@@ -19,11 +16,6 @@ env:
   # ID of 'preview' environment, which acts as a template
   DUPLICATE_FROM_ID: ${{ vars.RAILWAY_PREVIEW_ENVIRONMENT_ID }}
 
-  # Service IDs for CODE-BASED preview services
-  PREVIEW_AI_SVC_ID: ${{ vars.PREVIEW_AI_SERVICE_ID }}
-  PREVIEW_BACKEND_SVC_ID: ${{ vars.PREVIEW_BACKEND_SERVICE_ID }}
-  PREVIEW_FRONTEND_SVC_ID: ${{ vars.PREVIEW_FRONTEND_SERVICE_ID }}
-
 jobs:
   setup_pr_environment:
     # Don't run with secrets on PRs from forks.
@@ -31,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/railwayapp/cli:4.23.2
     steps:
-      - name: Link Railway CLI to preview environment (for initial context)
+      - name: Link to preview environment
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
 
       - name: Create PR environment (copy from preview)
@@ -66,18 +58,18 @@ jobs:
 
       - name: Verify ${{ matrix.service_name }} deployment status
         run: |
-         railway link \
-           --project $LINK_PROJECT_ID \
-           --environment pr-${{ github.event.pull_request.number }}
+          for i in {1..10}; do
+            railway service status --service ${{ matrix.service_id }} && exit 0
+            echo "Attempt $i: Waiting for deployment..."
+            sleep 15
+           done
 
-         for i in {1..10}; do
-           railway service status --service ${{ matrix.service_id }} && exit 0
-           echo "Attempt $i: Waiting for deployment..."
-           sleep 15
-          done
+           echo "Deployment did not become ready in time"
+           exit 1
 
-          echo "Deployment did not become ready in time"
-          exit 1
+  # NOTE
+  # if you have 2fa on your account, the pr close part of the action will hang (due to 2fa not being supported non-interactively)
+
   pr_closed:
     # Don't run with secrets on PRs from forks.
     if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
@@ -85,8 +77,8 @@ jobs:
     timeout-minutes: 5
     container: ghcr.io/railwayapp/cli:4.23.2
     steps:
-      - name: Link Railway CLI to project (for cleanup context)
-        run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment ${{ env.DUPLICATE_FROM_ID }}
+      - name: Link to project
+        run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
       - name: Delete PR environment
-        run: railway environment delete pr-${{ github.event.pull_request.number }}
+        run: railway environment delete pr-${{ github.event.pull_request.number }} || true

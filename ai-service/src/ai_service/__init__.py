@@ -15,12 +15,11 @@ Main Components:
 Core functionality is exposed through submodules for easy integration.
 """
 
+from __future__ import annotations
+
 # Core modules
 from . import errors
 from . import utils
-
-# Main application
-from .main import app, main
 
 # Submodules for external use
 from . import embeddings
@@ -29,13 +28,25 @@ from . import handlers
 
 __version__ = "1.0.0"
 
+
+def __getattr__(name: str):
+    """Lazy attribute access to avoid import side-effects.
+
+    Importing `ai_service.main` at package import time breaks `python -m ai_service.main`
+    by pre-loading the module (runpy emits a warning) and can create circular imports.
+    """
+
+    if name in {"app", "main"}:
+        from . import main as _main
+
+        return getattr(_main, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 __all__ = [
     # Core modules
     "errors",
     "utils",
-    # Main app
-    "app",
-    "main",
     # Submodules
     "embeddings",
     "db_setup",

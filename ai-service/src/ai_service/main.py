@@ -8,14 +8,16 @@ from contextlib import asynccontextmanager
 
 load_dotenv()
 
-# Configure basic logging
-logging.basicConfig(level=logging.INFO)
+# Keep this simple and Docker-friendly: always log to stdout.
+# `force=True` ensures the handler exists even if another library configured logging.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    force=True,
+)
 logger = logging.getLogger(__name__)
 
-from ai_service import (
-    errors,
-    utils,
-)
+from . import errors, utils
 
 # FastAPI imports
 from fastapi import FastAPI, Request
@@ -90,9 +92,11 @@ def main() -> None:
         app_port = "8000"
 
     uvicorn.run(
-        "ai_service.main:app",
+        app,
         host="0.0.0.0",
         port=int(app_port),
+        log_level="info",
+        access_log=True,
     )
 
 

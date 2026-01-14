@@ -58,13 +58,33 @@ jobs:
 
       - name: Verify ${{ matrix.service_name }} deployment status
         run: |
+          set -e
+
           for i in {1..10}; do
-            railway service status --service ${{ matrix.service_id }} && exit 0
-            echo "Attempt $i: Waiting for deployment..."
+            if railway service status --service ${{ matrix.service_id }}; then
+              echo "Deployment is ready"
+              exit 0
+            fi
+
+            echo "Attempt $i/10: Waiting for deployment..."
             sleep 15
           done
 
-          echo "Deployment did not become ready in time"
+          echo "Deployment did not become ready in time. Triggering redeploy..."
+
+          railway redeploy --service ${{ matrix.service_id }} --yes
+
+          for i in {1..10}; do
+            if railway service status --service ${{ matrix.service_id }}; then
+              echo "Deployment is ready after redeploy"
+              exit 0
+            fi
+            
+            echo "Redeploy attempt $i/10: Waiting..."
+            sleep 15
+          done
+
+          echo "Deployment failed even after redeploy"
           exit 1
 
   # NOTE

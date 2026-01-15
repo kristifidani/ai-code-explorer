@@ -54,7 +54,6 @@ jobs:
 
       - name: Deploy ${{ matrix.service_name }} to PR environment
         continue-on-error: true
-        timeout-minutes: 1
         working-directory: ${{ matrix.working_dir }}
         run: |
           railway up \

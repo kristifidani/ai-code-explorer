@@ -54,7 +54,7 @@ jobs:
 
       - name: Deploy ${{ matrix.service_name }} to PR environment
         continue-on-error: true
-        timeout-minutes: 1
+        timeout-minutes: 5
         working-directory: ${{ matrix.working_dir }}
         run: |
           railway up \
@@ -73,7 +73,7 @@ jobs:
             fi
 
             echo "---------------- Attempt $i/10: Waiting for deployment... ----------------"
-            sleep 30
+            sleep 15
           done
 
           echo "---------------- Deployment did not become ready in time. Triggering redeploy ... ----------------"

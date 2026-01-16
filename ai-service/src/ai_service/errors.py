@@ -25,7 +25,7 @@ class EmbeddingError(AIServiceError):
 class LLMQueryError(AIServiceError):
     @classmethod
     def query_failed(cls, error: Exception) -> "LLMQueryError":
-        return cls(f"Failed to query Ollama: {error}")
+        return cls(f"Failed to query LLM: {error}")
 
 
 class DatabaseError(AIServiceError):

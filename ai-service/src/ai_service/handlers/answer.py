@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, HttpUrl
 from fastapi import APIRouter
 
-from ai_service import ollama_client, errors, utils
+from ai_service import llm_api_client, errors, utils
 from ai_service.embeddings import embed_query
 from ai_service.db_setup import set_repo_context, query_chunks
 
@@ -115,7 +115,7 @@ def answer_question(
                 "Respond in a helpful, natural way."
             )
 
-        answer = ollama_client.chat_with_ollama(prompt)
+        answer = llm_api_client.chat_with_llm(prompt)
         logger.info("LLM answer: %s", answer)
     except errors.AIServiceError:
         logger.exception("Answer error")

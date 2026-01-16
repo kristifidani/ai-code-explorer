@@ -4,7 +4,7 @@
 .PHONY: start check lint format unit-tests integration-tests test
 
 start:
-	ENVIRONMENT=development pdm run start
+	pdm run start
 
 # Code quality
 

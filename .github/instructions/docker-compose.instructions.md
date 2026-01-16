@@ -7,7 +7,6 @@ applyTo: "docker-compose.yml,**/Dockerfile"
 ## Service Architecture
 
 **Infrastructure:**
-- `ollama` — LLM inference.
 - `mongo` — Backend DB storage.
 
 **Application:**

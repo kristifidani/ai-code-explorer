@@ -59,7 +59,7 @@ This project uses two separate environment files:
 **Variable patterns:**
 
 - Frontend requires `VITE_*` prefix for Vite access in browser.
-- Docker services use internal DNS names (e.g., `mongo`, `ai-service`, `backend`, `ollama`).
+- Docker services use internal DNS names (e.g., `mongo`, `ai-service`, `backend`).
 - Local development uses `localhost` with specific ports.
 
 After changes, run service tests and verify both `.env.example` and `.env.docker.example` are updated if env vars changed.

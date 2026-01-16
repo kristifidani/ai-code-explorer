@@ -1,26 +1,13 @@
 services:
   # Infrastructure services
-  ollama:
-    image: ollama/ollama:0.13.5
-    ports:
-      - "11434:11434"
-    restart: unless-stopped
-    volumes:
-      - ollama_data:/root/.ollama
-    healthcheck:
-      test: ["CMD", "ollama", "list"]
-      interval: 20s
-      timeout: 10s
-      retries: 2
-      start_period: 20s
-
   mongo:
     image: mongo:8.0.4
     restart: unless-stopped
     ports:
       - 27017:27017
-    env_file:
-      - .env.docker
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
     volumes:
       - mongo_data:/data/db
 
@@ -33,12 +20,9 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env.docker
+      - .env
     volumes:
       - ./ai-service/chroma_store:/app/chroma_store
-    depends_on:
-      ollama:
-        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -54,8 +38,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    env_file:
-      - .env.docker
+    environment:
+      RUST_BACKEND_PORT: 8080
+      RUST_LOG: info
+      MONGO_URI: mongodb://root:example@mongo:27017
+      MONGO_DB_NAME: ai_code_explorer
+      AI_SERVICE_URL: http://ai-service:8000
+      # Browser-origin CORS (host browser → container)
+      FRONTEND_API_URL: http://localhost:5173
     depends_on: 
       mongo:
         condition: service_started
@@ -78,8 +68,8 @@ services:
         VITE_BACKEND_API_URL: /api
     ports:
       - "5173:5173"
-    env_file:
-      - .env.docker
+    environment:
+      BACKEND_URL: http://backend:8080
     depends_on:
       backend:
         condition: service_healthy
@@ -92,5 +82,4 @@ services:
       start_period: 40s
 
 volumes:
-  ollama_data:
   mongo_data:

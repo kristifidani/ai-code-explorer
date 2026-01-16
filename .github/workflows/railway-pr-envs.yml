@@ -53,19 +53,65 @@ jobs:
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
       - name: Deploy ${{ matrix.service_name }} to PR environment
+        continue-on-error: true
+        timeout-minutes: 5
         working-directory: ${{ matrix.working_dir }}
-        run: railway up --service=${{ matrix.service_id }} --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
+        run: |
+          railway up \
+            --service=${{ matrix.service_id }} \
+            --project ${{ env.LINK_PROJECT_ID }} \
+            --environment pr-${{ github.event.pull_request.number }}
 
       - name: Verify ${{ matrix.service_name }} deployment status
         run: |
-          for i in {1..10}; do
-            railway service status --service ${{ matrix.service_id }} && exit 0
-            echo "Attempt $i: Waiting for deployment..."
+          set -e
+
+          for i in $(seq 1 10); do
+            if railway service status --service ${{ matrix.service_id }} | grep -q "Status: SUCCESS"; then
+              echo "---------------- Deployment is ready ----------------"
+              exit 0
+            fi
+
+            echo "---------------- Attempt $i/10: Waiting for deployment... ----------------"
             sleep 15
           done
 
-          echo "Deployment did not become ready in time"
-          exit 1
+          echo "---------------- Deployment did not become ready in time. Triggering redeploy ... ----------------"
+
+          railway redeploy --service ${{ matrix.service_id }} --yes
+
+          # Long polling ONLY for redeploy
+
+          POLL_INTERVAL=60
+          MAX_WAIT_SECONDS=600
+
+          start_time=$(date +%s)
+
+          while true; do
+            status=$(railway service status --service ${{ matrix.service_id }})
+            echo "$status"
+
+            if echo "$status" | grep -q "Status: SUCCESS"; then
+              echo "---------------- Deployment is ready after redeploy ----------------"
+              exit 0
+            fi
+
+            if echo "$status" | grep -q "Status: FAILED"; then
+              echo "---------------- Redeploy failed ----------------"
+              exit 1
+            fi
+
+            now=$(date +%s)
+            elapsed=$((now - start_time))
+
+            if [ "$elapsed" -ge "$MAX_WAIT_SECONDS" ]; then
+              echo "---------------- Timed out waiting for redeploy ----------------"
+              exit 1
+            fi
+
+            echo "---------------- Redeploy in progress. Waiting ${POLL_INTERVAL}s ... ----------------"
+            sleep $POLL_INTERVAL
+          done
 
   # NOTE
   # if you have 2fa on your account, the pr close part of the action will hang (due to 2fa not being supported non-interactively)

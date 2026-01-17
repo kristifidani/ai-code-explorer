@@ -129,7 +129,7 @@ curl -X POST http://localhost:8000/answer \
 curl -X POST http://localhost:8000/answer \
   -H "Content-Type: application/json" \
   -d '{
-    "user_question": "Hello, how are you? Can you explain me the LLMs?"
+    "user_question": "Hello, how are you?"
   }'
 ```
 

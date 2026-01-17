@@ -5,9 +5,14 @@ services:
     restart: unless-stopped
     ports:
       - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "mongodb://localhost:27017/admin", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     volumes:
       - mongo_data:/data/db
 
@@ -39,16 +44,16 @@ services:
     ports:
       - "8080:8080"
     environment:
-      RUST_BACKEND_PORT: 8080
-      RUST_LOG: info
-      MONGO_URI: mongodb://root:example@mongo:27017
-      MONGO_DB_NAME: ai_code_explorer
+      RUST_BACKEND_PORT: ${RUST_BACKEND_PORT}
+      RUST_LOG: ${RUST_LOG}
+      MONGO_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017
+      MONGO_DB_NAME: ${MONGO_DB_NAME}
       AI_SERVICE_URL: http://ai-service:8000
       # Browser-origin CORS (host browser → container)
-      FRONTEND_API_URL: http://localhost:5173
+      FRONTEND_API_URL: ${FRONTEND_API_URL}
     depends_on: 
       mongo:
-        condition: service_started
+        condition: service_healthy
       ai-service:
         condition: service_healthy
     restart: unless-stopped

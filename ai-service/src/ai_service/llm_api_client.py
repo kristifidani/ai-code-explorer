@@ -1,5 +1,11 @@
+from functools import lru_cache
 from ai_service import utils, errors
 from openai import OpenAI
+
+
+@lru_cache(maxsize=1)
+def _get_client() -> OpenAI:
+    return OpenAI(api_key=utils.get_env_var(utils.OPENAI_API_KEY))
 
 
 def chat_with_llm(prompt: str) -> str:
@@ -8,13 +14,18 @@ def chat_with_llm(prompt: str) -> str:
     """
     try:
         model = utils.get_env_var(utils.LLM_MODEL)
-        client = OpenAI(api_key=utils.get_env_var(utils.OPENAI_API_KEY))  # type: ignore
+        client = _get_client()
         response = client.chat.completions.create(  # type: ignore
             model=model,
             messages=[{"role": "user", "content": prompt}],
         )
 
-        return response.choices[0].message.content  # type: ignore
+        content = response.choices[0].message.content
+        if content is None:
+            raise errors.LLMQueryError.query_failed(
+                ValueError("LLM returned empty content")
+            )
+        return content
 
     except Exception as e:
         # OpenAI raises different exception types; keep your abstraction clean

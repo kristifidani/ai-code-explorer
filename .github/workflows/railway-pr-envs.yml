@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - id: check
         run: |
@@ -32,8 +33,10 @@ jobs:
           echo "$COMMIT_MSG"
 
           if echo "$COMMIT_MSG" | grep -q "\[deploy-pr-env\]"; then
+            echo "deploy=true"
             echo "deploy=true" >> $GITHUB_OUTPUT
           else
+            echo "deploy=false"
             echo "deploy=false" >> $GITHUB_OUTPUT
           fi
 

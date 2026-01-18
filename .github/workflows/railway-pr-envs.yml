@@ -18,6 +18,8 @@ env:
 
 jobs:
   pr_env_gate:
+    # do not run on main branch
+    if: github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
       deploy: ${{ steps.check.outputs.deploy }}
@@ -152,4 +154,11 @@ jobs:
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
       - name: Delete PR environment
-        run: railway environment delete pr-${{ github.event.pull_request.number }} --yes || true
+        run: |
+          ENV_NAME="pr-${{ github.event.pull_request.number }}"
+          ENV_LIST=$(railway environment <<< "" || echo "")
+          if echo "$ENV_LIST" | grep -qw "$ENV_NAME"; then
+            railway environment delete "$ENV_NAME" --yes
+          else
+            echo "Environment $ENV_NAME does not exist, skipping delete."
+          fi

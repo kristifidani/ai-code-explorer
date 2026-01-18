@@ -154,16 +154,12 @@ jobs:
         id: env_check
         run: |
           ENV_NAME="pr-${{ github.event.pull_request.number }}"
-          ENV_LIST=$(railway environment <<< "" || echo "")
-          if echo "$ENV_LIST" | grep -qw "$ENV_NAME"; then
+
+          if railway link --project ${{ env.LINK_PROJECT_ID }} --environment "$ENV_NAME" >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Link to project
-        if: steps.env_check.outputs.exists == 'true'
-        run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
       - name: Delete PR environment
         if: steps.env_check.outputs.exists == 'true'

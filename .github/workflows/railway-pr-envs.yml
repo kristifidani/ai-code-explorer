@@ -162,7 +162,9 @@ jobs:
           fi
 
       - name: Link to project
+        if: steps.env_check.outputs.exists == 'true'
         run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
 
       - name: Delete PR environment
+        if: steps.env_check.outputs.exists == 'true'
         run: railway environment delete pr-${{ github.event.pull_request.number }} --yes || true

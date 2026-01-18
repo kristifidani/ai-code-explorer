@@ -1,4 +1,4 @@
-from ai_service import ollama_client
+from ai_service import llm_api_client
 from ai_service.db_setup import add_chunks, get_collection, query_chunks
 from ai_service.embeddings import embed_documents, embed_query
 
@@ -9,11 +9,11 @@ import pytest
 
 def test_llm_chat_basic_response(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(
-        "ai_service.ollama_client.chat_with_ollama",
+        "ai_service.llm_api_client.chat_with_llm",
         lambda prompt: "Mocked LLM response for: " + prompt,  # type: ignore
     )
     prompt = "Code context:\ndef add(a, b): return a + b\nQuestion: How does the sum work?\nExplain."
-    response = ollama_client.chat_with_ollama(prompt)
+    response = llm_api_client.chat_with_llm(prompt)
     assert response.startswith("Mocked LLM response for:")
 
 
@@ -31,7 +31,7 @@ def test_db_search_and_llm_integration(monkeypatch: pytest.MonkeyPatch):
 
     # Mock LLM
     monkeypatch.setattr(
-        "ai_service.ollama_client.chat_with_ollama",
+        "ai_service.llm_api_client.chat_with_llm",
         lambda prompt: f"LLM saw: {prompt}",  # type: ignore
     )
     # User question
@@ -43,7 +43,7 @@ def test_db_search_and_llm_integration(monkeypatch: pytest.MonkeyPatch):
     docs = results.get("documents")
     relevant_code = docs[0][0] if docs and docs[0] else ""
     prompt = f"Code context:\n{relevant_code}\nQuestion: {question}\nExplain."
-    response = ollama_client.chat_with_ollama(prompt)
+    response = llm_api_client.chat_with_llm(prompt)
     assert "LLM saw: Code context:" in response
     assert code in response
     assert question in response
@@ -70,10 +70,10 @@ def test_db_search_no_results():
 def test_llm_chat_with_long_prompt(monkeypatch: pytest.MonkeyPatch):
     # Mock LLM
     monkeypatch.setattr(
-        "ai_service.ollama_client.chat_with_ollama",
+        "ai_service.llm_api_client.chat_with_llm",
         lambda prompt: "LLM received prompt of length: " + str(len(prompt)),  # type: ignore
     )
     long_code = "def foo(): pass\n" * 1000
     prompt = f"Code context:\n{long_code}\nQuestion: What does this do?\nExplain."
-    response = ollama_client.chat_with_ollama(prompt)
+    response = llm_api_client.chat_with_llm(prompt)
     assert response.startswith("LLM received prompt of length:")

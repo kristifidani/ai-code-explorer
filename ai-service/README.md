@@ -72,14 +72,14 @@ Step-by-step explanation:
 
 3. Prompt Building: assemble a compact prompt for the LLM using the highest-quality retrieved snippets, metadata (for citations), and a task-specific instruction. The service applies dynamic prompting to control token budgets and reduce hallucinations.
 
-4. LLM Answering: send the constructed prompt to the configured [LLM](./src/ai_service/ollama_client.py) and get an answer back based on the instructions given. Also check the [API](https://docs.ollama.com/api/introduction).
+4. LLM Answering: send the constructed prompt to the configured [LLM](./src/ai_service/llm_api_client.py) and get an answer back based on the instructions given.
 
 ## Layers
 
 - [Chunking](./src/ai_service/chunking/README.md): is responsible for preprocessing code files into manageable segments before embedding.
 - [Embeddings](./src/ai_service/embeddings/README.md): layer responsible for converting code and natural language queries into high-dimensional vectors that capture semantic meaning.
 - [Vector DB](./src/ai_service/db_setup/README.md): layer responsible for managing ChromaDB operations for storing and querying code embeddings (semantic search).
-- [LLM](./src/ai_service/ollama_client.py): Layer responsible for interacting with LLM.
+- [LLM](./src/ai_service/llm_api_client.py): Layer responsible for interacting with LLM ([OpenAI](https://platform.openai.com/docs/guides/text)).
 
 ## Examples
 

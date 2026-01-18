@@ -8,7 +8,7 @@ This is a **RAG-powered AI codebase explorer** with a 3-service architecture:
 - **Backend** (Rust/Actix-web) at `backend/` — API gateway with MongoDB storage
 - **Frontend** (React/TypeScript/Vite) at `frontend/` — Web interface for GitHub upload and Q&A
 
-**Data flow:** Frontend → Backend → AI Service → ChromaDB/Ollama
+**Data flow:** Frontend → Backend → AI Service → ChromaDB/LLM
 
 Read `README.md` files in root and service directories for architecture details.
 

@@ -7,6 +7,7 @@ LLM_MODEL: Final[str] = "LLM_MODEL"
 EMBEDDING_MODEL: Final[str] = "EMBEDDING_MODEL"
 AI_SERVICE_PORT: Final[str] = "AI_SERVICE_PORT"
 MAX_CONTEXT_LENGTH: Final[str] = "MAX_CONTEXT_LENGTH"
+OPENAI_API_KEY: Final[str] = "OPENAI_API_KEY"
 
 
 def get_env_var(name: str) -> str:

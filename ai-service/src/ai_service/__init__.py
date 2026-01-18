@@ -9,7 +9,7 @@ Main Components:
 - embeddings: Code and text embedding functionality
 - db_setup: Database operations for storing and querying embeddings
 - handlers: REST API endpoints for ingestion and answering
-- ollama_client: Integration with Ollama LLM
+- llm_api_client: Integration with LLM
 - project_ingestor: GitHub repository processing
 
 Core functionality is exposed through submodules for easy integration.

@@ -27,7 +27,7 @@
     },
     "github.copilot.chat.commitMessageGeneration.instructions": [
         {
-            "text": "Provide a concise summary of the changes made. Focus on key modifications, added features, or bug fixes. Avoid generic phrases like 'Updated code' or 'Minor changes'."
+            "text": "Provide a concise summary of the changes made. Focus on key modifications, added features, or bug fixes. Avoid generic phrases like 'Updated code' or 'Minor changes'. If the changes require a PR preview environment, append '[deploy-pr-env]' at the end of the commit message."
         }
     ]
 }

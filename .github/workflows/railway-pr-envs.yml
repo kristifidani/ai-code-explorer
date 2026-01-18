@@ -17,9 +17,32 @@ env:
   DUPLICATE_FROM_ID: ${{ vars.RAILWAY_PREVIEW_ENVIRONMENT_ID }}
 
 jobs:
+  pr_env_gate:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.check.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - id: check
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "$COMMIT_MSG"
+
+          if echo "$COMMIT_MSG" | grep -q "\[deploy-pr-env\]"; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "deploy=false" >> $GITHUB_OUTPUT
+          fi
+
   setup_pr_environment:
-    # Don't run with secrets on PRs from forks.
-    if: (github.event.action == 'opened' || github.event.action == 'synchronize') && github.event.pull_request.head.repo.full_name == github.repository
+    needs: pr_env_gate
+    # Don't run if not triggered through commits and dont run with secrets on PRs from forks.
+    if: needs.pr_env_gate.outputs.deploy == 'true' &&
+      (github.event.action == 'opened' || github.event.action == 'synchronize') &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     container: ghcr.io/railwayapp/cli:4.23.2
     steps:

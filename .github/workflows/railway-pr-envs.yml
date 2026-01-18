@@ -99,7 +99,7 @@ jobs:
             fi
 
             echo "---------------- Attempt $i/10: Waiting for deployment... ----------------"
-            sleep 15
+            sleep 10
           done
 
           echo "---------------- Deployment did not become ready in time. Triggering redeploy ... ----------------"

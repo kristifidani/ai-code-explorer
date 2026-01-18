@@ -147,18 +147,24 @@ jobs:
     # Don't run with secrets on PRs from forks.
     if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 2
     container: ghcr.io/railwayapp/cli:4.23.2
     steps:
-      - name: Link to project
-        run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
-
-      - name: Delete PR environment
+      - name: Check if PR environment exists
+        id: env_check
         run: |
           ENV_NAME="pr-${{ github.event.pull_request.number }}"
           ENV_LIST=$(railway environment <<< "" || echo "")
           if echo "$ENV_LIST" | grep -qw "$ENV_NAME"; then
-            railway environment delete "$ENV_NAME" --yes
+            echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "Environment $ENV_NAME does not exist, skipping delete."
+            echo "exists=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Link to project
+        if: steps.env_check.outputs.exists == 'true'
+        run: railway link --project ${{ env.LINK_PROJECT_ID }} --environment pr-${{ github.event.pull_request.number }}
+
+      - name: Delete PR environment
+        if: steps.env_check.outputs.exists == 'true'
+        run: railway environment delete pr-${{ github.event.pull_request.number }} --yes || true

@@ -141,7 +141,6 @@ jobs:
 
   # NOTE
   # if you have 2fa on your account, the pr close part of the action will hang (due to 2fa not being supported non-interactively)
-
   pr_closed:
     # Don't run with secrets on PRs from forks.
     if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository

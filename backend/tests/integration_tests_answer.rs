@@ -17,7 +17,7 @@ use utils::{MockAiService, init_db};
 #[actix_web::test]
 async fn test_answer_question_with_project_context_success() {
     // Init db
-    let project_repo = init_db().await;
+    let (_db_guard, project_repo) = init_db().await;
 
     // Pre-insert project in database
     let github_url = Url::parse("https://github.com/testowner/testrepo.git").unwrap();
@@ -77,7 +77,7 @@ async fn test_answer_question_with_project_context_success() {
 #[actix_web::test]
 async fn test_answer_general_question_success() {
     // Init db
-    let project_repo = init_db().await;
+    let (_db_guard, project_repo) = init_db().await;
 
     // QA
     let question = "How do vector databases work and when should I use them?";
@@ -127,7 +127,7 @@ async fn test_answer_general_question_success() {
 #[actix_web::test]
 async fn test_answer_question_project_not_found() {
     // Init db
-    let project_repo = init_db().await;
+    let (_db_guard, project_repo) = init_db().await;
 
     // DO NOT pre-insert project - it should not exist
     let github_url = Url::parse("https://github.com/nonexistent/repo.git").unwrap();
@@ -183,7 +183,7 @@ async fn test_answer_question_invalid_input(
     #[case] expected_error_message: &str,
 ) {
     // Init db
-    let project_repo = init_db().await;
+    let (_db_guard, project_repo) = init_db().await;
 
     let github_url = Url::parse("https://github.com/testowner/testrepo.git").unwrap();
 
@@ -230,7 +230,7 @@ async fn test_answer_question_ai_service_errors(
     #[case] ai_response_body: &str,
 ) {
     // Init db and pre insert project
-    let project_repo = init_db().await;
+    let (_db_guard, project_repo) = init_db().await;
     let github_url = Url::parse("https://github.com/testowner/testrepo.git").unwrap();
     let preexisting = ProjectEntity::new_validated(&github_url).expect("valid canonical");
     project_repo
@@ -291,7 +291,7 @@ async fn test_answer_question_ai_service_errors(
 #[actix_web::test]
 async fn test_answer_question_ai_service_unavailable() {
     // Init db and pre insert project
-    let project_repo = init_db().await;
+    let (_db_guard, project_repo) = init_db().await;
     let github_url = Url::parse("https://github.com/testowner/testrepo.git").unwrap();
     let preexisting = ProjectEntity::new_validated(&github_url).expect("valid canonical");
     project_repo

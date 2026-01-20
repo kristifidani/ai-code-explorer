@@ -10,9 +10,6 @@ import { buildApiUrl } from '../utils/api_url_builder'
 import { postJson } from '../utils/api_client'
 import { getErrorMessage, logError } from '../utils/logger'
 
-// Backend API endpoint from environment
-const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL as string
-
 export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadProps) {
     const [githubUrl, setGithubUrl] = useState('')
     const [state, setState] = useState({
@@ -23,20 +20,8 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!BACKEND_API_URL) {
-            const errorMessage = 'Backend URL is not configured (VITE_BACKEND_API_URL).'
-            setState(prev => ({ ...prev, error: errorMessage }))
-            onUploadError?.(errorMessage)
-            return
-        }
-
         // Note: GitHub URL validation is handled by the backend
         // Frontend validation could be added here if needed for better UX
-
-        console.info('Starting project ingestion', {
-            githubUrl,
-            urlLength: githubUrl.length
-        })
 
         setState(prev => ({ ...prev, isLoading: true, error: null }))
 
@@ -45,7 +30,7 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
                 github_url: githubUrl
             }
 
-            const endpoint = buildApiUrl(BACKEND_API_URL, '/v1/ingest')
+            const endpoint = buildApiUrl('/v1/ingest')
             console.info('[Frontend] Sending ingest request to backend:', {
                 endpoint,
                 githubUrl
@@ -65,12 +50,10 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
 
         } catch (error) {
             logError(error, { component: 'GitHubUpload', githubUrl })
-
             const message = getErrorMessage(error)
-
             setState(prev => ({ ...prev, isLoading: false, error: message }))
+            onUploadError?.(message)
         }
-
     }
 
     return (

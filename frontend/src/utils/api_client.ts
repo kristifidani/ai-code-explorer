@@ -1,5 +1,5 @@
 /**
- Extract a tiny API helper for backend calls to avoid fetch duplication
+ * Extract a tiny API helper for backend calls to avoid fetch duplication
  */
 
 export async function postJson<TRequest, TResponse>(
@@ -23,7 +23,9 @@ export async function postJson<TRequest, TResponse>(
     })
 
     if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+        const apiResponse = json as { message?: string }
+        const errorMessage = apiResponse.message || `HTTP ${response.status}`
+        throw new Error(errorMessage)
     }
 
     return json as TResponse

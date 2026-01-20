@@ -13,9 +13,6 @@ import { postJson } from '../utils/api_client'
 import { renderMarkdown } from '../utils/markdown'
 import { getErrorMessage, logError } from '../utils/logger'
 
-// Backend API endpoint from environment
-const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL as string
-
 export function ChatBox({
     projectUrl,
     onError,
@@ -84,16 +81,7 @@ export function ChatBox({
         e.preventDefault()
 
         if (!input.trim() || isLoading) return
-
-        if (!BACKEND_API_URL) {
-            const errorMessage = 'Backend URL is not configured (VITE_BACKEND_API_URL).'
-            setState(prev => ({ ...prev, error: errorMessage }))
-            onError?.(errorMessage)
-            return
-        }
-
         const userMessage = input.trim()
-
         setInput('')
 
         // Add user message
@@ -108,7 +96,7 @@ export function ChatBox({
                 ...(projectUrl && { canonical_github_url: projectUrl })
             }
 
-            const endpoint = buildApiUrl(BACKEND_API_URL, '/v1/answer')
+            const endpoint = buildApiUrl('/v1/answer')
             console.info('[Frontend] Sending request to backend:', {
                 endpoint,
                 projectUrl: requestBody.canonical_github_url || 'none'

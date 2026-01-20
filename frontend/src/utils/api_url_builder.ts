@@ -12,6 +12,9 @@
  * - buildApiUrl("/api", "/v1/answer") => "/api/v1/answer"
  */
 
+// Backend API endpoint from environment
+const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL as string
+
 function stripLeadingSlash(value: string): string {
     return value.startsWith('/') ? value.slice(1) : value
 }
@@ -36,8 +39,8 @@ function joinPathPrefix(prefix: string, endpoint: string): string {
     return `${normalizedPrefix}/${stripLeadingSlash(normalizedEndpoint)}`
 }
 
-export function buildApiUrl(base: string, endpointPath: string): string {
-    const trimmedBase = base.trim()
+export function buildApiUrl(endpointPath: string): string {
+    const trimmedBase = BACKEND_API_URL.trim()
     if (!trimmedBase) {
         throw new Error('Backend URL is not configured (VITE_BACKEND_API_URL).')
     }
@@ -50,12 +53,7 @@ export function buildApiUrl(base: string, endpointPath: string): string {
     }
 
     // Absolute base => preserve origin and treat any pathname as a prefix
-    let parsedBase: URL
-    try {
-        parsedBase = new URL(trimmedBase)
-    } catch {
-        throw new Error(`Invalid backend URL format (VITE_BACKEND_API_URL): "${trimmedBase}"`)
-    }
+    const parsedBase = new URL(trimmedBase)
     const basePrefix = parsedBase.pathname === '/' ? '' : stripTrailingSlash(parsedBase.pathname)
     const fullPath = joinPathPrefix(basePrefix, endpoint)
 

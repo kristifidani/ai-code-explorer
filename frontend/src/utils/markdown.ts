@@ -1,13 +1,12 @@
 /**
-For formatting markdown content in AI responses displayed in the chat box.
+ *  For formatting markdown content in AI responses displayed in the chat box.
 */
 
 import MarkdownIt from 'markdown-it'
 import DOMPurify from 'dompurify'
 
-
 // Configure markdown-it for better formatting
-export const md = new MarkdownIt({
+const md = new MarkdownIt({
     breaks: true,
     html: false,
     linkify: false,

@@ -1,3 +1,7 @@
+/**
+ * Utility functions for logging and error handling. 
+ */
+
 export function logError(error: unknown, context?: Record<string, unknown>): void {
     if (error instanceof Error) {
         console.error(error.message, {

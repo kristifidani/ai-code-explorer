@@ -1,6 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import MarkdownIt from 'markdown-it'
-import DOMPurify from 'dompurify'
 import type {
     AnswerRequest,
     AnswerApiResponse,
@@ -10,26 +8,13 @@ import type {
     ChatState,
     ChatBoxProps
 } from '../types/internal'
-import { buildApiUrl } from '../utils/api'
+import { buildApiUrl } from '../utils/api_url_builder'
+import { postJson } from '../utils/api_client'
+import { renderMarkdown } from '../utils/markdown'
+import { getErrorMessage, logError } from '../utils/logger'
 
 // Backend API endpoint from environment
 const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL as string
-
-// Configure markdown-it for better formatting
-const md = new MarkdownIt({
-    breaks: true,
-    html: false,
-    linkify: false,
-    typographer: false
-})
-
-// Custom renderer for consistent spacing
-md.renderer.rules.paragraph_open = () => '<p class="chat-p">'
-md.renderer.rules.paragraph_close = () => '</p>'
-md.renderer.rules.bullet_list_open = () => '<ul class="chat-ul">'
-md.renderer.rules.bullet_list_close = () => '</ul>'
-md.renderer.rules.list_item_open = () => '<li class="chat-li">'
-md.renderer.rules.list_item_close = () => '</li>'
 
 export function ChatBox({
     projectUrl,
@@ -40,12 +25,12 @@ export function ChatBox({
     const [input, setInput] = useState('')
     const [state, setState] = useState<ChatState>({
         messages: [],
-        isLoading: false,
         error: null,
     })
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLTextAreaElement>(null)
+    const isLoading = state.messages.some(m => m.isLoading)
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
@@ -86,20 +71,19 @@ export function ChatBox({
         }))
     }
 
-    const handleError = (error: unknown, aiMessageId: string) => {
-        const errorMessage = error instanceof Error ? error.message : 'Network error occurred'
+    const handleError = (message: string, aiMessageId: string) => {
         setState(prev => ({
             ...prev,
-            error: errorMessage,
-            messages: prev.messages.filter(msg => msg.id !== aiMessageId)
+            error: message,
+            messages: prev.messages.filter(msg => msg.id !== aiMessageId),
         }))
-        onError?.(errorMessage)
     }
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!input.trim() || state.isLoading) return
+        if (!input.trim() || isLoading) return
 
         if (!BACKEND_API_URL) {
             const errorMessage = 'Backend URL is not configured (VITE_BACKEND_API_URL).'
@@ -118,8 +102,6 @@ export function ChatBox({
         // Add loading AI message
         const aiMessageId = addMessage('Thinking ...', 'ai', true)
 
-        setState(prev => ({ ...prev, isLoading: true, error: null }))
-
         try {
             const requestBody: AnswerRequest = {
                 question: userMessage,
@@ -129,47 +111,22 @@ export function ChatBox({
             const endpoint = buildApiUrl(BACKEND_API_URL, '/v1/answer')
             console.info('[Frontend] Sending request to backend:', {
                 endpoint,
-                hasProject: !!requestBody.canonical_github_url,
                 projectUrl: requestBody.canonical_github_url || 'none'
             })
 
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-            })
+            const result = await postJson<AnswerRequest, AnswerApiResponse>(endpoint, requestBody)
 
-            const result = await response.json() as AnswerApiResponse
-
-            console.info('[Frontend] Received response from backend:', {
-                status: response.status,
-                ok: response.ok,
-                hasData: !!result.data,
-                answerLength: result.data?.answer?.length || 0
-            })
-
-            if (response.ok && result.data) {
-                updateMessage(aiMessageId, result.data.answer)
-            } else {
-                const errorMessage = result.message || 'Failed to get answer'
-                console.error('[Frontend] Backend request failed:', {
-                    status: response.status,
-                    message: result.message,
-                    error: errorMessage
-                })
-                handleError(new Error(errorMessage), aiMessageId)
+            if (!result.data) {
+                throw new Error(result.message ?? 'Backend returned no data')
             }
+
+            updateMessage(aiMessageId, result.data.answer)
+            setState(prev => ({ ...prev, error: null }))
         } catch (error) {
-            console.error('[Frontend] Request error occurred:', {
-                error: error instanceof Error ? error.message : 'Unknown error',
-                name: error instanceof Error ? error.name : 'UnknownError'
-            })
-            handleError(error, aiMessageId)
-        } finally {
-            setState(prev => ({ ...prev, isLoading: false }))
+            logError(error, { component: 'ChatBox' })
+            const errorMsg = getErrorMessage(error)
+            handleError(errorMsg, aiMessageId)
+            onError?.(errorMsg)
         }
     }
 
@@ -276,7 +233,7 @@ export function ChatBox({
                                     <div
                                         className="whitespace-pre-wrap break-words leading-relaxed chat-message"
                                         dangerouslySetInnerHTML={{
-                                            __html: DOMPurify.sanitize(md.render(message.content))
+                                            __html: renderMarkdown(message.content)
                                         }}
                                     />
                                 ) : (
@@ -328,7 +285,7 @@ export function ChatBox({
                             }
                             className="w-full px-5 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 resize-none shadow-sm bg-white"
                             rows={3}
-                            disabled={state.isLoading}
+                            disabled={isLoading}
                         />
                         <div className="mt-2 text-xs text-gray-500 flex justify-between">
                             <span>Press Enter to send, Shift+Enter for new line</span>
@@ -339,10 +296,10 @@ export function ChatBox({
                     </div>
                     <button
                         type="submit"
-                        disabled={!input.trim() || state.isLoading}
+                        disabled={!input.trim() || isLoading}
                         className="px-6 py-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm self-start"
                     >
-                        {state.isLoading ? (
+                        {isLoading ? (
                             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         ) : (
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

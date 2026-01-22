@@ -9,7 +9,7 @@ import type {
     ChatBoxProps
 } from '../types/internal'
 import { buildApiUrl } from '../utils/api_url_builder'
-import { postJson } from '../utils/api_client'
+import { backendApiWrapper } from '../utils/api_client'
 import { renderMarkdown } from '../utils/markdown'
 import { getErrorMessage, logError } from '../utils/logger'
 
@@ -102,7 +102,7 @@ export function ChatBox({
                 projectUrl: requestBody.canonical_github_url || 'none'
             })
 
-            const result = await postJson<AnswerRequest, AnswerApiResponse>(endpoint, requestBody)
+            const result = await backendApiWrapper<AnswerRequest, AnswerApiResponse>('POST', endpoint, requestBody)
 
             if (!result.data) {
                 throw new Error(result.message ?? 'Backend returned no data')

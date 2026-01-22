@@ -7,7 +7,7 @@ import type {
     GitHubUploadProps
 } from '../types/internal'
 import { buildApiUrl } from '../utils/api_url_builder'
-import { postJson } from '../utils/api_client'
+import { backendApiWrapper } from '../utils/api_client'
 import { getErrorMessage, logError } from '../utils/logger'
 
 export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadProps) {
@@ -36,7 +36,8 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
                 githubUrl
             })
 
-            const result = await postJson<IngestRequest, IngestApiResponse>(
+            const result = await backendApiWrapper<IngestRequest, IngestApiResponse>(
+                'POST',
                 endpoint,
                 requestBody
             )

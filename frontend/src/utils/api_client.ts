@@ -2,15 +2,16 @@
  * Extract a tiny API helper for backend calls to avoid fetch duplication
  */
 
-export async function postJson<TRequest, TResponse>(
+export async function backendApiWrapper<TRequest, TResponse>(
+    method: string,
     url: string,
     body: TRequest
 ): Promise<TResponse> {
     const response = await fetch(url, {
-        method: 'POST',
+        method,
         headers: {
             'Content-Type': 'application/json',
-            Accept: 'application/json',
+            'Accept': 'application/json',
         },
         body: JSON.stringify(body),
     })

@@ -1,26 +1,46 @@
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { GitHubUpload } from './components/GitHubUpload'
 import { ChatBox } from './components/ChatBox'
+import { ProjectSelector } from './components/ProjectSelector'
+
+import type { Project, ProjectListApiResponse } from './types/external'
+import { buildApiUrl } from './utils/api_url_builder'
+import { backendApiWrapper } from './utils/api_client'
+
 
 function App() {
   const [projectUrl, setProjectUrl] = useState<string | undefined>(undefined)
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [projectsLoading, setProjectsLoading] = useState(false)
+  const [projectsError, setProjectsError] = useState<string | null>(null)
+
+  const fetchProjects = useCallback(() => {
+    setProjectsLoading(true)
+    setProjectsError(null)
+    backendApiWrapper<undefined, ProjectListApiResponse>(
+      'GET',
+      buildApiUrl('/v1/projects'),
+      undefined
+    )
+      .then((resp) => {
+        setProjects(resp.data || [])
+        setProjectsLoading(false)
+      })
+      .catch((err) => {
+        setProjectsError(err.message || 'Failed to load projects')
+        setProjectsLoading(false)
+      })
+  }, [])
+
+  useEffect(() => {
+    fetchProjects()
+  }, [fetchProjects])
 
   const handleUploadSuccess = (canonicalUrl: string) => {
     setProjectUrl(canonicalUrl)
     setShowUploadModal(false)
-  }
-
-  const handleUploadError = (error: string) => {
-    console.error('Upload failed:', error)
-  }
-
-  const handleChatError = (error: string) => {
-    console.error('Chat error:', error)
-  }
-
-  const handleRemoveProject = () => {
-    setProjectUrl(undefined)
+    fetchProjects()
   }
 
   return (
@@ -33,12 +53,24 @@ function App() {
           </p>
         </header>
 
+        {/* Project Selector UI above chat */}
+        <div className="flex justify-end mb-4">
+          <ProjectSelector
+            currentProjectUrl={projectUrl}
+            onSelect={(url) => setProjectUrl(url || undefined)}
+            projects={projects}
+            loading={projectsLoading}
+            error={projectsError}
+            onRefresh={fetchProjects}
+          />
+        </div>
+
         <main>
           <ChatBox
             projectUrl={projectUrl}
-            onError={handleChatError}
+            onError={(error) => console.error('Chat error:', error)}
             onAddProject={() => setShowUploadModal(true)}
-            onRemoveProject={handleRemoveProject}
+            onRemoveProject={() => setProjectUrl(undefined)}
           />
         </main>
 
@@ -61,7 +93,7 @@ function App() {
                 </div>
                 <GitHubUpload
                   onUploadSuccess={handleUploadSuccess}
-                  onUploadError={handleUploadError}
+                  onUploadError={(error) => console.error('Upload failed:', error)}
                 />
               </div>
             </div>

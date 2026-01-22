@@ -7,9 +7,9 @@
  * - Relative path prefix (production behind nginx): "/api"
  *
  * Examples:
- * - buildApiUrl("http://localhost:8080", "/v1/answer") => "http://localhost:8080/v1/answer"
- * - buildApiUrl("https://example.com/api", "/v1/answer") => "https://example.com/api/v1/answer"
- * - buildApiUrl("/api", "/v1/answer") => "/api/v1/answer"
+ * - buildApiUrl("/v1/answer") => "http://localhost:8080/v1/answer" (when VITE_BACKEND_API_URL="http://localhost:8080")
+ * - buildApiUrl("/v1/answer") => "https://example.com/api/v1/answer" (when VITE_BACKEND_API_URL="https://example.com/api")
+ * - buildApiUrl("/v1/answer") => "/api/v1/answer" (when VITE_BACKEND_API_URL="/api")
  */
 
 // Backend API endpoint from environment
@@ -40,7 +40,7 @@ function joinPathPrefix(prefix: string, endpoint: string): string {
 }
 
 export function buildApiUrl(endpointPath: string): string {
-    const trimmedBase = BACKEND_API_URL.trim()
+    const trimmedBase = (BACKEND_API_URL ?? '').trim()
     if (!trimmedBase) {
         throw new Error('Backend URL is not configured (VITE_BACKEND_API_URL).')
     }

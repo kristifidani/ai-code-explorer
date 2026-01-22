@@ -1,3 +1,20 @@
+/**
+ * Builds a backend endpoint URL suitable for fetch().
+ *
+ * `VITE_BACKEND_API_URL` is injected by Vite at build time and may be:
+ * - Absolute URL (local dev): "http://localhost:8080"
+ * - Absolute URL with path prefix: "https://example.com/api"
+ * - Relative path prefix (production behind nginx): "/api"
+ *
+ * Examples:
+ * - buildApiUrl("/v1/answer") => "http://localhost:8080/v1/answer" (when VITE_BACKEND_API_URL="http://localhost:8080")
+ * - buildApiUrl("/v1/answer") => "https://example.com/api/v1/answer" (when VITE_BACKEND_API_URL="https://example.com/api")
+ * - buildApiUrl("/v1/answer") => "/api/v1/answer" (when VITE_BACKEND_API_URL="/api")
+ */
+
+// Backend API endpoint from environment
+const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL as string
+
 function stripLeadingSlash(value: string): string {
     return value.startsWith('/') ? value.slice(1) : value
 }
@@ -22,21 +39,8 @@ function joinPathPrefix(prefix: string, endpoint: string): string {
     return `${normalizedPrefix}/${stripLeadingSlash(normalizedEndpoint)}`
 }
 
-/**
- * Builds a backend endpoint URL suitable for fetch().
- *
- * `VITE_BACKEND_API_URL` is injected by Vite at build time and may be:
- * - Absolute URL (local dev): "http://localhost:8080"
- * - Absolute URL with path prefix: "https://example.com/api"
- * - Relative path prefix (production behind nginx): "/api"
- *
- * Examples:
- * - buildApiUrl("http://localhost:8080", "/v1/answer") => "http://localhost:8080/v1/answer"
- * - buildApiUrl("https://example.com/api", "/v1/answer") => "https://example.com/api/v1/answer"
- * - buildApiUrl("/api", "/v1/answer") => "/api/v1/answer"
- */
-export function buildApiUrl(base: string, endpointPath: string): string {
-    const trimmedBase = base.trim()
+export function buildApiUrl(endpointPath: string): string {
+    const trimmedBase = (BACKEND_API_URL ?? '').trim()
     if (!trimmedBase) {
         throw new Error('Backend URL is not configured (VITE_BACKEND_API_URL).')
     }

@@ -17,7 +17,7 @@ use utils::{MockAiService, init_db};
 #[actix_web::test]
 async fn test_ingest_project_success() {
     // Init db
-    let project_repo = init_db().await;
+    let (_db_guard, project_repo) = init_db().await;
 
     // Setup urls
     let github_url =
@@ -70,7 +70,7 @@ async fn test_ingest_project_success() {
 #[actix_web::test]
 async fn test_ingest_project_already_exists() {
     // Init db and pre-insert project
-    let project_repo = init_db().await;
+    let (_db_guard, project_repo) = init_db().await;
 
     let github_url = Url::parse("https://github.com/Already/Exists").unwrap();
     let project_entity = ProjectEntity::new_validated(&github_url).expect("invalid canonical");
@@ -115,7 +115,7 @@ async fn test_ingest_project_already_exists() {
 #[actix_web::test]
 async fn test_ingest_invalid_github_url_returns_bad_request() {
     // Init db
-    let project_repo = init_db().await;
+    let (_db_guard, project_repo) = init_db().await;
 
     // AI service should not be called for invalid URLs
     let server = MockAiService::new().await;
@@ -162,7 +162,7 @@ async fn test_ingest_project_ai_service_errors(
     #[case] ai_response_body: &str,
 ) {
     // Init db
-    let project_repo = init_db().await;
+    let (_db_guard, project_repo) = init_db().await;
 
     // Used urls
     let github_url = Url::parse("https://github.com/TestOwner/TestRepo").unwrap();
@@ -222,7 +222,7 @@ async fn test_ingest_project_ai_service_errors(
 #[actix_web::test]
 async fn test_ingest_project_ai_service_unavailable() {
     // Init db
-    let project_repo = init_db().await;
+    let (_db_guard, project_repo) = init_db().await;
 
     // Used urls
     let github_url = Url::parse("https://github.com/TestOwner/TestRepo").unwrap();

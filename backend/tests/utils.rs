@@ -1,23 +1,25 @@
 #![allow(clippy::expect_used)]
 
+use std::sync::OnceLock;
+
 use actix_web::web;
 use backend::{clients::db::ProjectRepository, utils::parse_env_expect};
 use mockito::{Matcher, ServerGuard};
 use mongodb::Client;
-use std::sync::OnceLock;
-use tokio::sync::Mutex;
 
 const TEST_DB_NAME: &str = "integration_tests_db";
 
-// Global async mutex to ensure only one test accesses the database at a time
-static DB_MUTEX: OnceLock<Mutex<()>> = OnceLock::new();
+static DB_MUTEX: OnceLock<tokio::sync::Mutex<()>> = OnceLock::new();
 
-pub async fn init_db() -> web::Data<ProjectRepository> {
-    // Get or initialize the mutex
-    let mutex = DB_MUTEX.get_or_init(|| Mutex::new(()));
-
-    // Acquire the lock to ensure sequential database access
-    let _guard = mutex.lock().await;
+/// Initializes the test database and returns a guard that must be held
+/// for the duration of the test to ensure exclusive access.
+pub async fn init_db() -> (
+    tokio::sync::MutexGuard<'static, ()>,
+    web::Data<ProjectRepository>,
+) {
+    // Initialize the mutex and acquire the lock
+    let mutex = DB_MUTEX.get_or_init(|| tokio::sync::Mutex::new(()));
+    let guard = mutex.lock().await;
 
     // load env
     dotenvy::dotenv().ok();
@@ -34,7 +36,9 @@ pub async fn init_db() -> web::Data<ProjectRepository> {
         .collection::<mongodb::bson::Document>("projects");
     let _ = collection.delete_many(mongodb::bson::doc! {}).await;
 
-    web::Data::new(ProjectRepository::new(&mongo_client, TEST_DB_NAME))
+    let repo = web::Data::new(ProjectRepository::new(&mongo_client, TEST_DB_NAME));
+
+    (guard, repo)
 }
 
 // Mock AI service helpers

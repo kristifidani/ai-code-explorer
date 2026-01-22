@@ -19,7 +19,6 @@ export interface ChatMessage {
 
 export interface ChatState {
     messages: ChatMessage[]
-    isLoading: boolean
     error: string | null
 }
 

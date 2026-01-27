@@ -11,7 +11,7 @@ import type {
 import { buildApiUrl } from '../utils/api_url_builder'
 import { backendApiWrapper } from '../utils/api_client'
 import { renderMarkdown } from '../utils/markdown'
-import { getErrorMessage, logError } from '../utils/logger'
+import { handleError } from '../utils/errorHandler'
 
 export function ChatBox({
     projectUrl,
@@ -68,12 +68,17 @@ export function ChatBox({
         }))
     }
 
-    const handleError = (message: string, aiMessageId: string) => {
+
+    // Set user-facing error and log
+    const setUserError = (message: string, aiMessageId: string, originalError: unknown): void => {
+        // show error to the user in this component
         setState(prev => ({
             ...prev,
             error: message,
             messages: prev.messages.filter(msg => msg.id !== aiMessageId),
         }))
+        // log/debug for developers
+        handleError(message, { component: 'ChatBox' }, originalError)
     }
 
 
@@ -96,25 +101,20 @@ export function ChatBox({
                 ...(projectUrl && { canonical_github_url: projectUrl })
             }
 
-            const endpoint = buildApiUrl('/v1/answer')
-            console.info('[Frontend] Sending request to backend:', {
-                endpoint,
-                projectUrl: requestBody.canonical_github_url || 'none'
-            })
-
-            const result = await backendApiWrapper<AnswerRequest, AnswerApiResponse>('POST', endpoint, requestBody)
+            const result = await backendApiWrapper<AnswerRequest, AnswerApiResponse>('POST', buildApiUrl('/v1/answer'), requestBody)
 
             if (!result.data) {
-                throw new Error(result.message ?? 'Backend returned no data')
+                throw new Error(result.message ?? 'Something went wrong while fetching the answer')
             }
 
             updateMessage(aiMessageId, result.data.answer)
             setState(prev => ({ ...prev, error: null }))
+
         } catch (error) {
-            logError(error, { component: 'ChatBox' })
-            const errorMsg = getErrorMessage(error)
-            handleError(errorMsg, aiMessageId)
-            onError?.(errorMsg)
+            const errorMsg = error instanceof Error ? error.message : 'Chatbox error';
+            setUserError(errorMsg, aiMessageId, error);
+            // notify the parent component so it can handle it at a higher level if needed
+            onError?.(errorMsg);
         }
     }
 

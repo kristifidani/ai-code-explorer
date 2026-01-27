@@ -2,7 +2,7 @@
  * External API types used for communication with the backend
  */
 
-/// Igestion
+/// Ingestion
 export interface IngestRequest {
     github_url: string
 }

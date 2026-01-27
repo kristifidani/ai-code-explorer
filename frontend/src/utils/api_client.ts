@@ -5,7 +5,8 @@
 export async function backendApiWrapper<TRequest, TResponse>(
     method: string,
     url: string,
-    body: TRequest
+    body?: TRequest,
+    signal?: AbortSignal
 ): Promise<TResponse> {
     const response = await fetch(url, {
         method,
@@ -13,14 +14,16 @@ export async function backendApiWrapper<TRequest, TResponse>(
             'Content-Type': 'application/json',
             'Accept': 'application/json',
         },
-        body: JSON.stringify(body),
+        ...(body !== undefined && { body: JSON.stringify(body) }),
+        ...(signal ? { signal } : {}),
     })
 
     const json = (await response.json()) as unknown
 
     console.info('[Frontend] Received response from backend:', {
-        status: response.status,
-        ok: response.ok,
+        url,
+        status_code: response.status,
+        status_text: response.statusText,
     })
 
     if (!response.ok) {

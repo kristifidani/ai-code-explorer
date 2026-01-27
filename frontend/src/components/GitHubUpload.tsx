@@ -8,7 +8,7 @@ import type {
 } from '../types/internal'
 import { buildApiUrl } from '../utils/api_url_builder'
 import { backendApiWrapper } from '../utils/api_client'
-import { getErrorMessage, logError } from '../utils/logger'
+import { handleError } from '../utils/errorHandler'
 
 export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadProps) {
     const [githubUrl, setGithubUrl] = useState('')
@@ -30,29 +30,26 @@ export function GitHubUpload({ onUploadSuccess, onUploadError }: GitHubUploadPro
                 github_url: githubUrl
             }
 
-            const endpoint = buildApiUrl('/v1/ingest')
-            console.info('[Frontend] Sending ingest request to backend:', {
-                endpoint,
-                githubUrl
-            })
-
             const result = await backendApiWrapper<IngestRequest, IngestApiResponse>(
                 'POST',
-                endpoint,
+                buildApiUrl('/v1/ingest'),
                 requestBody
             )
 
             if (!result.data) {
-                throw new Error(result.message ?? 'Backend returned no data')
+                throw new Error(result.message ?? 'Something went wrong during project ingestion')
             }
 
             onUploadSuccess?.(result.data.canonical_github_url)
             setState(prev => ({ ...prev, isLoading: false }))
 
         } catch (error) {
-            logError(error, { component: 'GitHubUpload', githubUrl })
-            const message = getErrorMessage(error)
+            const message = error instanceof Error ? error.message : 'Project Upload Error';
+            // show error to the user in this component
             setState(prev => ({ ...prev, isLoading: false, error: message }))
+            // log/debug for developers
+            handleError(message, { component: 'GitHubUpload' }, error)
+            // notify the parent component so it can handle it at a higher level if needed
             onUploadError?.(message)
         }
     }

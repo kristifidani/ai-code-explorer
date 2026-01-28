@@ -44,18 +44,20 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(test, derive(Debug))]
 pub struct ProjectEntity {
     pub canonical_github_url: url::Url,
+    pub repo_name: String,
 }
 
 impl ProjectEntity {
     pub fn new_validated(github_url: &url::Url) -> crate::error::Result<Self> {
-        let canonical_github_url = Self::canonicalize_and_validate(github_url)?;
+        let (canonical_github_url, repo_name) = Self::canonicalize_and_validate(github_url)?;
         Ok(Self {
             canonical_github_url,
+            repo_name: repo_name.to_string(),
         })
     }
 
     /// Canonicalizes and validates a GitHub URL according to GitHub's official rules.
-    fn canonicalize_and_validate(url: &url::Url) -> crate::error::Result<url::Url> {
+    fn canonicalize_and_validate(url: &url::Url) -> crate::error::Result<(url::Url, &str)> {
         // Validate it's a GitHub URL with HTTPS
         if url.scheme() != "https" {
             return Err(crate::error::Error::InvalidGithubUrl(
@@ -107,10 +109,13 @@ impl ProjectEntity {
         let canonical_owner = owner.to_lowercase();
         let canonical_repo = repo_name.to_lowercase();
 
-        Ok(url::Url::parse(&format!(
-            "https://github.com/{}/{}.git",
-            canonical_owner, canonical_repo
-        ))?)
+        Ok((
+            url::Url::parse(&format!(
+                "https://github.com/{}/{}.git",
+                canonical_owner, canonical_repo
+            ))?,
+            repo_name,
+        ))
     }
 
     fn validate_owner_name(owner: &str) -> crate::error::Result<()> {

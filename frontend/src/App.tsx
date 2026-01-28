@@ -1,26 +1,17 @@
 import { useState } from 'react'
 import { GitHubUpload } from './components/GitHubUpload'
 import { ChatBox } from './components/ChatBox'
+import { ProjectSelector } from './components/ProjectSelector'
 
 function App() {
-  const [projectUrl, setProjectUrl] = useState<string | undefined>(undefined)
+  const [projectUrl, setProjectUrl] = useState<string>("")
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const handleUploadSuccess = (canonicalUrl: string) => {
     setProjectUrl(canonicalUrl)
     setShowUploadModal(false)
-  }
-
-  const handleUploadError = (error: string) => {
-    console.error('Upload failed:', error)
-  }
-
-  const handleChatError = (error: string) => {
-    console.error('Chat error:', error)
-  }
-
-  const handleRemoveProject = () => {
-    setProjectUrl(undefined)
+    setRefreshKey((k) => k + 1)
   }
 
   return (
@@ -33,12 +24,22 @@ function App() {
           </p>
         </header>
 
+        {/* Project Selector UI above chat */}
+        <div className="flex justify-end mb-4">
+          {!showUploadModal && (
+            <ProjectSelector
+              refreshKey={refreshKey}
+              currentProjectUrl={projectUrl}
+              onSelect={(url) => setProjectUrl(url)}
+            />
+          )}
+        </div>
+
         <main>
           <ChatBox
             projectUrl={projectUrl}
-            onError={handleChatError}
             onAddProject={() => setShowUploadModal(true)}
-            onRemoveProject={handleRemoveProject}
+            onRemoveProject={() => setProjectUrl("")}
           />
         </main>
 
@@ -61,7 +62,6 @@ function App() {
                 </div>
                 <GitHubUpload
                   onUploadSuccess={handleUploadSuccess}
-                  onUploadError={handleUploadError}
                 />
               </div>
             </div>

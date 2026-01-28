@@ -28,3 +28,10 @@ export interface ChatBoxProps {
     onAddProject?: () => void  // For opening the project upload modal
     onRemoveProject?: () => void  // For removing the current project
 }
+// ProjectSelector props for internal use
+export interface ProjectSelectorProps {
+    refreshKey: number
+    currentProjectUrl?: string
+    onSelect: (projectUrl: string) => void
+    onError?: (error: string) => void
+}

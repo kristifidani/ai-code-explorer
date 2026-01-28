@@ -1,4 +1,5 @@
 use crate::{error::Result, types::entities::ProjectEntity};
+use futures::StreamExt;
 
 const DB_COLLECTION_PROJECTS: &str = "projects";
 
@@ -6,6 +7,7 @@ const DB_COLLECTION_PROJECTS: &str = "projects";
 pub trait ProjectRepositoryImpl: Send + Sync + 'static {
     async fn find_by_canonical_github_url(&self, url: &url::Url) -> Result<Option<ProjectEntity>>;
     async fn create(&self, project: &ProjectEntity) -> Result<()>;
+    async fn get_all_projects(&self) -> Result<Vec<ProjectEntity>>;
 }
 
 #[derive(Clone)]
@@ -39,5 +41,23 @@ impl ProjectRepositoryImpl for ProjectRepository {
         })?;
 
         Ok(())
+    }
+
+    async fn get_all_projects(&self) -> Result<Vec<ProjectEntity>> {
+        let mut cursor = self
+            .collection
+            .find(mongodb::bson::doc! {})
+            .await
+            .map_err(|e| {
+                tracing::error!("Failed to retrieve projects: {}", e);
+                e
+            })?;
+
+        let mut projects = Vec::new();
+        while let Some(project) = cursor.next().await {
+            projects.push(project?);
+        }
+
+        Ok(projects)
     }
 }

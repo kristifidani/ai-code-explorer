@@ -79,3 +79,6 @@ Accept: application/json
   "canonical_github_url": "not-a-valid-url",
   "question": "This will fail because DB lookup won't find this malformed URL"
 }
+
+### Get Projects
+GET {{host}}/v1/projects

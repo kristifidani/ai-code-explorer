@@ -4,7 +4,7 @@ import { ChatBox } from './components/ChatBox'
 import { ProjectSelector } from './components/ProjectSelector'
 
 function App() {
-  const [projectUrl, setProjectUrl] = useState<string | undefined>(undefined)
+  const [projectUrl, setProjectUrl] = useState<string>("")
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
@@ -30,7 +30,7 @@ function App() {
             <ProjectSelector
               refreshKey={refreshKey}
               currentProjectUrl={projectUrl}
-              onSelect={(url) => setProjectUrl(url || undefined)}
+              onSelect={(url) => setProjectUrl(url)}
             />
           )}
         </div>
@@ -39,7 +39,7 @@ function App() {
           <ChatBox
             projectUrl={projectUrl}
             onAddProject={() => setShowUploadModal(true)}
-            onRemoveProject={() => setProjectUrl(undefined)}
+            onRemoveProject={() => setProjectUrl("")}
           />
         </main>
 

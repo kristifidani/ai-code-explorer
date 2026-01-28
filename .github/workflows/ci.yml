@@ -235,7 +235,7 @@ jobs:
         uses: ./.github/actions/frontend-action
 
       - name: Check formatting
-        run: eslint . --max-warnings=0
+        run: npm run format:check
 
   frontend_type_check:
     runs-on: ubuntu-latest

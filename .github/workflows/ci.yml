@@ -204,6 +204,86 @@ jobs:
         run: cargo test --test integration_tests_* --color always -- --nocapture
 
   # ============================================================================
+  # FRONTEND CI
+  # ============================================================================
+
+  frontend_lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node with npm
+        uses: ./.github/actions/frontend-action
+
+      - name: Run linter
+        run: npm run lint
+
+  frontend_format_check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node with npm
+        uses: ./.github/actions/frontend-action
+
+      - name: Check formatting
+        run: npm run format:check
+
+  frontend_type_check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node with npm
+        uses: ./.github/actions/frontend-action
+
+      - name: Run type-check
+        run: npm run type-check
+
+  frontend_build:
+    runs-on: ubuntu-latest
+    needs: [frontend_lint, frontend_format_check, frontend_type_check]
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node with npm
+        uses: ./.github/actions/frontend-action
+
+      - name: Build frontend
+        run: npm run build
+
+  frontend_audit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node with npm
+        uses: ./.github/actions/frontend-action
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=moderate
+
+  # ============================================================================
   # Containerize Services (BUILD + PUSH)
   # ============================================================================
 

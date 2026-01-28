@@ -1,0 +1,16 @@
+name: "Setup Node with npm"
+
+description: "Set up Node.js and install npm dependencies for frontend"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "22.20.0"
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: frontend
+      run: npm ci

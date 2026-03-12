@@ -5,7 +5,7 @@ license = "MIT"
 description = "AI service component designed to enable semantic codebase search and intelligent Q&A over your source code. Also for general purpose usage."
 authors = [{ name = "kristi" }]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 
 dependencies = [
     "chromadb>=1.1.1",
